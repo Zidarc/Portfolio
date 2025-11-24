@@ -47,3 +47,58 @@ window.addEventListener("scroll", () => {
         header.classList.remove("scrolled");
     }
 });
+
+// Intersection Observer for scroll animations
+function initScrollAnimations() {
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, observerOptions);
+
+    // Observe sections
+    const sectionsToAnimate = [
+        document.getElementById('intro-section'),
+        document.getElementById('education-section'),
+        document.getElementById('container-2'),
+        document.getElementById('container-3')
+    ];
+
+    sectionsToAnimate.forEach(section => {
+        if (section) {
+            observer.observe(section);
+        }
+    });
+
+    // Observe education items with staggered delay
+    const educationItems = document.querySelectorAll('.education-item');
+    educationItems.forEach(item => {
+        if (item) {
+            observer.observe(item);
+        }
+    });
+
+    // Observe skill icons with staggered delay
+    const skillIcons = document.querySelectorAll('.iconSkill');
+    skillIcons.forEach((icon, index) => {
+        if (icon) {
+            // Add delay based on index for staggered effect
+            icon.style.transitionDelay = `${(index % 4) * 0.1}s`;
+            observer.observe(icon);
+        }
+    });
+}
+
+// Initialize scroll animations when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initScrollAnimations);
+} else {
+    initScrollAnimations();
+}

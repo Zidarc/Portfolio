@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ali Hussain</title>
+    <meta name="description" content="Ali Hussain - Data Scientist and Developer portfolio. Showcasing projects in data science, web development, and software engineering.">
+    <title>Ali Hussain - Portfolio</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='70' font-size='60' text-anchor='middle' fill='%23F06060' font-family='Arial' font-weight='bold'%3EAH%3C/text%3E%3C/svg%3E">
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="main.css">
@@ -14,14 +18,15 @@
 </head>
 
 <body>
-<header id="top-header">
-    <i class="fa fa-bars nav-toggle" id="open-nav"></i>
+<a href="#intro-section" class="skip-to-main">Skip to main content</a>
+<header id="top-header" role="banner">
+    <button class="fa fa-bars nav-toggle" id="open-nav" aria-label="Open navigation menu" aria-expanded="false"></button>
     <span class="header-name">Ali Hussain</span>
 </header>
 
 
-<nav id="sidebar-nav">
-    <i class="fa fa-times nav-toggle" id="close-nav"></i>
+<nav id="sidebar-nav" role="navigation" aria-label="Main navigation">
+    <button class="fa fa-times nav-toggle" id="close-nav" aria-label="Close navigation menu" aria-expanded="false"></button>
     <ul class="list-unstyled">
         <li><a class="nav-link" href="#intro-section">About Me</a></li>
         <li><a class="nav-link" href="#education-section">Education</a></li>
@@ -38,96 +43,96 @@
 
 <div id="container-1" class="container-fluid"></div>
 
-<div id="intro-section" class="container-fluid">
+<main id="intro-section" class="container-fluid" role="main">
     <div class="row">
         <div class="intro-text col-lg-6 col-md-6 col-sm-12 col-xs-12">
             <h2>About Me</h2>
             <p>I'm Ali Hussain, an aspiring Data Scientist currently pursuing my Bachelor's in Data Science at FAST National University. My journey in technology began with a passion for transforming raw data into meaningful insights and building innovative solutions that make a real impact.</p>
-            <p>From engineering cryptocurrency trading platforms handling 100+ concurrent users to creating real-time stock exchange simulators and interactive projects, I thrive on turning complex challenges into elegant solutions. My experience has taught me the value of clear communication and collaborative problem-solving—skills, which I try tobring to every project.</p>
+            <p>From engineering cryptocurrency trading platforms handling 100+ concurrent users to creating real-time stock exchange simulators and interactive projects, I thrive on turning complex challenges into elegant solutions. My experience has taught me the value of clear communication and collaborative problem-solving skills, which I try to bring to every project.</p>
             <p>I specialize in Python, JavaScript, and the MERN stack, with expertise in data visualization, real-time systems, and database optimization. Whether it's building Power BI dashboards that tell compelling data stories or optimizing MongoDB queries for 30% performance gains, I'm driven by the pursuit of excellence in everything I create.</p>
         </div>
         <div class="intro-image col-lg-6 col-md-6 col-sm-12 col-xs-12">
-            <img src="https://via.placeholder.com/400" alt="Profile" class="circle-image">
+            <img src="https://via.placeholder.com/400" alt="Ali Hussain - Data Scientist and Developer" class="circle-image">
         </div>
     </div>
-</div>
+</main>
 
-<div id="education-section" class="container-fluid">
-    <h2 class="education-title">Education</h2>
+<section id="education-section" class="container-fluid" aria-labelledby="education-heading">
+    <h2 id="education-heading" class="education-title">Education</h2>
     <div class="row education-row">
         <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12 education-item">
             <a href="https://www.bvsparsischool.edu.pk/" target="_blank" class="education-link">
                 <img src="https://i.ibb.co/YFGyb0Y9/2.jpg" alt="BVS High School" class="education-image">
                 <h3 class="education-name">BVS High School</h3>
+                <p class="education-period">2013-2022</p>
             </a>
         </div>
         <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12 education-item">
             <a href="https://college.cedar.edu.pk/pechs/" target="_blank" class="education-link">
                 <img src="https://i.ibb.co/DPhqmz8Y/Logo.png" alt="Cedar College" class="education-image">
                 <h3 class="education-name">Cedar College</h3>
+                <p class="education-period">2022-2024</p>
             </a>
         </div>
         <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12 education-item">
             <a href="https://www.nu.edu.pk/" target="_blank" class="education-link">
                 <img src="https://i.ibb.co/G4DXscCY/FAST.png" alt="FAST NUCES" class="education-image">
                 <h3 class="education-name">FAST NUCES</h3>
+                <p class="education-period">2025 - Present</p>
             </a>
         </div>
     </div>
-</div>
+</section>
 
-<div id="container-2" class="container-fluid">
+<section id="container-2" class="container-fluid" aria-labelledby="skills-heading">
     <div class="row header">
         <div class="col-xs-12">
-            <h3>SKILLS AND TOOLS:</h3>
+            <h3 id="skills-heading">SKILLS AND TOOLS:</h3>
         </div>
     </div>
 
     <div class="row skills-block">
-        <div class="iconSkill col-lg-4 col-md-4 col-sm-6 col-xs-12"><i class="devicon-python-plain-wordmark"></i></div>
-        <div class="iconSkill col-lg-4 col-md-4 col-sm-6 col-xs-12"><i class="devicon-javascript-plain"></i></div>
-        <div class="iconSkill col-lg-4 col-md-4 col-sm-6 col-xs-12"><i class="devicon-git-plain-wordmark"></i></div>
+        <div class="iconSkill col-lg-3 col-md-3 col-sm-6 col-xs-12"><i class="devicon-python-plain-wordmark" aria-label="Python programming language"></i></div>
+        <div class="iconSkill col-lg-3 col-md-3 col-sm-6 col-xs-12"><i class="devicon-javascript-plain" aria-label="JavaScript programming language"></i></div>
+        <div class="iconSkill col-lg-3 col-md-3 col-sm-6 col-xs-12"><i class="devicon-git-plain-wordmark" aria-label="Git version control"></i></div>
+        <div class="iconSkill col-lg-3 col-md-3 col-sm-6 col-xs-12"><i class="devicon-html5-plain-wordmark" aria-label="HTML5 markup language"></i></div>
     </div>
 
     <div class="row skills-block">
-        <div class="iconSkill col-lg-4 col-md-4 col-sm-6 col-xs-12"><i class="devicon-html5-plain-wordmark"></i></div>
-        <div class="iconSkill col-lg-4 col-md-4 col-sm-6 col-xs-12"><i class="devicon-css3-plain-wordmark"></i></div>
-        <div class="iconSkill col-lg-4 col-md-4 col-sm-6 col-xs-12"><i class="devicon-nodejs-plain-wordmark"></i></div>
-    </div>
-
-    <div class="row skills-block">
-        <div class="iconSkill col-lg-4 col-md-4 col-sm-6 col-xs-12"><i class="devicon-express-original-wordmark"></i></div>
-        <div class="iconSkill col-lg-4 col-md-4 col-sm-6 col-xs-12">
-            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/qgis.svg" alt="QGIS" class="skill-icon-img">
-        </div>
-        <div class="iconSkill col-lg-4 col-md-4 col-sm-6 col-xs-12">
-            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/powerbi.svg" alt="Power BI" class="skill-icon-img">
+        <div class="iconSkill col-lg-3 col-md-3 col-sm-6 col-xs-12"><i class="devicon-css3-plain-wordmark" aria-label="CSS3 styling language"></i></div>
+        <div class="iconSkill col-lg-3 col-md-3 col-sm-6 col-xs-12"><i class="devicon-nodejs-plain-wordmark" aria-label="Node.js runtime environment"></i></div>
+        <div class="iconSkill col-lg-3 col-md-3 col-sm-6 col-xs-12"><i class="devicon-express-original-wordmark" aria-label="Express.js web framework"></i></div>
+        <div class="iconSkill col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/qgis.svg" alt="QGIS geographic information system" class="skill-icon-img">
         </div>
     </div>
 
     <div class="row skills-block">
-        <div class="iconSkill col-lg-4 col-md-4 col-sm-6 col-xs-12"><i class="devicon-mongodb-plain-wordmark"></i></div>
-        <div class="iconSkill col-lg-4 col-md-4 col-sm-6 col-xs-12">
-            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/supabase.svg" alt="Supabase" class="skill-icon-img">
+        <div class="iconSkill col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/powerbi.svg" alt="Power BI business analytics tool" class="skill-icon-img">
         </div>
-        <div class="iconSkill col-lg-4 col-md-4 col-sm-6 col-xs-12"><i class="devicon-mysql-plain-wordmark"></i></div>
+        <div class="iconSkill col-lg-3 col-md-3 col-sm-6 col-xs-12"><i class="devicon-mongodb-plain-wordmark" aria-label="MongoDB database"></i></div>
+        <div class="iconSkill col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/supabase.svg" alt="Supabase database platform" class="skill-icon-img">
+        </div>
+        <div class="iconSkill col-lg-3 col-md-3 col-sm-6 col-xs-12"><i class="devicon-c-plain-wordmark" aria-label="C programming language"></i>        </div>
     </div>
-</div>
+</section>
 
-<div id="container-3">
-    <h3>MY WORK:</h3>
+<section id="container-3" aria-labelledby="work-heading">
+    <h3 id="work-heading">MY WORK:</h3>
 
     <ul id="grid">
-        <li><a class="gridCell" href="https://github.com/Zidarc/SynergyIBA" target="_blank"><img class="gridImg" src="https://i.ibb.co/Mk8ffPdd/synergy.jpg"><span class="gridOverlay"></span><span class="gridText">Synergy</span></a></li>
-        <li><a class="gridCell" href="https://github.com/Zidarc/GEOCODE" target="_blank"><img class="gridImg" src="https://res.cloudinary.com/dt4qeehms/image/upload/q_100/v1470090147/Portfolio/wp1_eal3pl.png"><span class="gridOverlay"></span><span class="gridText">GeoCode</span></a></li>
-        <li><a class="gridCell" href="https://github.com/Zidarc/NasaSpaceApps-main" target="_blank"><img class="gridImg" src="https://res.cloudinary.com/dt4qeehms/image/upload/q_100/v1470090146/Portfolio/wp2_y2rkr8.png"><span class="gridOverlay"></span><span class="gridText">Nasa Space App</span></a></li>
-        <li><a class="gridCell" href="https://github.com/Zidarc/Data-Dash" target="_blank"><img class="gridImg" src="https://res.cloudinary.com/dt4qeehms/image/upload/q_100/v1470091955/photos_nqxdnz.png"><span class="gridOverlay"></span><span class="gridText">DataDash</span></a></li>
-        <li><a class="gridCell" href="https://github.com/Zidarc/BitMap_Image_Editor" target="_blank"><img class="gridImg" src="https://res.cloudinary.com/dt4qeehms/image/upload/q_100/v1470079575/Portfolio/drawings_f1vejf.png"><span class="gridOverlay"></span><span class="gridText">BMP Editor</span></a></li>
-        <li><a class="gridCell" href="https://github.com/Zidarc/Negotioum-ccx" target="_blank"><img class="gridImg" src="https://i.ibb.co/1J42Nkkd/negotium.jpg"><span class="gridOverlay"></span><span class="gridText">Negotium</span></a></li>
+        <li><a class="gridCell" href="https://github.com/Zidarc/SynergyIBA" target="_blank" aria-label="View Synergy project on GitHub"><img class="gridImg" src="https://i.ibb.co/Mk8ffPdd/synergy.jpg" alt="Synergy project screenshot"><span class="gridOverlay"></span><span class="gridText">Synergy</span></a></li>
+        <li><a class="gridCell" href="https://github.com/Zidarc/GEOCODE" target="_blank" aria-label="View GeoCode project on GitHub"><img class="gridImg" src="https://res.cloudinary.com/dt4qeehms/image/upload/q_100/v1470090147/Portfolio/wp1_eal3pl.png" alt="GeoCode project screenshot"><span class="gridOverlay"></span><span class="gridText">GeoCode</span></a></li>
+        <li><a class="gridCell" href="https://github.com/Zidarc/NasaSpaceApps-main" target="_blank" aria-label="View NASA Space App project on GitHub"><img class="gridImg" src="https://res.cloudinary.com/dt4qeehms/image/upload/q_100/v1470090146/Portfolio/wp2_y2rkr8.png" alt="NASA Space App project screenshot"><span class="gridOverlay"></span><span class="gridText">Nasa Space App</span></a></li>
+        <li><a class="gridCell" href="https://github.com/Zidarc/Data-Dash" target="_blank" aria-label="View DataDash project on GitHub"><img class="gridImg" src="https://res.cloudinary.com/dt4qeehms/image/upload/q_100/v1470091955/photos_nqxdnz.png" alt="DataDash project screenshot"><span class="gridOverlay"></span><span class="gridText">DataDash</span></a></li>
+        <li><a class="gridCell" href="https://github.com/Zidarc/BitMap_Image_Editor" target="_blank" aria-label="View BMP Editor project on GitHub"><img class="gridImg" src="https://res.cloudinary.com/dt4qeehms/image/upload/q_100/v1470079575/Portfolio/drawings_f1vejf.png" alt="BMP Image Editor project screenshot"><span class="gridOverlay"></span><span class="gridText">BMP Editor</span></a></li>
+        <li><a class="gridCell" href="https://github.com/Zidarc/Negotioum-ccx" target="_blank" aria-label="View Negotium project on GitHub"><img class="gridImg" src="https://i.ibb.co/1J42Nkkd/negotium.jpg" alt="Negotium project screenshot"><span class="gridOverlay"></span><span class="gridText">Negotium</span></a></li>
     </ul>
-</div>
+</section>
 
-<footer>
+<footer role="contentinfo">
     <div class="footer-sections">
         <section class="about footer-section">
             <h3>MY PHILOSOPHY</h3>
@@ -138,18 +143,27 @@
         <section class="contact footer-section">
             <h3>GET IN TOUCH</h3>
             <form>
-                <div class="form-group"><input type="text" placeholder="NAME" class="form-control"></div>
-                <div class="form-group"><input type="email" placeholder="E-MAIL" class="form-control"></div>
-                <div class="form-group"><textarea class="form-control" placeholder="YOUR MESSAGE" rows="5"></textarea></div>
-                <input type="button" class="buttonSend" value="SEND">
+                <div class="form-group">
+                    <label for="contact-name" class="sr-only">Name</label>
+                    <input type="text" id="contact-name" name="name" placeholder="NAME" class="form-control" aria-label="Your name" required>
+                </div>
+                <div class="form-group">
+                    <label for="contact-email" class="sr-only">Email</label>
+                    <input type="email" id="contact-email" name="email" placeholder="E-MAIL" class="form-control" aria-label="Your email address" required>
+                </div>
+                <div class="form-group">
+                    <label for="contact-message" class="sr-only">Message</label>
+                    <textarea id="contact-message" name="message" class="form-control" placeholder="YOUR MESSAGE" rows="5" aria-label="Your message" required></textarea>
+                </div>
+                <input type="button" class="buttonSend" value="SEND" aria-label="Send message">
             </form>
         </section>
 
         <section class="follow footer-section">
             <h3>FIND ME ONLINE</h3>
-            <a href="https://github.com/Zidarc" target="_blank" class="social-icon"><i class="fa fa-github"></i></a>
-            <a href="https://www.linkedin.com/in/alihussainfast/" target="_blank" class="social-icon"><i class="fa fa-linkedin"></i></a>
-            <a href="https://www.instagram.com/_zodarcli_/?hl=en" target="_blank" class="social-icon"><i class="fa fa-instagram"></i></a>
+            <a href="https://github.com/Zidarc" target="_blank" class="social-icon" aria-label="Visit Ali Hussain's GitHub profile"><i class="fa fa-github" aria-hidden="true"></i></a>
+            <a href="https://www.linkedin.com/in/alihussainfast/" target="_blank" class="social-icon" aria-label="Visit Ali Hussain's LinkedIn profile"><i class="fa fa-linkedin" aria-hidden="true"></i></a>
+            <a href="https://www.instagram.com/_zodarcli_/?hl=en" target="_blank" class="social-icon" aria-label="Visit Ali Hussain's Instagram profile"><i class="fa fa-instagram" aria-hidden="true"></i></a>
         </section>
     </div>
     
