@@ -8,6 +8,30 @@ body {
     animation: fadeIn 0.8s ease-in forwards;
 }
 
+/* RTL Support for Urdu */
+html[dir="rtl"] body,
+html[dir="rtl"] #intro-section,
+html[dir="rtl"] #education-section,
+html[dir="rtl"] #container-2,
+html[dir="rtl"] footer {
+    direction: rtl;
+}
+
+html[dir="rtl"] .intro-text h2::after {
+    right: 0;
+    left: auto;
+    transform-origin: right;
+}
+
+html[dir="rtl"] .language-selector {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+html[dir="rtl"] #top-header {
+    flex-direction: row-reverse;
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -1099,6 +1123,51 @@ nav ul li { margin: 30px 0; }
     transition: background 0.3s ease;
     z-index: 4000;
     box-sizing: border-box;
+    gap: 20px;
+}
+
+/* Language Selector */
+.language-selector {
+    display: flex;
+    align-items: center;
+    margin-right: auto;
+    margin-left: 50px;
+}
+
+#language-select {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: white;
+    padding: 6px 12px;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 12px;
+    padding-right: 30px;
+}
+
+#language-select:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+#language-select:focus {
+    outline: 2px solid #F06060;
+    outline-offset: 2px;
+    border-color: #F06060;
+}
+
+#language-select option {
+    background: #151515;
+    color: white;
+    padding: 10px;
 }
 
 .header-name {
@@ -1121,6 +1190,16 @@ nav ul li { margin: 30px 0; }
         padding-left: 3%;
         padding-right: 3%;
     }
+    
+    .language-selector {
+        margin-left: 15px;
+    }
+    
+    #language-select {
+        font-size: 12px;
+        padding: 4px 8px;
+        padding-right: 25px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1137,6 +1216,16 @@ nav ul li { margin: 30px 0; }
     #open-nav {
         font-size: 20px !important;
         padding: 8px;
+    }
+    
+    .language-selector {
+        margin-left: 10px;
+    }
+    
+    #language-select {
+        font-size: 11px;
+        padding: 3px 6px;
+        padding-right: 22px;
     }
 }
 
