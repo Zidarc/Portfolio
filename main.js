@@ -1,6 +1,7 @@
+/* ========================== NAVIGATION ========================== */
+/* Smooth scroll for navigation links */
 $(document).ready(function () {
-
-    // Smooth scroll for all navigation links
+    // Smooth scroll for navigation links
     $('a.nav-link[href^="#"]').on('click', function (e) {
         e.preventDefault();
 
@@ -12,27 +13,43 @@ $(document).ready(function () {
         }, 900, 'swing');
     });
 
+    // Smooth scroll for skip-to-main link
+    $('a.skip-to-main[href^="#"]').on('click', function (e) {
+        e.preventDefault();
+
+        const target = $(this.hash);
+        if (!target.length) return;
+
+        $('html, body').stop().animate({
+            scrollTop: target.offset().top - 70
+        }, 900, 'swing');
+        
+        // Remove focus after scrolling
+        this.blur();
+    });
 });
 
+/* Sidebar Navigation Toggle */
 const nav = document.getElementById("sidebar-nav");
 const openBtn = document.getElementById("open-nav");
 const closeBtn = document.getElementById("close-nav");
 const header = document.getElementById("top-header");
 
+// Open navigation menu
 openBtn.addEventListener("click", () => {
     nav.classList.add("open");
     openBtn.classList.add("hide");
     header.classList.add("hidden");
 });
 
+// Close navigation menu
 closeBtn.addEventListener("click", () => {
     nav.classList.remove("open");
     openBtn.classList.remove("hide");
     header.classList.remove("hidden");
 });
 
-
-// close when clicking a link
+// Close navigation when clicking a link
 document.querySelectorAll(".nav-link").forEach(link =>
     link.addEventListener("click", () => {
         nav.classList.remove("open");
@@ -40,6 +57,10 @@ document.querySelectorAll(".nav-link").forEach(link =>
         header.classList.remove("hidden");
     })
 );
+
+
+/* ========================== HEADER SCROLL EFFECT ========================== */
+/* Add scrolled class to header when scrolling */
 window.addEventListener("scroll", () => {
     if (window.scrollY > 20) {
         header.classList.add("scrolled");
@@ -48,7 +69,9 @@ window.addEventListener("scroll", () => {
     }
 });
 
-// Intersection Observer for scroll animations
+
+/* ========================== SCROLL ANIMATIONS ========================== */
+/* Intersection Observer for fade-in animations on scroll */
 function initScrollAnimations() {
     const observerOptions = {
         threshold: 0.1,
@@ -63,7 +86,7 @@ function initScrollAnimations() {
         });
     }, observerOptions);
 
-    // Observe sections
+    // Observe main sections
     const sectionsToAnimate = [
         document.getElementById('intro-section'),
         document.getElementById('education-section'),
@@ -103,8 +126,9 @@ if (document.readyState === 'loading') {
     initScrollAnimations();
 }
 
-// ==================== MULTI-LANGUAGE SUPPORT ====================
 
+/* ========================== MULTI-LANGUAGE SUPPORT ========================== */
+/* Translation object containing all language translations */
 const translations = {
     en: {
         nav: {
@@ -588,10 +612,15 @@ const translations = {
     }
 };
 
+/* Language Management */
 // Get saved language or default to English
 let currentLanguage = localStorage.getItem('language') || 'en';
 
-// Function to update text content
+/**
+ * Update text content of an element based on its type
+ * @param {HTMLElement} element - The element to update
+ * @param {string} text - The text to set
+ */
 function updateTextContent(element, text) {
     if (element.tagName === 'INPUT' && element.type === 'button') {
         element.value = text;
@@ -602,7 +631,10 @@ function updateTextContent(element, text) {
     }
 }
 
-// Function to translate the page
+/**
+ * Translate the entire page to the specified language
+ * @param {string} lang - Language code (en, ur, es, fr, ko, ja, zh, de, ar, pt)
+ */
 function translatePage(lang) {
     currentLanguage = lang;
     localStorage.setItem('language', lang);
@@ -659,7 +691,7 @@ function translatePage(lang) {
     }
 }
 
-// Initialize language on page load
+/* Initialize language on page load */
 document.addEventListener('DOMContentLoaded', () => {
     translatePage(currentLanguage);
     
