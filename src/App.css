@@ -1,0 +1,27 @@
+.stage0 {
+  min-height: 100vh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 1rem;
+  padding: var(--gutter);
+}
+
+.stage0__note {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.stage0__swatches {
+  display: flex;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stage0__swatches li {
+  width: 28px;
+  height: 28px;
+  border-radius: 50% 45% 55% 48%;
+}

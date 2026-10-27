@@ -1,0 +1,22 @@
+:root {
+  /* paper */
+  --paper: #fbf7ee;
+  --paper-shade: #f3ecdc;
+
+  /* crayon box */
+  --crayon-graphite: #3a3836;
+  --crayon-red: #d6453d;
+  --crayon-blue: #3a6fc4;
+  --crayon-green: #3f9a4f;
+  --crayon-yellow: #e8b931;
+  --crayon-orange: #ea7a2c;
+  --crayon-purple: #7b52ab;
+
+  --ink: var(--crayon-graphite);
+  --ink-soft: #6b6660;
+
+  --font-hand: 'Patrick Hand', 'Comic Sans MS', 'Segoe Print', cursive;
+
+  --gutter: clamp(16px, 4vw, 48px);
+  --max-width: 1120px;
+}
