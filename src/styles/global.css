@@ -36,6 +36,23 @@ a {
   color: inherit;
 }
 
+/* sections land below the fixed header when jumped to */
+section[id] {
+  scroll-margin-top: 72px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 :focus-visible {
   outline: 3px dashed var(--crayon-blue);
   outline-offset: 4px;

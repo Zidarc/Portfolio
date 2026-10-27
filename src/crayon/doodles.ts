@@ -167,10 +167,38 @@ const smiley: DoodleFn = (rng, m) => [
   { pts: chain(quad(p(-50, -72), p(-30, -112), p(-14, -86)), quad(p(-14, -86), p(4, -118), p(16, -88)), quad(p(16, -88), p(38, -114), p(52, -70))) },
 ];
 
-export const DOODLES = { sparkle, cat, flower, rings, smiley } satisfies Record<string, DoodleFn>;
+/** `-->`: a slightly bent shaft, then the head as one `>` stroke into the tip. */
+const arrow: DoodleFn = (rng, m) => {
+  const tip = p(100, gauss(rng) * 3 * m);
+  return [
+    { pts: quad(p(0, gauss(rng) * 3 * m), p(50, gauss(rng) * 7 * m), tip) },
+    { pts: [p(76, -17 + gauss(rng) * 3 * m), tip, p(76, 17 + gauss(rng) * 3 * m)] },
+  ];
+};
+
+/** Three crayon lines: the menu button. */
+const menu: DoodleFn = (rng, m) =>
+  [0, 28, 56].map((y) => ({ pts: quad(p(0, y), p(45, y + gauss(rng) * 4 * m), p(90 + gauss(rng) * 5 * m, y)) }));
+
+/** An X: the close button. */
+const cross: DoodleFn = () => [{ pts: [p(0, 0), p(70, 70)] }, { pts: [p(70, 0), p(0, 70)] }];
+
+/** A long, gently wavy line: drawn under the header once the page scrolls. */
+const underline: DoodleFn = (rng) => {
+  const phase = rng() * Math.PI * 2;
+  return [{ pts: Array.from({ length: 41 }, (_, i) => p(i * 25, Math.sin(i * 0.45 + phase) * 4)) }];
+};
+
+export const DOODLES = { sparkle, cat, flower, rings, smiley, arrow, menu, cross, underline } satisfies Record<
+  string,
+  DoodleFn
+>;
 export type DoodleName = keyof typeof DOODLES;
 
 const FRAMES: Partial<Record<DoodleName, Frame>> = { rings: RINGS_FRAME };
+
+/** Long lines where even a few degrees of tilt turns into a slope across the screen. */
+const NO_TILT: ReadonlySet<DoodleName> = new Set(['underline']);
 
 export interface DoodleOptions extends CrayonStyle {
   seed: number;
@@ -179,7 +207,7 @@ export interface DoodleOptions extends CrayonStyle {
 export function planDoodle(name: DoodleName, opts: DoodleOptions): CrayonPlan {
   const m = opts.messiness;
   const rng = createRng(opts.seed);
-  const tilt = (gauss(rng) * 4 * m * Math.PI) / 180;
+  const tilt = NO_TILT.has(name) ? 0 : (gauss(rng) * 4 * m * Math.PI) / 180;
   const cos = Math.cos(tilt);
   const sin = Math.sin(tilt);
 
@@ -187,7 +215,7 @@ export function planDoodle(name: DoodleName, opts: DoodleOptions): CrayonPlan {
     // each part comes out a slightly different size than planned
     const cx = s.pts.reduce((a, q) => a + q.x, 0) / s.pts.length;
     const cy = s.pts.reduce((a, q) => a + q.y, 0) / s.pts.length;
-    const k = 1 + gauss(rng) * 0.05 * m;
+    const k = NO_TILT.has(name) ? 1 : 1 + gauss(rng) * 0.05 * m;
     const pts = s.pts.map((q) => {
       const x = cx + (q.x - cx) * k;
       const y = cy + (q.y - cy) * k;

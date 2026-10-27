@@ -16,6 +16,8 @@ export interface CrayonCommonProps {
   instant?: boolean;
   /** Multiplies the hand's speed, e.g. 2 = draw twice as fast. */
   tempo?: number;
+  /** Hide from screen readers (when the same text is already there, e.g. a link's sr-only label). */
+  decorative?: boolean;
   /** Turn the wax texture filter off (debugging / low-power devices). */
   texture?: boolean;
   onDone?: () => void;
@@ -40,6 +42,7 @@ export function CrayonDrawing({
   delay = 0,
   play = true,
   instant = false,
+  decorative = false,
   texture = true,
   onDone,
   className,
@@ -114,8 +117,7 @@ export function CrayonDrawing({
       className={['crayon', className].filter(Boolean).join(' ')}
       viewBox={plan.viewBox}
       style={{ ...style, aspectRatio: `${plan.width} / ${plan.height}` }}
-      role="img"
-      aria-label={label}
+      {...(decorative ? { 'aria-hidden': true } : { role: 'img', 'aria-label': label })}
     >
       {texture && (
         <defs>

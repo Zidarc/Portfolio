@@ -10,6 +10,10 @@ const LABELS: Record<DoodleName, string> = {
   flower: 'Crayon drawing of a flower',
   rings: 'Crayon circles',
   smiley: 'Crayon drawing of a smiley face',
+  arrow: 'Crayon arrow',
+  menu: 'Menu',
+  cross: 'Close',
+  underline: 'Crayon line',
 };
 
 export interface CrayonDoodleProps extends CrayonCommonProps, Partial<CrayonStyle> {

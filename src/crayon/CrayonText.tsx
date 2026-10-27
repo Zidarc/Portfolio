@@ -8,6 +8,11 @@ export interface CrayonTextProps extends CrayonCommonProps, Partial<Omit<Handwri
   text: string;
   /** Fixed seed for repeatable handwriting. Omit for a fresh hand on every mount. */
   seed?: number;
+  /**
+   * Size by letter height (px of a capital) instead of filling the container's width,
+   * so words with descenders or different lengths still match each other.
+   */
+  capHeight?: number;
 }
 
 /**
@@ -25,6 +30,8 @@ export function CrayonText({
   letterSpacing,
   wordSpacing,
   tempo = 1,
+  capHeight,
+  style,
   ...common
 }: CrayonTextProps) {
   const [mountSeed] = useState(randomSeed);
@@ -43,5 +50,8 @@ export function CrayonText({
     });
   }, [text, seed, messiness, speed, weight, tempo, align, lineHeight, letterSpacing, wordSpacing]);
 
-  return <CrayonDrawing plan={plan} seed={seed} label={text.replace(/\n/g, ' ')} {...common} />;
+  // viewBox units are 1/100 of a capital letter
+  const sized = capHeight ? { width: `${(plan.width * capHeight) / 100}px`, height: 'auto', ...style } : style;
+
+  return <CrayonDrawing plan={plan} seed={seed} label={text.replace(/\n/g, ' ')} style={sized} {...common} />;
 }
