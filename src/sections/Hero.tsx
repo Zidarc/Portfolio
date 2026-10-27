@@ -68,8 +68,8 @@ export function Hero() {
             className="hero__sparkle"
           />
           <p className={`hero__tagline ${shown >= PHOTO ? 'is-visible' : ''}`}>
-            Computer Science student at FAST NUCES, Karachi. I build web apps, real-time games and
-            data-heavy things.
+            Computer Science student at FAST NUCES, Karachi. I build real-time web apps, games and
+            AI tools people actually use.
           </p>
         </div>
 
@@ -100,6 +100,15 @@ export function Hero() {
             onDone={advanceTo(FLOWER)}
             className="hero__cat"
           />
+          <a
+            href="https://github.com/Zidarc"
+            target="_blank"
+            rel="noreferrer"
+            className={`hero__huna ${shown >= DONE ? 'is-visible' : ''}`}
+            tabIndex={shown >= DONE ? undefined : -1}
+          >
+            <span aria-hidden="true">↖ </span>psst, that's Huna. She's hungry! Go feed her on my GitHub 🐟
+          </a>
           <CrayonDoodle
             {...common}
             name="flower"

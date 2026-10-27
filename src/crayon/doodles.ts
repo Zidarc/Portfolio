@@ -189,10 +189,28 @@ const underline: DoodleFn = (rng) => {
   return [{ pts: Array.from({ length: 41 }, (_, i) => p(i * 25, Math.sin(i * 0.45 + phase) * 4)) }];
 };
 
-export const DOODLES = { sparkle, cat, flower, rings, smiley, arrow, menu, cross, underline } satisfies Record<
-  string,
-  DoodleFn
->;
+/** ✓ in one stroke. */
+const check: DoodleFn = () => [{ pts: [p(0, 42), p(30, 74), p(96, 0)] }];
+
+/** A small circle, then coloured in with a zigzag: timeline markers. */
+const dot: DoodleFn = (rng, m) => [
+  { pts: loop(0, 0, 14, 14, rng, m) },
+  { pts: Array.from({ length: 6 }, (_, i) => p(i % 2 ? 8 : -8, -9 + i * 3.6)) },
+];
+
+export const DOODLES = {
+  sparkle,
+  cat,
+  flower,
+  rings,
+  smiley,
+  arrow,
+  menu,
+  cross,
+  underline,
+  check,
+  dot,
+} satisfies Record<string, DoodleFn>;
 export type DoodleName = keyof typeof DOODLES;
 
 const FRAMES: Partial<Record<DoodleName, Frame>> = { rings: RINGS_FRAME };

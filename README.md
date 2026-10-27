@@ -19,9 +19,14 @@ npm run preview   # serve the production build
 ## Docker
 ```bash
 docker build -t portfolio .
-docker run -p 8080:80 portfolio   # http://localhost:8080
+docker run -p 8080:8080 --env-file .env.local portfolio   # http://localhost:8080
 ```
+The image runs a small Node server (`server/index.ts`) that serves the site and the contact form API.
 CI builds and pushes `ghcr.io/zidarc/portfolio:latest` on every push to `main`.
+
+## Contact form email
+Messages are sent through the Gmail API (send-only scope). Setup: [docs/email-setup.md](docs/email-setup.md).
+Without credentials, `npm run dev` prints messages to the terminal instead of sending them.
 
 Add `?lab` to the URL (e.g. http://localhost:5173/?lab) to open the crayon test bench.
 

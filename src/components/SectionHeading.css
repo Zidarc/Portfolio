@@ -1,0 +1,32 @@
+.section-heading {
+  margin: 0 0 1.75rem;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.section-heading--small {
+  margin-bottom: 1.25rem;
+}
+
+/* ---------- shared section layout ---------- */
+
+.section {
+  width: min(var(--max-width), 100%);
+  margin: 0 auto;
+  padding: clamp(4rem, 10vw, 7rem) var(--gutter);
+}
+
+.section p {
+  margin: 0 0 1rem;
+}
+
+.section a {
+  text-decoration-color: var(--crayon-blue);
+  text-decoration-style: wavy;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 5px;
+}
+
+.section a:hover {
+  color: var(--crayon-blue);
+}

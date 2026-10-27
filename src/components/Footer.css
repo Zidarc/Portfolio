@@ -1,0 +1,15 @@
+.footer {
+  padding: 3rem var(--gutter) 2.5rem;
+  color: var(--ink-soft);
+  font-size: 1.05rem;
+  text-align: center;
+}
+
+.footer p {
+  margin: 0.2rem 0;
+}
+
+.footer__made {
+  font-size: 0.95rem;
+  opacity: 0.8;
+}

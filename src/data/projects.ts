@@ -11,7 +11,10 @@ export type ProjectTheme =
   | 'paint'
   | 'mun'
   | 'mission-control'
-  | 'pixel';
+  | 'pixel'
+  | 'vision'
+  | 'vault'
+  | 'dashboard';
 
 export interface Project {
   id: string;
@@ -40,6 +43,16 @@ export const projects: Project[] = [
     repo: 'https://github.com/Zidarc/Cyber-Loop',
     live: 'https://recursion-hell.vercel.app',
     theme: 'stranger-things',
+  },
+  {
+    id: 'ishara',
+    name: 'Ishara',
+    tagline: 'AI wayfinding for visually impaired students',
+    description:
+      'An assistive campus-navigation app: on-device YOLO object detection plus monocular depth estimation turn a phone camera into left/centre/right proximity alerts, delivered through an AR app with spatial audio and haptics.',
+    stack: ['Python', 'YOLO', 'Monocular depth', 'OpenVINO', 'Unity AR', 'Streamlit'],
+    repo: 'https://github.com/Zidarc/Ishara',
+    theme: 'vision',
   },
   {
     id: 'gcc',
@@ -94,6 +107,27 @@ export const projects: Project[] = [
     live: 'https://ismailsilat7.github.io/NasaSpaceApps/',
     role: 'Web developer',
     theme: 'mission-control',
+  },
+  {
+    id: 'trustworthy-ai',
+    name: 'Trustworthy AI × GES',
+    tagline: 'Hackathon: ad-click prediction inside a data clean room',
+    description:
+      'For the Trustworthy AI Lab × GES UCLA hackathon, team "Dumb Peeps" built click-through-rate models on publisher and advertiser data merged inside a privacy-preserving data clean room, using synthetic data so neither side sees the other\'s raw records.',
+    stack: ['Python', 'Jupyter', 'Machine learning', 'Synthetic data'],
+    repo: 'https://github.com/Zidarc/Trustworthy-AI-X-GES-Dumb-Peeps',
+    theme: 'vault',
+  },
+  {
+    id: 'data-dash',
+    name: 'Data-Dash',
+    tagline: 'Power BI dashboards from messy multi-source data',
+    description:
+      'Cleaned and merged several Excel datasets, then built 5+ interactive Power BI dashboards comparing sales, music-genre performance and regional metrics, and presented the findings to 50+ people.',
+    stack: ['Power BI', 'Excel'],
+    repo: 'https://github.com/Zidarc/Data-Dash',
+    role: 'Team of three, with Hatim Mustafa and Asad Majeed',
+    theme: 'dashboard',
   },
   {
     id: 'geocode',

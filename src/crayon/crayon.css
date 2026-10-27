@@ -16,6 +16,11 @@
   opacity: 0;
 }
 
+.crayon-shape {
+  position: absolute;
+  pointer-events: none;
+}
+
 .crayon--static path {
   stroke-dashoffset: 0;
   opacity: 1;

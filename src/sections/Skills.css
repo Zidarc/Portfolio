@@ -1,0 +1,50 @@
+.skills__intro {
+  color: var(--ink-soft);
+}
+
+.skills__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: clamp(1.5rem, 3vw, 2.25rem);
+  margin: 2rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.skill-card {
+  position: relative;
+  padding: 1.4rem 1.4rem 1.6rem;
+}
+
+.skill-card__title {
+  margin: 0 0 0.9rem;
+  color: var(--card-colour);
+  font-size: 1.45rem;
+  font-weight: 400;
+}
+
+.skill-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* lopsided corner radii make each chip look traced by hand */
+.chip {
+  padding: 0.15rem 0.7rem;
+  border: 2px solid color-mix(in srgb, var(--card-colour) 70%, transparent);
+  border-radius: 14px 4px 12px 5px / 5px 12px 4px 14px;
+  font-size: 1.05rem;
+  line-height: 1.4;
+}
+
+.chip:nth-child(even) {
+  border-radius: 4px 14px 5px 12px / 12px 5px 14px 4px;
+}
+
+.chip:nth-child(3n) {
+  transform: rotate(-1.5deg);
+}

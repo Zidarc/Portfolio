@@ -14,6 +14,8 @@ const LABELS: Record<DoodleName, string> = {
   menu: 'Menu',
   cross: 'Close',
   underline: 'Crayon line',
+  check: 'Tick',
+  dot: 'Crayon dot',
 };
 
 export interface CrayonDoodleProps extends CrayonCommonProps, Partial<CrayonStyle> {

@@ -4,3 +4,8 @@
 
 [build.environment]
   NODE_VERSION = "24"
+
+# POST /api/contact (the function sets its own path)
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
