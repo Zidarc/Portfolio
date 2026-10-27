@@ -23,7 +23,12 @@ docker run -p 8080:80 portfolio   # http://localhost:8080
 ```
 CI builds and pushes `ghcr.io/zidarc/portfolio:latest` on every push to `main`.
 
+Add `?lab` to the URL (e.g. http://localhost:5173/?lab) to open the crayon test bench.
+
 ## Layout
+- `src/crayon/`: the crayon engine (handwriting, doodles, wax texture filter)
+- `src/sections/`: page sections (Hero, …)
+- `public/ali.jpg`: the profile photo shown in the hero (a crayon smiley shows if it's missing)
 - `src/data/projects.ts`: the project list that drives the project boxes
 - `src/styles/`: design tokens (crayon colours, paper) and global styles
 - `legacy/`: the previous HTML/CSS/jQuery version, kept for reference

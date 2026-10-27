@@ -1,17 +1,14 @@
-import { projects } from './data/projects.ts';
-import './App.css';
+import { CrayonLab } from './lab/CrayonLab.tsx';
+import { Hero } from './sections/Hero.tsx';
 
-/** Stage 0 placeholder: blank paper with a quick sanity check of fonts, colours and data. */
+/** `?lab` opens the crayon test bench; otherwise the site. */
+const showLab = new URLSearchParams(window.location.search).has('lab');
+
 export default function App() {
+  if (showLab) return <CrayonLab />;
   return (
-    <main className="stage0">
-      <p className="stage0__note">Stage 0: blank paper ✏️</p>
-      <ul className="stage0__swatches" aria-label="Crayon colours">
-        {['graphite', 'red', 'blue', 'green', 'yellow', 'orange', 'purple'].map((c) => (
-          <li key={c} style={{ background: `var(--crayon-${c})` }} title={c} />
-        ))}
-      </ul>
-      <p className="stage0__note">{projects.length} projects loaded</p>
+    <main>
+      <Hero />
     </main>
   );
 }
