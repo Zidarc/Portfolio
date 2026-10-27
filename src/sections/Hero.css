@@ -102,6 +102,30 @@
   bottom: -4%;
   left: -24%;
   width: 27%;
+  cursor: pointer;
+  transform-origin: 50% 90%;
+}
+
+/* she perks up when you come near */
+.hero__cat:hover,
+.hero__cat:focus-visible {
+  animation: huna-wiggle 0.6s ease-in-out;
+}
+
+@keyframes huna-wiggle {
+  25% {
+    transform: rotate(-7deg);
+  }
+  60% {
+    transform: rotate(5deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__cat:hover,
+  .hero__cat:focus-visible {
+    animation: none;
+  }
 }
 
 .hero__flower {

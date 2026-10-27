@@ -19,6 +19,9 @@ const PHOTO_SETTLE_MS = 650;
 /** Background-removed cutout made by scripts/make-portrait.py. */
 const PHOTO_SRC = `${import.meta.env.BASE_URL}ali.webp`;
 
+/** Huna lives on the GitHub profile README; visitors feed her by opening an issue. */
+const HUNA_URL = 'https://github.com/Zidarc';
+
 export function Hero() {
   const reducedMotion = usePrefersReducedMotion();
   const [run, setRun] = useState(0);
@@ -91,17 +94,20 @@ export function Hero() {
               className="hero__rings"
             />
           </div>
-          <CrayonDoodle
-            {...common}
-            name="cat"
-            color="var(--crayon-graphite)"
-            tempo={2.4}
-            play={shown >= CAT}
-            onDone={advanceTo(FLOWER)}
-            className="hero__cat"
-          />
+          <a href={HUNA_URL} target="_blank" rel="noreferrer" className="hero__cat" title="Feed Huna on GitHub">
+            <span className="sr-only">Huna the cat: feed her on my GitHub</span>
+            <CrayonDoodle
+              {...common}
+              name="cat"
+              decorative
+              color="var(--crayon-graphite)"
+              tempo={2.4}
+              play={shown >= CAT}
+              onDone={advanceTo(FLOWER)}
+            />
+          </a>
           <a
-            href="https://github.com/Zidarc"
+            href={HUNA_URL}
             target="_blank"
             rel="noreferrer"
             className={`hero__huna ${shown >= DONE ? 'is-visible' : ''}`}

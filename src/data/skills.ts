@@ -35,6 +35,6 @@ export const skillGroups: SkillGroup[] = [
   {
     title: 'Tools & Deploy',
     colour: 'yellow',
-    skills: ['Git', 'GitHub Actions', 'Docker', 'Vercel', 'Netlify', 'Vitest', 'Codeforces (ICPC prep)'],
+    skills: ['Git', 'GitHub Actions', 'Docker', 'Vercel', 'Netlify', 'Vitest'],
   },
 ];
