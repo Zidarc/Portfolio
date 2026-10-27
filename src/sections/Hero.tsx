@@ -16,7 +16,8 @@ const DONE = 6;
 /** How long the photo takes to settle before the circles start. Matches the CSS transition. */
 const PHOTO_SETTLE_MS = 650;
 
-const PHOTO_SRC = `${import.meta.env.BASE_URL}ali.jpg`;
+/** Background-removed cutout made by scripts/make-portrait.py. */
+const PHOTO_SRC = `${import.meta.env.BASE_URL}ali.webp`;
 
 export function Hero() {
   const reducedMotion = usePrefersReducedMotion();

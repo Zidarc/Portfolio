@@ -27,9 +27,9 @@
 
 .hero__sparkle {
   position: absolute;
-  top: -6%;
-  right: 6%;
-  width: clamp(44px, 7vw, 84px);
+  top: -14%;
+  right: 2%;
+  width: clamp(66px, 10vw, 126px);
 }
 
 .hero__tagline {
@@ -56,6 +56,8 @@
   position: relative;
   width: min(100%, 420px);
   justify-self: center;
+  /* the flower hangs off the right edge, so nudge left to look centred */
+  translate: -14px 0;
 }
 
 .hero__frame {
@@ -67,7 +69,11 @@
 .hero__photo {
   position: absolute;
   inset: calc(55 / 310 * 100%);
+  overflow: hidden;
   border-radius: 50%;
+  /* sunny wash behind the cutout so the white shirt doesn't vanish into the paper */
+  background: radial-gradient(circle at 50% 38%, #fcebb4 0%, #f5d98a 70%, #efcd78 100%);
+  box-shadow: 0 8px 22px rgba(70, 50, 20, 0.16);
   opacity: 0;
   transform: scale(0.82) rotate(-8deg);
   transition:
@@ -83,9 +89,7 @@
 .hero__photo img {
   width: 100%;
   height: 100%;
-  border-radius: 50%;
   object-fit: cover;
-  box-shadow: 0 8px 22px rgba(70, 50, 20, 0.18);
 }
 
 .hero__rings {
@@ -144,6 +148,12 @@
 
   .hero__portrait {
     width: min(70%, 320px);
+    translate: none;
+  }
+
+  .hero__sparkle {
+    top: -18%;
+    right: 0;
   }
 
   .hero__cat {

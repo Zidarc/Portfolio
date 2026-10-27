@@ -1,5 +1,5 @@
 import type { Point } from './geometry.ts';
-import { createRng, gauss, range, type Rng } from './random.ts';
+import { createNoise1D, createRng, gauss, range, type Rng } from './random.ts';
 import type { CrayonStyle } from './style.ts';
 import { finishPlan, handDrawn, type CrayonPlan, type Frame, type RawStroke } from './strokes.ts';
 
@@ -64,16 +64,18 @@ const mirror = (pts: Point[]) => pts.map((q) => p(-q.x, q.y));
 
 // ---------- the doodles ----------
 
-/** ✦ drawn as two halves, `)` then `(`, with sides curving in toward the middle. */
-const sparkle: DoodleFn = () => {
-  const top = p(0, -66);
-  const bottom = p(0, 66);
+/** One ✦ drawn as two halves, `)` then `(`, with sides curving in toward the middle. */
+function star(cx: number, cy: number, size: number): DoodleStroke[] {
+  const at = (x: number, y: number) => p(cx + x * size, cy + y * size);
   const pinch = 3;
   return [
-    { pts: chain(quad(top, p(-pinch, -pinch), p(-50, 0)), quad(p(-50, 0), p(-pinch, pinch), bottom)) },
-    { pts: chain(quad(top, p(pinch, -pinch), p(50, 0)), quad(p(50, 0), p(pinch, pinch), bottom)) },
+    { pts: chain(quad(at(0, -66), at(-pinch, -pinch), at(-50, 0)), quad(at(-50, 0), at(-pinch, pinch), at(0, 66))) },
+    { pts: chain(quad(at(0, -66), at(pinch, -pinch), at(50, 0)), quad(at(50, 0), at(pinch, pinch), at(0, 66))) },
   ];
-};
+}
+
+/** A big ✦ and then a small one up beside it. */
+const sparkle: DoodleFn = () => [...star(0, 0, 1), ...star(78, -58, 0.42)];
 
 /** Sitting cat: head, ears, face, whiskers, body, feet, curly tail. */
 const cat: DoodleFn = (rng, m) => {
@@ -127,17 +129,30 @@ const flower: DoodleFn = (rng, m) => {
 };
 
 /**
- * Circles scribbled around a round photo of radius 100 centred on (0, 0), each in a different crayon.
+ * A kid circling a round photo (radius 100, centred on (0, 0)): one continuous scribble that goes
+ * round about three times without lifting the crayon, the radius and centre drifting as it goes.
  * Uses RINGS_FRAME so the photo can be positioned underneath precisely.
  */
-const rings: DoodleFn = (rng, m) =>
-  ['red', 'blue', 'orange'].map((colour, i) => {
-    const r = 104 + i * 9 + gauss(rng) * 4 * m;
-    const rx = r * (1 + gauss(rng) * 0.05 * m);
-    const ry = r * (1 + gauss(rng) * 0.05 * m);
-    const from = -Math.PI / 2 + gauss(rng) * 0.9;
-    return { pts: loop(gauss(rng) * 6 * m, gauss(rng) * 6 * m, rx, ry, rng, m, from), colour: crayon(colour) };
+const rings: DoodleFn = (rng, m) => {
+  const radiusDrift = createNoise1D(rng);
+  const centreDriftX = createNoise1D(rng);
+  const centreDriftY = createNoise1D(rng);
+  const turns = range(rng, 2.6, 3.1);
+  const from = -Math.PI / 2 + gauss(rng) * 0.9;
+  const squashX = 1 + gauss(rng) * 0.04 * m;
+  const squashY = 1 + gauss(rng) * 0.04 * m;
+  const n = Math.round(turns * 96);
+
+  const pts = Array.from({ length: n + 1 }, (_, i) => {
+    const t = (i / n) * turns; // turns completed so far
+    const a = from - t * Math.PI * 2; // anticlockwise
+    // spirals outward ~9 units a turn so the loops sit apart, wandering in and out as it goes
+    // (kept ≥ 110 so even with the centre drifting it never crosses into the photo)
+    const r = Math.max(110, 110 + t * 9 + radiusDrift(t * 1.6) * 6 * m);
+    return p(centreDriftX(t * 0.8) * 4 * m + Math.cos(a) * r * squashX, centreDriftY(t * 0.8) * 4 * m + Math.sin(a) * r * squashY);
   });
+  return [{ pts, colour: crayon('blue') }];
+};
 
 /** viewBox for `rings`: the photo (radius 100) fills the middle 200 of these 310 units. */
 export const RINGS_FRAME = { x: -155, y: -155, w: 310, h: 310 };

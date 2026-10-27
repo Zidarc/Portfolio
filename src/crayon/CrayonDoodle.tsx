@@ -5,7 +5,7 @@ import { randomSeed } from './random.ts';
 import { resolveStyle, type CrayonStyle } from './style.ts';
 
 const LABELS: Record<DoodleName, string> = {
-  sparkle: 'Crayon drawing of a sparkly star',
+  sparkle: 'Crayon drawing of two sparkly stars',
   cat: 'Crayon drawing of a cat',
   flower: 'Crayon drawing of a flower',
   rings: 'Crayon circles',

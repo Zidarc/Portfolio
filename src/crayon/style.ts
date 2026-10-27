@@ -13,7 +13,7 @@ export interface CrayonStyle {
 /** Every unset style value is picked from these ranges, so each visit looks a little different. */
 export const STYLE_RANGES: Record<keyof CrayonStyle, [number, number]> = {
   messiness: [0.75, 1.25],
-  speed: [1, 1.5],
+  speed: [1.1, 1.65],
   weight: [0.08, 0.12],
 };
 
