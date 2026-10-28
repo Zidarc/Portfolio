@@ -28,11 +28,19 @@ export const roles: Role[] = [
     skills: ['Product development', 'Product management'],
   },
   {
+    title: 'Assistant Director, Registration & Web Dev',
+    org: "The Grand Debate '26",
+    start: '2026',
+    colour: 'blue',
+    note: "Running delegate registration, and I built the event's website and registration portal (one of the projects below).",
+    skills: ['Web development', 'Registration ops'],
+  },
+  {
     title: 'Programs & Initiatives Co-head',
     org: 'Youth Intelligentsia',
     start: 'Oct 2026',
     colour: 'green',
-    skills: [],
+    skills: ['Program planning', 'Event management'],
   },
   {
     title: 'Marketing Co-head',
@@ -45,7 +53,7 @@ export const roles: Role[] = [
     title: 'Student Teaching Assistant',
     org: 'FAST NUCES Karachi',
     start: 'Sep 2026',
-    colour: 'blue',
+    colour: 'red',
     note: 'Functional English',
     skills: ['English'],
   },
@@ -55,7 +63,7 @@ export const roles: Role[] = [
     start: 'Feb 2026',
     end: 'Apr 2026',
     colour: 'red',
-    note: 'Ran the competition, and built the game it was played on (it is the first project below).',
+    note: 'Ran the competition, and built the game it was played on (one of the projects below).',
     skills: ['Technical leadership', 'Project management'],
   },
   {

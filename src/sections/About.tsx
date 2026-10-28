@@ -38,8 +38,8 @@ export function About() {
         </p>
         <p>
           Outside class I wear a few hats: Tech Competition Co-head at ACM NUCES, Product Design Head at the GitHub
-          Campus Club, Marketing Co-head at AWS SBG, Programs &amp; Initiatives Co-head at Youth Intelligentsia, and a
-          student TA for Functional English.
+          Campus Club, Assistant Director of Registration &amp; Web Dev for The Grand Debate '26, Marketing Co-head at
+          AWS SBG, Programs &amp; Initiatives Co-head at Youth Intelligentsia, and a student TA for Functional English.
         </p>
         <p>
           Most days I'm in TypeScript, Python and C++: Node, Express, Postgres, MongoDB and Supabase on the back end;

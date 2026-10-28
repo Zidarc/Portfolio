@@ -32,15 +32,13 @@ export interface Project {
 
 export const projects: Project[] = [
   {
-    id: 'recursion-hell',
-    name: 'Recursion Hell',
-    tagline: "Real-time team puzzle game for DevDay '26",
-    description:
-      'A real-time, team-based puzzle game with auth, game logic and a live leaderboard. Teams race through puzzles that keep folding back into themselves.',
-    stack: ['React', 'Vite', 'Tailwind', 'TypeScript', 'Express', 'SQLite', 'Supabase', 'JWT'],
-    repo: 'https://github.com/Zidarc/Cyber-Loop',
-    live: 'https://recursion-hell.vercel.app',
-    theme: 'stranger-things',
+    id: 'mystery',
+    name: 'Project ???',
+    tagline: "Shh, it's a secret",
+    description: "Something new is cooking. No hints yet, but you'll see it here first.",
+    stack: [],
+    stamp: 'in development',
+    theme: 'mystery',
   },
   {
     id: 'ishara',
@@ -54,6 +52,17 @@ export const projects: Project[] = [
     theme: 'vision',
   },
   {
+    id: 'recursion-hell',
+    name: 'Recursion Hell',
+    tagline: "Real-time team puzzle game for DevDay '26",
+    description:
+      'A real-time, team-based puzzle game with auth, game logic and a live leaderboard. Teams race through puzzles that keep folding back into themselves.',
+    stack: ['React', 'Vite', 'Tailwind', 'TypeScript', 'Express', 'SQLite', 'Supabase', 'JWT'],
+    repo: 'https://github.com/Zidarc/Cyber-Loop',
+    live: 'https://recursion-hell.vercel.app',
+    theme: 'stranger-things',
+  },
+  {
     id: 'gcc',
     name: 'GitHub Campus Club',
     tagline: 'Website + community arcade for GCC at FAST NUCES',
@@ -63,6 +72,36 @@ export const projects: Project[] = [
     repo: 'https://github.com/GCC-FAST-NUCES-Karachi/GCC',
     live: 'https://www.gccfast.tech/',
     theme: 'galaxy',
+  },
+  {
+    id: 'grand-debate',
+    name: "The Grand Debate '26",
+    tagline: 'MUN website + registration portal',
+    description:
+      'Event site and delegate portal for The Literary Club: registrations, receipt upload with OCR checks, status lookup, email notifications and an organiser dashboard for committee allocation.',
+    stack: ['Next.js', 'React', 'TypeScript', 'Tailwind', 'MongoDB', 'Nodemailer', 'Tesseract OCR'],
+    repo: 'https://github.com/mukhtar-x/GrandDebatePortal',
+    live: 'https://www.tgd26.com/',
+    theme: 'mun',
+  },
+  {
+    id: 'bmp-editor',
+    name: 'BMP Image Editor',
+    tagline: 'A bitmap editor written in C',
+    description:
+      'Loads, edits and saves 24-bit BMPs with a dozen hand-written filters (blur, sepia, emboss, pixelate, vignette…) behind a Raylib GUI and a CLI.',
+    stack: ['C', 'Raylib', 'RayGui'],
+    repo: 'https://github.com/Zidarc/BitMap_Image_Editor',
+    theme: 'paint',
+  },
+  {
+    id: 'pixel-town',
+    name: 'Pixel Town',
+    tagline: 'A little pixel-game town',
+    description: 'Something pixelated is on its way. The code lands on GitHub soon.',
+    stack: [],
+    stamp: 'on GitHub soon',
+    theme: 'pixel',
   },
   {
     id: 'synergy',
@@ -86,17 +125,6 @@ export const projects: Project[] = [
     theme: 'crypto',
   },
   {
-    id: 'grand-debate',
-    name: "The Grand Debate '26",
-    tagline: 'MUN website + registration portal',
-    description:
-      'Event site and delegate portal for The Literary Club: registrations, receipt upload with OCR checks, status lookup, email notifications and an organiser dashboard for committee allocation.',
-    stack: ['Next.js', 'React', 'TypeScript', 'Tailwind', 'MongoDB', 'Nodemailer', 'Tesseract OCR'],
-    repo: 'https://github.com/mukhtar-x/GrandDebatePortal',
-    live: 'https://www.tgd26.com/',
-    theme: 'mun',
-  },
-  {
     id: 'astralis-7',
     name: 'Astralis-7',
     tagline: 'NASA Space Apps 2023: a habitable exoplanet',
@@ -106,16 +134,6 @@ export const projects: Project[] = [
     repo: 'https://github.com/ismailsilat7/NasaSpaceApps',
     live: 'https://ismailsilat7.github.io/NasaSpaceApps/',
     theme: 'mission-control',
-  },
-  {
-    id: 'data-dash',
-    name: 'Data-Dash',
-    tagline: 'Power BI dashboards from messy multi-source data',
-    description:
-      'Cleaned and merged several Excel datasets, then built 5+ interactive Power BI dashboards comparing sales, music-genre performance and regional metrics, and presented the findings to 50+ people.',
-    stack: ['Power BI', 'Excel'],
-    repo: 'https://github.com/Zidarc/Data-Dash',
-    theme: 'dashboard',
   },
   {
     id: 'geocode',
@@ -129,31 +147,13 @@ export const projects: Project[] = [
     theme: 'maps',
   },
   {
-    id: 'bmp-editor',
-    name: 'BMP Image Editor',
-    tagline: 'A bitmap editor written in C',
+    id: 'data-dash',
+    name: 'Data-Dash',
+    tagline: 'Power BI dashboards from messy multi-source data',
     description:
-      'Loads, edits and saves 24-bit BMPs with a dozen hand-written filters (blur, sepia, emboss, pixelate, vignette…) behind a Raylib GUI and a CLI.',
-    stack: ['C', 'Raylib', 'RayGui'],
-    repo: 'https://github.com/Zidarc/BitMap_Image_Editor',
-    theme: 'paint',
-  },
-  {
-    id: 'pixel-town',
-    name: 'Pixel Town',
-    tagline: 'A little pixel-game town',
-    description: 'Something pixelated is on its way. The code lands on GitHub soon.',
-    stack: [],
-    stamp: 'on GitHub soon',
-    theme: 'pixel',
-  },
-  {
-    id: 'mystery',
-    name: 'Project ???',
-    tagline: "Shh, it's a secret",
-    description: "Something new is cooking. No hints yet, but you'll see it here first.",
-    stack: [],
-    stamp: 'in development',
-    theme: 'mystery',
+      'Cleaned and merged several Excel datasets, then built 5+ interactive Power BI dashboards comparing sales, music-genre performance and regional metrics, and presented the findings to 50+ people.',
+    stack: ['Power BI', 'Excel'],
+    repo: 'https://github.com/Zidarc/Data-Dash',
+    theme: 'dashboard',
   },
 ];
