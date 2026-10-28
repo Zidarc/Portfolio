@@ -1,0 +1,539 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+/* BMP Image Editor: a home-made 90s paint program drawn in crayon. All classes pt-.
+   One scene unit = 100cqw / 320 (the window is drawn as a 320 x 200 picture). */
+
+.pt-scene {
+  container-type: size;
+  overflow: hidden;
+  background: #d9d4c8;
+  font-family: var(--font-hand);
+  color: var(--crayon-graphite);
+  --pt-u: calc(100cqw / 320);
+  --pt-accent: var(--crayon-purple);
+  --pt-ink: #34322f;
+  --pt-wipe: 1.3s;
+  --pt-ease: cubic-bezier(0.45, 0.05, 0.4, 1);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ---------- static window (SVG) ---------- */
+
+.pt-chrome {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.pt-body {
+  fill: #d9d4c8;
+}
+
+.pt-line {
+  stroke: var(--pt-ink);
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pt-line:not([fill]) {
+  fill: none;
+}
+
+.pt-line--soft {
+  stroke-width: 0.8;
+  opacity: 0.75;
+}
+
+.pt-line--thin {
+  stroke-width: 0.6;
+  opacity: 0.9;
+}
+
+.pt-line--frame {
+  stroke-width: 1.6;
+}
+
+.pt-bevel-light,
+.pt-bevel-dark {
+  fill: none;
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pt-bevel-light {
+  stroke: #fbf9f3;
+}
+
+.pt-bevel-dark {
+  stroke: #6f6b64;
+}
+
+.pt-btn {
+  fill: #e4dfd3;
+}
+
+.pt-btn--down {
+  fill: #c8c2b4;
+}
+
+.pt-ico,
+.pt-ico-thin {
+  stroke: var(--pt-ink);
+  stroke-width: 0.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pt-ico-thin {
+  stroke-width: 0.5;
+}
+
+.pt-ico-dash {
+  fill: none;
+  stroke: var(--pt-ink);
+  stroke-width: 0.7;
+  stroke-dasharray: 1.4 1;
+}
+
+.pt-ico-dot {
+  fill: var(--pt-ink);
+}
+
+.pt-ico-sel {
+  fill: none;
+  stroke: var(--pt-accent);
+  stroke-width: 0.6;
+}
+
+.pt-scene .pt-ico-text {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 8.5px;
+  font-weight: 700;
+  fill: var(--pt-ink);
+}
+
+.pt-scene .pt-title {
+  font-family: var(--font-hand);
+  font-size: 9.2px;
+  letter-spacing: 0.02em;
+  fill: #fdfaf2;
+}
+
+.pt-scene .pt-menu-label {
+  font-family: var(--font-hand);
+  font-size: 8.6px;
+  fill: var(--pt-ink);
+}
+
+.pt-scene .pt-menu-key {
+  text-decoration: underline;
+}
+
+.pt-canvas-shadow {
+  fill: #4b4c49;
+  opacity: 0.45;
+}
+
+.pt-handle {
+  fill: var(--crayon-blue);
+  stroke: var(--pt-ink);
+  stroke-width: 0.35;
+}
+
+.pt-swatch-pick {
+  fill: none;
+  stroke: #fdfcf7;
+  stroke-width: 0.9;
+  stroke-dasharray: 1.2 0.9;
+}
+
+.pt-scene .pt-note {
+  font-family: var(--font-hand);
+  font-size: 9.5px;
+  fill: var(--crayon-orange);
+  transform: rotate(-3deg);
+  transform-origin: 262px 178px;
+}
+
+.pt-note-arrow {
+  fill: none;
+  stroke: var(--crayon-orange);
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pt-scene .pt-status-text {
+  font-family: 'VT323', ui-monospace, monospace;
+  font-size: 8.6px;
+  fill: #4f4b45;
+}
+
+/* ---------- the picture ---------- */
+
+.pt-canvas {
+  position: absolute;
+  overflow: hidden;
+}
+
+.pt-layer {
+  position: absolute;
+  inset: 0;
+  visibility: hidden;
+}
+
+.pt-layer canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.pt-layer--under {
+  visibility: visible;
+}
+
+/* the next filtered version sweeps in from the left, pre-rendered: only its clip moves */
+.pt-layer--over {
+  visibility: visible;
+  z-index: 1;
+  animation: pt-wipe var(--pt-wipe) var(--pt-ease) both;
+}
+
+@keyframes pt-wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* a fat crayon stroke riding the edge of the sweep */
+.pt-scan {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pt-scan i {
+  position: absolute;
+  top: -2%;
+  bottom: -2%;
+  left: calc(-1.1 * var(--pt-u));
+  width: calc(2.2 * var(--pt-u));
+  border-radius: 40% 60% 50% 50% / 3% 3% 3% 3%;
+  background:
+    repeating-linear-gradient(170deg, rgba(255, 255, 255, 0.28) 0 calc(0.6 * var(--pt-u)), transparent 0 calc(1.7 * var(--pt-u))),
+    var(--pt-accent);
+}
+
+.pt-scan--on {
+  animation: pt-scan var(--pt-wipe) var(--pt-ease) both;
+}
+
+@keyframes pt-scan {
+  0% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.9;
+  }
+  88% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* pixels the kid paints with the pencil */
+.pt-paint {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  transition: opacity 0.8s ease;
+}
+
+.pt-paint--fade {
+  opacity: 0;
+}
+
+.pt-paint span {
+  position: absolute;
+  box-sizing: border-box;
+  border: calc(0.5 * var(--pt-u)) solid color-mix(in srgb, var(--c) 82%, black);
+  border-radius: 8% 14% 10% 12%;
+  background: var(--c);
+  animation: pt-pop 0.22s ease-out both;
+}
+
+@keyframes pt-pop {
+  from {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+}
+
+/* marching ants: dashed strips that slide along each edge, so the dashes crawl round the box */
+.pt-select {
+  position: absolute;
+  z-index: 3;
+  transition: opacity 0.5s ease;
+  --pt-dash: calc(1.6 * var(--pt-u));
+  --pt-th: max(1px, calc(0.55 * var(--pt-u)));
+}
+
+.pt-is-active .pt-select {
+  opacity: 0;
+}
+
+.pt-ants {
+  position: absolute;
+  overflow: hidden;
+}
+
+.pt-ants b {
+  position: absolute;
+  background: repeating-linear-gradient(
+    var(--pt-dir, 90deg),
+    #2c2a28 0 var(--pt-dash),
+    #fdfcf7 0 calc(2 * var(--pt-dash))
+  );
+  animation: pt-ants-x 0.9s linear infinite;
+}
+
+.pt-ants--t,
+.pt-ants--b {
+  left: 0;
+  right: 0;
+  height: var(--pt-th);
+}
+
+.pt-ants--t {
+  top: 0;
+}
+
+.pt-ants--b {
+  bottom: 0;
+}
+
+.pt-ants--l,
+.pt-ants--r {
+  top: 0;
+  bottom: 0;
+  width: var(--pt-th);
+  --pt-dir: 180deg;
+}
+
+.pt-ants--l {
+  left: 0;
+}
+
+.pt-ants--r {
+  right: 0;
+}
+
+.pt-ants--t b,
+.pt-ants--b b {
+  top: 0;
+  bottom: 0;
+  left: calc(-2 * var(--pt-dash));
+  width: calc(100% + 4 * var(--pt-dash));
+}
+
+.pt-ants--l b,
+.pt-ants--r b {
+  left: 0;
+  right: 0;
+  top: calc(-2 * var(--pt-dash));
+  height: calc(100% + 4 * var(--pt-dash));
+  animation-name: pt-ants-y;
+}
+
+.pt-ants--b b,
+.pt-ants--l b {
+  animation-direction: reverse;
+}
+
+@keyframes pt-ants-x {
+  to {
+    transform: translateX(calc(2 * var(--pt-dash)));
+  }
+}
+
+@keyframes pt-ants-y {
+  to {
+    transform: translateY(calc(2 * var(--pt-dash)));
+  }
+}
+
+/* ---------- Filters menu ---------- */
+
+.pt-menu-press {
+  position: absolute;
+  box-sizing: border-box;
+  border-top: calc(0.5 * var(--pt-u)) solid #77726a;
+  border-left: calc(0.5 * var(--pt-u)) solid #77726a;
+  border-right: calc(0.5 * var(--pt-u)) solid #fbf9f3;
+  border-bottom: calc(0.5 * var(--pt-u)) solid #fbf9f3;
+  border-radius: 1px 2px 1px 2px;
+  background: rgba(123, 82, 171, 0.12);
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.pt-menu {
+  position: absolute;
+  z-index: 4;
+  box-sizing: border-box;
+  border: calc(0.55 * var(--pt-u)) solid var(--pt-ink);
+  border-radius: 2px 3px 2px 4px;
+  background: #ece8de;
+  box-shadow: calc(1.8 * var(--pt-u)) calc(1.8 * var(--pt-u)) 0 rgba(40, 38, 34, 0.28);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(calc(-2 * var(--pt-u))) scaleY(0.92);
+  transform-origin: 50% 0;
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease,
+    visibility 0s linear 0.16s;
+}
+
+.pt-scene .pt-on {
+  opacity: 1;
+}
+
+.pt-menu.pt-on {
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease;
+}
+
+.pt-menu-hi {
+  position: absolute;
+  left: calc(0.6 * var(--pt-u));
+  right: calc(0.6 * var(--pt-u));
+  border-radius: 3px 2px 4px 2px;
+  background:
+    repeating-linear-gradient(-28deg, rgba(255, 255, 255, 0.22) 0 calc(0.5 * var(--pt-u)), transparent 0 calc(1.4 * var(--pt-u))),
+    color-mix(in srgb, var(--pt-accent) 45%, transparent);
+  opacity: 0;
+  transition:
+    transform 0.5s cubic-bezier(0.45, 0, 0.25, 1),
+    opacity 0.15s ease;
+}
+
+.pt-menu-item {
+  position: absolute;
+  left: calc(6 * var(--pt-u));
+  right: 0;
+  display: flex;
+  align-items: center;
+  font-size: calc(8.2 * var(--pt-u));
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.pt-menu-sep {
+  position: absolute;
+  left: calc(2.5 * var(--pt-u));
+  right: calc(2.5 * var(--pt-u));
+  height: calc(0.6 * var(--pt-u));
+  border-radius: 1px;
+  background: #8b867d;
+}
+
+/* ---------- status bar ---------- */
+
+.pt-status {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  font-family: 'VT323', ui-monospace, monospace;
+  font-size: calc(8.6 * var(--pt-u));
+  line-height: 1;
+  color: #3f3b36;
+  white-space: nowrap;
+}
+
+/* ---------- cursor ---------- */
+
+.pt-cursor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 6;
+  width: calc(8.6 * var(--pt-u));
+  height: calc(14.3 * var(--pt-u));
+  pointer-events: none;
+  will-change: transform;
+}
+
+.pt-cursor-inner {
+  width: 100%;
+  height: 100%;
+  transform-origin: 0 0;
+}
+
+.pt-cursor svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.pt-ripple {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 5;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.pt-ripple i {
+  position: absolute;
+  left: calc(-5 * var(--pt-u));
+  top: calc(-5 * var(--pt-u));
+  width: calc(10 * var(--pt-u));
+  height: calc(10 * var(--pt-u));
+  box-sizing: border-box;
+  border: calc(0.7 * var(--pt-u)) solid var(--pt-accent);
+  border-radius: 48% 52% 45% 55%;
+  opacity: 0;
+}
+
+/* ---------- paused / still ---------- */
+
+.pt-is-paused *,
+.pt-is-paused *::before,
+.pt-is-paused *::after {
+  animation-play-state: paused !important;
+}
+
+.pt-is-still *,
+.pt-is-still *::before,
+.pt-is-still *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pt-scene * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

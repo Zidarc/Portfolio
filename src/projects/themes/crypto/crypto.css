@@ -1,0 +1,902 @@
+/* Negotium: crayon coins under a night sky. Classes are cr-; scene units via --u (1/320 of the width). */
+
+.cr-scene {
+  container-type: size;
+  overflow: hidden;
+  background: radial-gradient(75% 95% at 88% 10%, #4d3672 0%, #35264f 45%, #271c3c 100%);
+  font-family: var(--font-hand);
+  color: #fbf7ee;
+  --u: 0.3125cqw;
+  --gold-ink: #9a560c;
+  --up: #7fe08c;
+  --down: #ff8a80;
+}
+
+.cr-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.cr-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.cr-at {
+  position: absolute;
+  left: calc(var(--x) * var(--u));
+  top: calc(var(--y) * var(--u));
+  width: calc(var(--w) * var(--u));
+  height: calc(var(--h) * var(--u));
+}
+
+.cr-at svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.cr-spin,
+.cr-drop__coin,
+.cr-trickle__coin {
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------- sky ---------- */
+
+.cr-star {
+  fill: #ffe9a3;
+  stroke: #ffd35c;
+  stroke-width: 0.5;
+  stroke-linejoin: round;
+}
+
+.cr-dot {
+  fill: #f2e6ff;
+  opacity: 0.55;
+}
+
+.cr-moon {
+  fill: #f8ecbd;
+  stroke: #fff6d6;
+  stroke-width: 1.2;
+}
+
+.cr-moon-shade {
+  fill: #e5cf86;
+  opacity: 0.65;
+}
+
+.cr-moon-crater {
+  fill: #e2c97d;
+  stroke: #cdb064;
+  stroke-width: 0.6;
+}
+
+.cr-moon-smile,
+.cr-moon-eye {
+  fill: none;
+  stroke: #8d6b2c;
+  stroke-width: 0.8;
+  stroke-linecap: round;
+}
+
+.cr-moon-eye {
+  fill: #8d6b2c;
+  stroke: none;
+}
+
+/* glow baked into a gradient: only its opacity moves */
+.cr-moonglow {
+  position: absolute;
+  left: calc(234 * var(--u));
+  top: calc(-16 * var(--u));
+  width: calc(100 * var(--u));
+  height: calc(100 * var(--u));
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 233, 160, 0.42), rgba(255, 233, 160, 0.12) 55%, rgba(255, 233, 160, 0) 100%);
+  opacity: 0.55;
+  transition: opacity 1.2s ease;
+}
+
+.cr-is-pumped .cr-moonglow {
+  opacity: 1;
+  transition-delay: 1.2s;
+}
+
+.cr-twinkle {
+  animation: cr-twinkle var(--t) var(--td) ease-in-out infinite alternate;
+}
+
+@keyframes cr-twinkle {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0.3;
+    transform: scale(0.7) rotate(20deg);
+  }
+}
+
+.cr-motion {
+  fill: none;
+  stroke: #e9dcff;
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  opacity: 0.55;
+}
+
+/* ---------- ground, towers, pad ---------- */
+
+.cr-ground {
+  fill: #1e162d;
+}
+
+.cr-ground-hatch {
+  fill: none;
+  stroke: #4a3b66;
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+
+.cr-ground-edge {
+  fill: none;
+  stroke: #8a74b3;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.cr-stack-band {
+  stroke: var(--gold-ink);
+  stroke-width: 0.9;
+  stroke-linejoin: round;
+}
+
+.cr-stack-ridge {
+  fill: none;
+  stroke: #a9620f;
+  stroke-width: 0.55;
+  opacity: 0.8;
+}
+
+.cr-stack-top {
+  stroke: var(--gold-ink);
+  stroke-width: 0.95;
+}
+
+.cr-pig {
+  fill: #f6a9c0;
+  stroke: #b85776;
+  stroke-width: 0.95;
+  stroke-linejoin: round;
+}
+
+.cr-pig-ear,
+.cr-pig-snout {
+  fill: #ee8dab;
+}
+
+.cr-pig-tail,
+.cr-pig-line {
+  fill: none;
+  stroke: #b85776;
+  stroke-width: 1;
+  stroke-linecap: round;
+}
+
+.cr-pig-slot {
+  fill: none;
+  stroke: #5b2338;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.cr-pig-shine {
+  fill: none;
+  stroke: #ffe3ec;
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  opacity: 0.85;
+}
+
+.cr-pig-cheek {
+  fill: #e5718f;
+  opacity: 0.55;
+}
+
+.cr-pig-eye {
+  fill: #3b1a27;
+}
+
+.cr-pad {
+  fill: #8f8aa0;
+  stroke: #cfc8dc;
+  stroke-width: 0.9;
+}
+
+.cr-pad-leg {
+  fill: none;
+  stroke: #cfc8dc;
+  stroke-width: 1.1;
+  stroke-linecap: round;
+}
+
+/* ---------- coins ---------- */
+
+.cr-coin-rim {
+  fill: #c27717;
+}
+
+.cr-coin-edge {
+  stroke: var(--gold-ink);
+  stroke-width: 1.15;
+}
+
+.cr-coin-ring {
+  fill: none;
+  stroke: #b8700f;
+  stroke-width: 0.6;
+  stroke-dasharray: 1.6 1.1;
+}
+
+.cr-scene .cr-coin-sym {
+  font-family: var(--font-hand);
+  font-size: 5.6px;
+  font-weight: 700;
+  letter-spacing: -0.15px;
+  fill: #7a3f05;
+}
+
+.cr-coin-shine {
+  fill: none;
+  stroke: #fff7d1;
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  opacity: 0.85;
+}
+
+/* the big coin floats and every so often does a double spin */
+.cr-hero {
+  animation: cr-bob 3.2s ease-in-out infinite alternate;
+}
+
+.cr-shadow {
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(10, 5, 20, 0.6), rgba(10, 5, 20, 0));
+  animation: cr-shadow 3.2s ease-in-out infinite alternate;
+}
+
+@keyframes cr-bob {
+  to {
+    transform: translateY(calc(-4 * var(--u)));
+  }
+}
+
+@keyframes cr-shadow {
+  to {
+    transform: scaleX(0.82);
+    opacity: 0.7;
+  }
+}
+
+.cr-spin {
+  animation: cr-spin var(--spin, 5s) var(--spin-d, 0s) ease-in-out infinite;
+}
+
+.cr-spin--hero {
+  --spin: 4.6s;
+}
+
+.cr-spin--b {
+  --spin: 6.2s;
+  --spin-d: -2.2s;
+}
+
+.cr-spin--c {
+  --spin: 5.4s;
+  --spin-d: -4.1s;
+}
+
+.cr-spin--d {
+  --spin: 7.1s;
+  --spin-d: -0.8s;
+}
+
+@keyframes cr-spin {
+  0%,
+  62%,
+  100% {
+    transform: scaleX(1);
+  }
+  68% {
+    transform: scaleX(0.06);
+  }
+  74% {
+    transform: scaleX(1);
+  }
+  80% {
+    transform: scaleX(0.06);
+  }
+  86% {
+    transform: scaleX(1);
+  }
+}
+
+.cr-lean {
+  transform: rotate(-13deg);
+}
+
+.cr-lean--waxx {
+  transform: rotate(9deg);
+}
+
+.cr-lean--cryn {
+  transform: rotate(-6deg);
+}
+
+/* the top coin of the middle tower gets flipped like a coin toss, then lands back */
+.cr-hop {
+  animation: cr-hop 6.5s 1.5s ease-in-out infinite;
+}
+
+@keyframes cr-hop {
+  0%,
+  80%,
+  100% {
+    transform: translate(0, 0) scaleY(1);
+  }
+  84% {
+    transform: translate(calc(2 * var(--u)), calc(-15 * var(--u))) scaleY(-0.7);
+  }
+  88% {
+    transform: translate(calc(4 * var(--u)), calc(-20 * var(--u))) scaleY(1);
+  }
+  92% {
+    transform: translate(calc(2 * var(--u)), calc(-10 * var(--u))) scaleY(-0.7);
+  }
+  95.5% {
+    transform: translate(0, 0) scaleY(1);
+  }
+  97.5% {
+    transform: translate(0, calc(-1.5 * var(--u))) scaleY(1);
+  }
+}
+
+/* ---------- blockchain ---------- */
+
+.cr-chain {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 9%, #000 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 9%, #000 100%);
+}
+
+.cr-chain__track {
+  position: absolute;
+  inset: 0;
+  transition: transform 0.8s cubic-bezier(0.45, 0, 0.2, 1);
+}
+
+.cr-link {
+  fill: none;
+  stroke: #cfc8dc;
+  stroke-width: 1.3;
+}
+
+.cr-block-front,
+.cr-block-top,
+.cr-block-side {
+  stroke: currentColor;
+  stroke-width: 1.1;
+  stroke-linejoin: round;
+}
+
+.cr-block-front {
+  fill: color-mix(in srgb, currentColor 30%, #2a1f3f);
+}
+
+.cr-block-top {
+  fill: color-mix(in srgb, currentColor 55%, #2a1f3f);
+}
+
+.cr-block-side {
+  fill: color-mix(in srgb, currentColor 16%, #1a1328);
+}
+
+.cr-scene .cr-block-label {
+  font-family: var(--font-hand);
+  font-size: 6.4px;
+  fill: #fbf7ee;
+}
+
+.cr-block--fresh {
+  animation: cr-block-in 0.7s 0.35s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+  transform-origin: 65% 100%;
+}
+
+@keyframes cr-block-in {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-14 * var(--u))) scale(0.3);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.cr-check-bg {
+  fill: #2f8a43;
+  stroke: #9af0a6;
+  stroke-width: 0.9;
+}
+
+.cr-check {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.cr-badge--pop {
+  animation: cr-pop-in 0.5s 0.95s cubic-bezier(0.3, 1.8, 0.5, 1) both;
+}
+
+@keyframes cr-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.2) rotate(-30deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- rocket ---------- */
+
+.cr-rk-body {
+  fill: #f6f0e3;
+  stroke: #e2574c;
+  stroke-width: 1.1;
+  stroke-linejoin: round;
+}
+
+.cr-rk-nose,
+.cr-rk-fin {
+  fill: #e2574c;
+  stroke: #b8352d;
+  stroke-width: 0.8;
+  stroke-linejoin: round;
+}
+
+.cr-rk-stripe {
+  fill: none;
+  stroke: #e2574c;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+}
+
+.cr-rk-nozzle {
+  fill: #8f8aa0;
+  stroke: #5c566c;
+  stroke-width: 0.7;
+}
+
+.cr-rk-window {
+  fill: #86b6ff;
+  stroke: #3a6fc4;
+  stroke-width: 1;
+}
+
+.cr-rk-glint {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 0.8;
+  stroke-linecap: round;
+}
+
+.cr-rocket--pad {
+  transition: opacity 0.5s ease 0.15s;
+}
+
+.cr-has-pump .cr-rocket--pad {
+  opacity: 0;
+  transition: none;
+}
+
+.cr-rocket--fly {
+  animation:
+    cr-launch 2.3s both,
+    cr-hover 2.2s 2.3s ease-in-out infinite alternate;
+}
+
+@keyframes cr-launch {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  6% {
+    transform: translate(calc(-0.7 * var(--u)), 0) rotate(-1deg) scale(1);
+  }
+  12% {
+    transform: translate(calc(0.7 * var(--u)), 0) rotate(1deg) scale(1);
+  }
+  18% {
+    transform: translate(calc(-0.5 * var(--u)), 0) rotate(-1deg) scale(1);
+    animation-timing-function: cubic-bezier(0.5, 0, 0.6, 0.6);
+  }
+  60% {
+    transform: translate(calc(18 * var(--u)), calc(-46 * var(--u))) rotate(16deg) scale(0.85);
+    animation-timing-function: cubic-bezier(0.2, 0.4, 0.4, 1);
+  }
+  100% {
+    transform: translate(calc(60 * var(--u)), calc(-94 * var(--u))) rotate(32deg) scale(0.6);
+  }
+}
+
+@keyframes cr-hover {
+  from {
+    transform: translate(calc(60 * var(--u)), calc(-94 * var(--u))) rotate(32deg) scale(0.6);
+  }
+  to {
+    transform: translate(calc(58 * var(--u)), calc(-97 * var(--u))) rotate(28deg) scale(0.6);
+  }
+}
+
+.cr-flame {
+  position: absolute;
+  left: 25%;
+  top: 79%;
+  width: 50%;
+  height: 32%;
+  transform-origin: 50% 0;
+  animation: cr-flame 0.2s ease-in-out infinite alternate;
+}
+
+@keyframes cr-flame {
+  from {
+    transform: scale(0.85, 0.75);
+  }
+  to {
+    transform: scale(1.05, 1.15);
+  }
+}
+
+.cr-flame-out {
+  fill: #ff9a3c;
+  stroke: #e2574c;
+  stroke-width: 0.6;
+}
+
+.cr-flame-in {
+  fill: #ffe066;
+}
+
+.cr-puff-shape {
+  fill: #ddd4ec;
+  stroke: #f4efff;
+  stroke-width: 0.7;
+}
+
+.cr-puff {
+  opacity: 0;
+  animation: cr-puff 1.5s var(--d) ease-out both;
+}
+
+@keyframes cr-puff {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.3);
+  }
+  20% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(var(--dx) * var(--u)), calc(-3 * var(--u))) scale(1.5);
+  }
+}
+
+.cr-trail {
+  opacity: 0;
+  animation: cr-trail 1.9s var(--d) ease-out both;
+}
+
+@keyframes cr-trail {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  15% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.4);
+  }
+}
+
+.cr-moonnote {
+  transform-origin: 30% 60%;
+  animation: cr-note 0.6s 1.85s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+
+@keyframes cr-note {
+  from {
+    opacity: 0;
+    transform: rotate(-8deg) scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-8deg) scale(1);
+  }
+}
+
+.cr-scene .cr-moonnote__text {
+  font-family: var(--font-hand);
+  font-size: 13.5px;
+  fill: #ffd65a;
+}
+
+.cr-moonnote__line {
+  fill: none;
+  stroke: #ffd65a;
+  stroke-width: 1.1;
+  stroke-linecap: round;
+}
+
+/* ---------- coin rain ---------- */
+
+.cr-drop {
+  animation: cr-fall 0.9s var(--d) both;
+}
+
+.cr-drop__coin {
+  animation: cr-tumble 0.9s var(--d) both;
+}
+
+@keyframes cr-fall {
+  0% {
+    opacity: 0;
+    transform: translate(calc(var(--dx) * var(--u)), calc(var(--fall) * var(--u) * -1));
+    animation-timing-function: cubic-bezier(0.45, 0, 0.95, 0.75);
+  }
+  8% {
+    opacity: 1;
+  }
+  74% {
+    transform: translate(0, 0);
+    animation-timing-function: ease-out;
+  }
+  86% {
+    transform: translate(0, calc(-3 * var(--u)));
+    animation-timing-function: ease-in;
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes cr-tumble {
+  0% {
+    transform: rotate(var(--r0)) scale(1, 1);
+  }
+  18% {
+    transform: rotate(var(--r0)) scale(0.08, 1);
+  }
+  36% {
+    transform: rotate(var(--r0)) scale(1, 1);
+  }
+  54% {
+    transform: rotate(var(--r0)) scale(0.08, 1);
+  }
+  74%,
+  100% {
+    transform: rotate(var(--r)) scale(1, 0.44);
+  }
+}
+
+.cr-trickle {
+  opacity: 0;
+  animation: cr-trickle 1.45s var(--d) cubic-bezier(0.45, 0, 0.95, 0.8) infinite;
+}
+
+.cr-trickle__coin {
+  animation: cr-tumble-loop 0.48s var(--d) linear infinite;
+}
+
+@keyframes cr-trickle {
+  0% {
+    opacity: 0;
+    transform: translateY(calc(var(--fall) * var(--u) * -1));
+  }
+  10% {
+    opacity: 1;
+  }
+  86% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cr-tumble-loop {
+  0%,
+  100% {
+    transform: rotate(var(--r0)) scaleX(1);
+  }
+  50% {
+    transform: rotate(var(--r0)) scaleX(0.08);
+  }
+}
+
+.cr-pump {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.6s ease;
+}
+
+.cr-pump--leaving {
+  opacity: 0;
+}
+
+/* ---------- wallet ---------- */
+
+.cr-slip {
+  transform: rotate(-3deg);
+  transform-origin: 50% 100%;
+  color: #3a3836;
+}
+
+.cr-is-pumped .cr-slip {
+  animation: cr-slip-pop 0.7s 0.4s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+@keyframes cr-slip-pop {
+  0% {
+    transform: rotate(-3deg) translateY(0);
+  }
+  45% {
+    transform: rotate(-5deg) translateY(calc(-7 * var(--u)));
+  }
+  100% {
+    transform: rotate(-3deg) translateY(0);
+  }
+}
+
+.cr-slip__paper {
+  position: absolute;
+  inset: 0;
+}
+
+.cr-slip-paper {
+  fill: #fbf7ee;
+  stroke: #d8cdb3;
+  stroke-width: 0.9;
+}
+
+.cr-slip-lines {
+  fill: none;
+  stroke: #9fbbe6;
+  stroke-width: 0.5;
+  opacity: 0.7;
+}
+
+.cr-slip-under {
+  fill: none;
+  stroke: var(--crayon-purple);
+  stroke-width: 0.9;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+
+.cr-slip__label,
+.cr-slip__num,
+.cr-slip__unit,
+.cr-slip__pct {
+  position: absolute;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.cr-slip__label {
+  left: calc(7 * var(--u));
+  top: calc(3.5 * var(--u));
+  font-size: calc(9.5 * var(--u));
+  color: var(--crayon-purple);
+}
+
+.cr-slip__num {
+  left: calc(6 * var(--u));
+  top: calc(18 * var(--u));
+  font-size: calc(17 * var(--u));
+  font-variant-numeric: tabular-nums;
+  letter-spacing: calc(-0.2 * var(--u));
+}
+
+.cr-slip__unit {
+  left: calc(7 * var(--u));
+  top: calc(38 * var(--u));
+  font-size: calc(8 * var(--u));
+  color: #b0520f;
+  letter-spacing: 0.06em;
+}
+
+.cr-slip__pct {
+  left: calc(30 * var(--u));
+  top: calc(38 * var(--u));
+  font-size: calc(8.5 * var(--u));
+}
+
+.cr-slip__pct.cr-up {
+  color: #2f8a43;
+}
+
+.cr-slip__pct.cr-down {
+  color: #c43a32;
+}
+
+.cr-wallet-body {
+  fill: #8a5634;
+  stroke: #5e3519;
+  stroke-width: 1.2;
+}
+
+.cr-wallet-stitch {
+  fill: none;
+  stroke: #e9be82;
+  stroke-width: 0.8;
+  stroke-dasharray: 2.4 1.8;
+}
+
+.cr-wallet-slot {
+  fill: none;
+  stroke: #3d2210;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.cr-wallet-flap {
+  fill: #a2663d;
+  stroke: #5e3519;
+  stroke-width: 1.1;
+}
+
+.cr-wallet-button {
+  fill: #f4c642;
+  stroke: #9a560c;
+  stroke-width: 0.8;
+}
+
+/* ---------- states ---------- */
+
+.cr-is-paused,
+.cr-is-paused * {
+  animation-play-state: paused !important;
+}
+
+.cr-is-still *,
+.cr-is-still {
+  animation: none !important;
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cr-scene *,
+  .cr-scene {
+    animation: none !important;
+    transition: none !important;
+  }
+}

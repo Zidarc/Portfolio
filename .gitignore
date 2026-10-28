@@ -2,3 +2,6 @@ node_modules
 dist
 *.local
 .DS_Store
+
+# personal exports (e.g. LinkedIn data); never committed or shipped
+private/

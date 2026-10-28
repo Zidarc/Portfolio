@@ -53,6 +53,23 @@ section[id] {
   border: 0;
 }
 
+/* hand-drawn tag (skills, project stacks); lopsided corner radii make each look traced by hand */
+.chip {
+  padding: 0.15rem 0.7rem;
+  border: 2px solid color-mix(in srgb, var(--chip-colour, var(--ink-soft)) 70%, transparent);
+  border-radius: 14px 4px 12px 5px / 5px 12px 4px 14px;
+  font-size: 1.05rem;
+  line-height: 1.4;
+}
+
+.chip:nth-child(even) {
+  border-radius: 4px 14px 5px 12px / 12px 5px 14px 4px;
+}
+
+.chip:nth-child(3n) {
+  transform: rotate(-1.5deg);
+}
+
 :focus-visible {
   outline: 3px dashed var(--crayon-blue);
   outline-offset: 4px;

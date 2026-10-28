@@ -1,0 +1,19 @@
+.projects__intro {
+  max-width: 60ch;
+  color: var(--ink-soft);
+}
+
+.projects__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr));
+  gap: clamp(2rem, 4vw, 3rem) clamp(1.5rem, 3.5vw, 2.75rem);
+  margin: 2.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* the browser skips boxes far off screen entirely; they're rendered as they come close */
+.projects__grid > li {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 720px;
+}

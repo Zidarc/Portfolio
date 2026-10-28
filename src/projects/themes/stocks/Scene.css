@@ -1,0 +1,324 @@
+/* Synergy IBA: a trading floor drawn in crayon on graph paper. Everything lives in one 320x200 SVG. */
+
+.stk-scene {
+  overflow: hidden;
+  background: #fbf8ee;
+  font-family: var(--font-hand);
+  --stk-up: var(--crayon-green);
+  --stk-down: var(--crayon-red);
+  --stk-ink: var(--crayon-graphite);
+}
+
+.stk-scene svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.stk-scene text {
+  font-family: var(--font-hand);
+  fill: var(--stk-ink);
+}
+
+.stk-gridline {
+  fill: none;
+  stroke: rgba(58, 111, 196, 0.16);
+  stroke-width: 0.5;
+}
+
+.stk-axis {
+  fill: none;
+  stroke: var(--stk-ink);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.8;
+}
+
+/* ---------- candles ---------- */
+
+.stk-candle path {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.stk-wick {
+  fill: none;
+  stroke-width: 1.3;
+}
+
+.stk-halo {
+  fill: none;
+  stroke-width: 2.6;
+  opacity: 0.28;
+}
+
+.stk-body {
+  stroke-width: 1.5;
+}
+
+.stk-up .stk-wick,
+.stk-up .stk-halo,
+.stk-up .stk-body {
+  stroke: var(--stk-up);
+}
+
+.stk-down .stk-wick,
+.stk-down .stk-halo,
+.stk-down .stk-body {
+  stroke: var(--stk-down);
+}
+
+.stk-fill-up {
+  fill: var(--stk-up);
+  opacity: 0.18;
+}
+
+.stk-fill-down {
+  fill: var(--stk-down);
+  opacity: 0.18;
+}
+
+.stk-hatch-up,
+.stk-hatch-down {
+  stroke-width: 1.3;
+  opacity: 0.75;
+}
+
+.stk-hatch-up {
+  stroke: var(--stk-up);
+}
+
+.stk-hatch-down {
+  stroke: var(--stk-down);
+}
+
+.stk-scene path.stk-pline {
+  fill: none;
+  stroke-width: 0.9;
+  stroke-dasharray: 2.5 2.5;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+
+.stk-pline.stk-up {
+  stroke: var(--stk-up);
+}
+
+.stk-pline.stk-down {
+  stroke: var(--stk-down);
+}
+
+/* "to the moon!" / "uh oh!" scribble next to the live candle */
+.stk-note {
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.stk-note--on {
+  opacity: 1;
+}
+
+.stk-note text {
+  font-size: 10px;
+}
+
+.stk-note.stk-up text {
+  fill: var(--stk-up);
+}
+
+.stk-note.stk-down text {
+  fill: var(--stk-down);
+}
+
+.stk-note-arrow {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.stk-note.stk-up {
+  color: var(--stk-up);
+}
+
+.stk-note.stk-down {
+  color: var(--stk-down);
+}
+
+/* ---------- price ---------- */
+
+.stk-label {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  opacity: 0.75;
+}
+
+.stk-dot {
+  fill: var(--stk-up);
+  opacity: 0.8;
+}
+
+.stk-live .stk-dot {
+  fill: var(--stk-down);
+  animation: stk-blink 1.2s steps(2, jump-none) infinite;
+}
+
+@keyframes stk-blink {
+  50% {
+    opacity: 0.15;
+  }
+}
+
+.stk-scene .stk-price {
+  font-size: 29px;
+  fill: var(--stk-ink);
+  transition: fill 0.6s ease;
+}
+
+.stk-scene .stk-price.stk-flash-up {
+  fill: var(--stk-up);
+  transition-duration: 0.08s;
+}
+
+.stk-scene .stk-price.stk-flash-down {
+  fill: var(--stk-down);
+  transition-duration: 0.08s;
+}
+
+.stk-pct {
+  font-size: 11.5px;
+}
+
+.stk-scene .stk-up {
+  fill: var(--stk-up);
+}
+
+.stk-scene .stk-down {
+  fill: var(--stk-down);
+}
+
+/* ---------- leaderboard card ---------- */
+
+.stk-card {
+  transform: rotate(-1.6deg);
+  transform-origin: 267px 140px;
+}
+
+.stk-card-edge {
+  fill: #f8efd3;
+  stroke: var(--stk-ink);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+  opacity: 0.9;
+}
+
+.stk-scene .stk-card-title {
+  font-size: 11px;
+  fill: var(--crayon-green);
+  letter-spacing: 0.03em;
+}
+
+.stk-underline {
+  fill: none;
+  stroke: var(--crayon-green);
+  stroke-width: 0.9;
+  stroke-linecap: round;
+}
+
+.stk-rank {
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+.stk-crown {
+  fill: var(--crayon-yellow);
+  stroke: var(--crayon-orange);
+  stroke-width: 0.7;
+  stroke-linejoin: round;
+}
+
+.stk-row--anim {
+  transition: transform 0.7s cubic-bezier(0.5, 0, 0.2, 1);
+}
+
+.stk-row-bg {
+  fill: #f8efd3;
+}
+
+/* a team overtaking hops out to the left as it slides past the one above */
+.stk-climb {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: stk-climb 0.7s cubic-bezier(0.5, 0, 0.2, 1);
+}
+
+@keyframes stk-climb {
+  50% {
+    transform: translate(-5px, 0) rotate(-2deg);
+  }
+}
+
+.stk-team,
+.stk-val {
+  font-size: 11.5px;
+}
+
+.stk-move {
+  font-size: 7px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.stk-move--on {
+  opacity: 1;
+}
+
+/* ---------- ticker tape ---------- */
+
+.stk-tape {
+  fill: #f4ecd6;
+}
+
+.stk-tape-edge {
+  fill: none;
+  stroke: var(--stk-ink);
+  stroke-width: 1.3;
+  stroke-linecap: round;
+}
+
+.stk-tick {
+  font-size: 11px;
+}
+
+.stk-scene .stk-sep {
+  fill: var(--crayon-yellow);
+  font-size: 9px;
+}
+
+.stk-label-box {
+  fill: #e7f1e3;
+}
+
+.stk-scene .stk-exchange {
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  fill: var(--crayon-green);
+}
+
+.stk-exchange-under {
+  fill: none;
+  stroke: var(--crayon-green);
+  stroke-width: 1;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stk-scene *,
+  .stk-live .stk-dot {
+    animation: none !important;
+    transition: none !important;
+  }
+}

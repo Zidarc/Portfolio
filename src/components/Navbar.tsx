@@ -7,6 +7,7 @@ import './Navbar.css';
 const LINKS = [
   { id: 'home', label: 'Home', colour: 'red' },
   { id: 'about', label: 'About', colour: 'blue' },
+  { id: 'roles', label: 'Roles', colour: 'red' },
   { id: 'skills', label: 'Skills', colour: 'green' },
   { id: 'projects', label: 'Projects', colour: 'orange' },
   { id: 'contact', label: 'Contact', colour: 'purple' },

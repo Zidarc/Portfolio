@@ -1,0 +1,459 @@
+@import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&display=swap');
+
+/* The Grand Debate '26: a crayon committee room. Every class starts with mun-. */
+
+.mun-scene {
+  container-type: size;
+  overflow: hidden;
+  background: linear-gradient(#f4ead3 0 49%, #dcb683 49% 100%);
+  font-family: var(--font-hand);
+  --mun-ink: var(--crayon-graphite);
+}
+
+.mun-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.mun-piece {
+  position: absolute;
+}
+
+.mun-piece > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.mun-scene text {
+  font-family: var(--font-hand);
+  fill: var(--mun-ink);
+}
+
+/* ---------- crayon strokes ---------- */
+
+.mun-ink {
+  fill: none;
+  stroke: var(--mun-ink);
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mun-halo {
+  opacity: 0.3;
+}
+
+.mun-plank {
+  fill: none;
+  stroke: #9a6a3c;
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  opacity: 0.55;
+}
+
+.mun-fold {
+  fill: none;
+  stroke: var(--crayon-blue);
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  opacity: 0.5;
+}
+
+.mun-string {
+  fill: none;
+  stroke: var(--mun-ink);
+  stroke-width: 0.6;
+  opacity: 0.6;
+}
+
+.mun-hair {
+  stroke: var(--mun-ink);
+  stroke-width: 0.5;
+  stroke-linejoin: round;
+}
+
+.mun-face {
+  fill: none;
+  stroke: var(--mun-ink);
+  stroke-width: 0.7;
+  stroke-linecap: round;
+}
+
+.mun-limb-ink,
+.mun-limb {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.mun-limb-ink {
+  stroke: var(--mun-ink);
+  stroke-width: 4;
+}
+
+.mun-limb {
+  stroke-width: 2.6;
+}
+
+/* ---------- words ---------- */
+
+.mun-scene .mun-banner {
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  fill: var(--crayon-blue);
+}
+
+.mun-scene .mun-podium-text {
+  font-size: 6px;
+  fill: #5a3a1f;
+}
+
+.mun-scene .mun-committee {
+  font-size: 7px;
+  fill: var(--crayon-purple);
+}
+
+.mun-card-name {
+  font-size: 9px;
+}
+
+.mun-bubble-text {
+  font-size: 9.5px;
+}
+
+.mun-scene .mun-tally-label {
+  font-size: 8.5px;
+  letter-spacing: 0.05em;
+  fill: var(--crayon-blue);
+}
+
+.mun-scene .mun-tally-count {
+  font-size: 17px;
+  fill: var(--crayon-blue);
+}
+
+/* small print only where there's room for it */
+@container (max-width: 420px) {
+  .mun-tiny {
+    display: none;
+  }
+}
+
+/* ---------- idle life ---------- */
+
+.mun-flag {
+  will-change: transform;
+  animation: mun-flutter var(--t, 1.3s) ease-in-out var(--d, 0s) infinite alternate;
+}
+
+@keyframes mun-flutter {
+  from {
+    transform: skewY(-5deg) scaleX(1);
+  }
+  to {
+    transform: skewY(4deg) scaleX(0.9);
+  }
+}
+
+.mun-arm {
+  will-change: transform;
+  animation: mun-wave 2.6s ease-in-out infinite alternate;
+}
+
+@keyframes mun-wave {
+  from {
+    transform: rotate(-16deg);
+  }
+  to {
+    transform: rotate(10deg);
+  }
+}
+
+.mun-zzz {
+  will-change: transform, opacity;
+  animation: mun-doze 2.8s ease-in-out infinite alternate;
+}
+
+@keyframes mun-doze {
+  from {
+    transform: translate(0, 10%);
+    opacity: 0.35;
+  }
+  to {
+    transform: translate(4%, -10%);
+    opacity: 1;
+  }
+}
+
+.mun-scene .mun-z {
+  font-size: 6px;
+  fill: var(--crayon-purple);
+}
+
+.mun-scene .mun-z--m {
+  font-size: 7.5px;
+}
+
+.mun-scene .mun-z--l {
+  font-size: 9.5px;
+}
+
+/* speech bubbles pop from the speaker's mouth */
+.mun-bubble {
+  opacity: 0;
+  transform: scale(0.35);
+  will-change: transform, opacity;
+  transition:
+    opacity 0.22s ease-in,
+    transform 0.25s ease-in;
+}
+
+.mun-bubble--on {
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 0.2s ease-out,
+    transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ---------- the vote ---------- */
+
+.mun-card {
+  will-change: transform;
+  transition: transform 0.36s cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.mun-card--up {
+  transform: translateY(-75%) rotate(var(--tilt, 0deg));
+  transition: transform 0.45s cubic-bezier(0.34, 1.5, 0.64, 1);
+}
+
+.mun-mark {
+  fill: none;
+  stroke: var(--crayon-blue);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.mun-mark--on {
+  opacity: 1;
+}
+
+.mun-gavel {
+  will-change: transform;
+}
+
+.mun-gavel--bang {
+  animation: mun-bang 1s both;
+}
+
+/* two knocks, ~0.37s apart: lift slowly, slam fast */
+@keyframes mun-bang {
+  0% {
+    transform: rotate(0deg);
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1);
+  }
+  18% {
+    transform: rotate(32deg);
+    animation-timing-function: cubic-bezier(0.6, 0, 1, 0.6);
+  }
+  28% {
+    transform: rotate(-3deg);
+    animation-timing-function: ease-out;
+  }
+  36% {
+    transform: rotate(0deg);
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1);
+  }
+  52% {
+    transform: rotate(30deg);
+    animation-timing-function: cubic-bezier(0.6, 0, 1, 0.6);
+  }
+  62% {
+    transform: rotate(-3deg);
+    animation-timing-function: ease-out;
+  }
+  70%,
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.mun-bonk {
+  opacity: 0;
+  will-change: opacity, transform;
+}
+
+.mun-bonk--on {
+  animation: mun-bonk 1s linear both;
+}
+
+@keyframes mun-bonk {
+  0%,
+  26% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  29% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  44% {
+    opacity: 0;
+    transform: scale(1.15);
+  }
+  60% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  63% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  78%,
+  100% {
+    opacity: 0;
+    transform: scale(1.15);
+  }
+}
+
+.mun-bonk-lines,
+.mun-order-lines {
+  fill: none;
+  stroke: var(--crayon-red);
+  stroke-width: 1.1;
+  stroke-linecap: round;
+}
+
+.mun-order {
+  opacity: 0;
+  transform: scale(0.5) rotate(-6deg);
+  will-change: transform, opacity;
+  transition:
+    opacity 0.25s ease-in,
+    transform 0.25s ease-in;
+}
+
+.mun-order--on {
+  opacity: 1;
+  transform: scale(1) rotate(-4deg);
+  transition:
+    opacity 0.15s ease-out,
+    transform 0.35s cubic-bezier(0.34, 1.7, 0.64, 1);
+}
+
+.mun-scene .mun-order-text {
+  font-size: 12.5px;
+  fill: var(--crayon-red);
+  letter-spacing: 0.03em;
+}
+
+/* the rubber stamp thumps down at an angle */
+.mun-stamp {
+  opacity: 0;
+  transform: rotate(-8deg);
+  will-change: transform, opacity;
+}
+
+.mun-stamp--on {
+  opacity: 1;
+  animation: mun-land 0.42s both;
+}
+
+.mun-stamp--off {
+  animation: mun-lift 0.6s ease both;
+}
+
+@keyframes mun-land {
+  0% {
+    opacity: 0;
+    transform: rotate(-15deg) scale(1.75);
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  55% {
+    opacity: 1;
+    transform: rotate(-8deg) scale(0.93);
+    animation-timing-function: ease-out;
+  }
+  78% {
+    transform: rotate(-8deg) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(-8deg) scale(1);
+  }
+}
+
+@keyframes mun-lift {
+  from {
+    opacity: 1;
+    transform: rotate(-8deg) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: rotate(-8deg) scale(1.05);
+  }
+}
+
+.mun-stamp-ink {
+  color: var(--mun-stamp, var(--crayon-red));
+}
+
+.mun-stamp-edge {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linejoin: round;
+}
+
+.mun-stamp-edge--thin {
+  stroke-width: 1.1;
+}
+
+.mun-scene .mun-stamp-text {
+  font-family: 'Black Ops One', 'Impact', 'Arial Black', sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  fill: currentColor;
+}
+
+.mun-stamp-check {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---------- still + paused ---------- */
+
+.mun-paused *,
+.mun-paused *::before,
+.mun-paused *::after {
+  animation-play-state: paused !important;
+}
+
+.mun-still *,
+.mun-still *::before,
+.mun-still *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+.mun-still .mun-stamp--on {
+  opacity: 1;
+  transform: rotate(-8deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mun-scene * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -1,6 +1,6 @@
 /**
  * Every project box on the site is generated from this list.
- * `theme` picks which themed interior the box renders (built in Stage 6).
+ * `theme` picks which themed interior the box renders (src/projects/themes/<theme>/).
  */
 export type ProjectTheme =
   | 'stranger-things'
@@ -13,8 +13,8 @@ export type ProjectTheme =
   | 'mission-control'
   | 'pixel'
   | 'vision'
-  | 'vault'
-  | 'dashboard';
+  | 'dashboard'
+  | 'mystery';
 
 export interface Project {
   id: string;
@@ -25,10 +25,8 @@ export interface Project {
   /** Missing while the repo doesn't exist yet. */
   repo?: string;
   live?: string;
-  /** Set for team projects so the box says what Ali did. */
-  role?: string;
-  /** Work in progress: rendered as "coming soon". */
-  wip?: boolean;
+  /** Rubber stamp on the box for unfinished work, e.g. "in development". */
+  stamp?: string;
   theme: ProjectTheme;
 }
 
@@ -47,11 +45,12 @@ export const projects: Project[] = [
   {
     id: 'ishara',
     name: 'Ishara',
-    tagline: 'AI wayfinding for visually impaired students',
+    tagline: 'Fine-tuning vision models to help visually impaired students',
     description:
-      'An assistive campus-navigation app: on-device YOLO object detection plus monocular depth estimation turn a phone camera into left/centre/right proximity alerts, delivered through an AR app with spatial audio and haptics.',
-    stack: ['Python', 'YOLO', 'Monocular depth', 'OpenVINO', 'Unity AR', 'Streamlit'],
+      'Fine-tuning compact object-detection (YOLO) and depth-estimation models so a phone camera can warn visually impaired students about obstacles around campus, then optimising them with OpenVINO to run fast on-device.',
+    stack: ['Python', 'YOLO', 'Fine-tuning', 'Monocular depth', 'OpenVINO', 'Streamlit'],
     repo: 'https://github.com/Zidarc/Ishara',
+    stamp: 'in development',
     theme: 'vision',
   },
   {
@@ -62,14 +61,15 @@ export const projects: Project[] = [
       'The club site with learning paths, events, team directory, an arcade of mini-games (Commit Snake, Bug Bash) and a simulated Git terminal puzzle.',
     stack: ['Next.js', 'React', 'JavaScript'],
     repo: 'https://github.com/GCC-FAST-NUCES-Karachi/GCC',
+    live: 'https://www.gccfast.tech/',
     theme: 'galaxy',
   },
   {
     id: 'synergy',
-    name: 'Synergy IBA',
-    tagline: 'Real-time simulated trading dashboard',
+    name: 'Synergy',
+    tagline: 'Stock-trading module for the Synergy competition',
     description:
-      'Teams buy and sell while an admin panel moves the market live. Serverless functions recalculate holdings and the leaderboard on every tick.',
+      'Teams traded stocks in real time while an admin panel moved the market live. Serverless functions recalculated every holding and the leaderboard on each tick.',
     stack: ['JavaScript', 'Netlify Functions', 'Supabase', 'Postgres'],
     repo: 'https://github.com/Zidarc/SynergyIBA',
     live: 'https://synergy-iba.netlify.app/',
@@ -78,9 +78,9 @@ export const projects: Project[] = [
   {
     id: 'negotium',
     name: 'Negotium',
-    tagline: 'Real-time crypto trading platform',
+    tagline: 'Crypto-trading module for the Negotium competition at Cedar',
     description:
-      'A MERN crypto trading simulator that handled 100+ concurrent traders, with precise buy/sell controls and tuned MongoDB Atlas queries.',
+      'A real-time crypto-coin trading simulator for Negotium at Cedar College: 100+ traders buying and selling at once, with precise buy/sell controls and tuned MongoDB Atlas queries.',
     stack: ['React', 'Node.js', 'Express', 'MongoDB Atlas'],
     repo: 'https://github.com/Zidarc/Negotioum-ccx',
     theme: 'crypto',
@@ -93,7 +93,7 @@ export const projects: Project[] = [
       'Event site and delegate portal for The Literary Club: registrations, receipt upload with OCR checks, status lookup, email notifications and an organiser dashboard for committee allocation.',
     stack: ['Next.js', 'React', 'TypeScript', 'Tailwind', 'MongoDB', 'Nodemailer', 'Tesseract OCR'],
     repo: 'https://github.com/mukhtar-x/GrandDebatePortal',
-    role: 'Web developer: frontend + backend',
+    live: 'https://www.tgd26.com/',
     theme: 'mun',
   },
   {
@@ -101,22 +101,11 @@ export const projects: Project[] = [
     name: 'Astralis-7',
     tagline: 'NASA Space Apps 2023: a habitable exoplanet',
     description:
-      'An interactive site for a fictional tidally-locked exoplanet, with 3D renders and an essay on how life could adapt to it. Built by team Stellar Coders.',
+      'An interactive site for a fictional tidally-locked exoplanet, with 3D renders and an essay on how life could adapt to it.',
     stack: ['HTML', 'CSS', 'JavaScript', 'Spline'],
     repo: 'https://github.com/ismailsilat7/NasaSpaceApps',
     live: 'https://ismailsilat7.github.io/NasaSpaceApps/',
-    role: 'Web developer',
     theme: 'mission-control',
-  },
-  {
-    id: 'trustworthy-ai',
-    name: 'Trustworthy AI × GES',
-    tagline: 'Hackathon: ad-click prediction inside a data clean room',
-    description:
-      'For the Trustworthy AI Lab × GES UCLA hackathon, team "Dumb Peeps" built click-through-rate models on publisher and advertiser data merged inside a privacy-preserving data clean room, using synthetic data so neither side sees the other\'s raw records.',
-    stack: ['Python', 'Jupyter', 'Machine learning', 'Synthetic data'],
-    repo: 'https://github.com/Zidarc/Trustworthy-AI-X-GES-Dumb-Peeps',
-    theme: 'vault',
   },
   {
     id: 'data-dash',
@@ -126,7 +115,6 @@ export const projects: Project[] = [
       'Cleaned and merged several Excel datasets, then built 5+ interactive Power BI dashboards comparing sales, music-genre performance and regional metrics, and presented the findings to 50+ people.',
     stack: ['Power BI', 'Excel'],
     repo: 'https://github.com/Zidarc/Data-Dash',
-    role: 'Team of three, with Hatim Mustafa and Asad Majeed',
     theme: 'dashboard',
   },
   {
@@ -137,6 +125,7 @@ export const projects: Project[] = [
       'Leaflet maps with multi-provider geocoding, distance/area measuring and pre-loaded datasets of schools and universities across Karachi.',
     stack: ['JavaScript', 'Leaflet', 'QGIS', 'GeoJSON'],
     repo: 'https://github.com/Zidarc/GEOCODE',
+    live: 'https://zidarc.github.io/GEOCODE/',
     theme: 'maps',
   },
   {
@@ -152,10 +141,19 @@ export const projects: Project[] = [
   {
     id: 'pixel-town',
     name: 'Pixel Town',
-    tagline: 'Coming soon',
-    description: 'Something pixelated is being built. Check back soon.',
+    tagline: 'A little pixel-game town',
+    description: 'Something pixelated is on its way. The code lands on GitHub soon.',
     stack: [],
-    wip: true,
+    stamp: 'on GitHub soon',
     theme: 'pixel',
+  },
+  {
+    id: 'mystery',
+    name: 'Project ???',
+    tagline: "Shh, it's a secret",
+    description: "Something new is cooking. No hints yet, but you'll see it here first.",
+    stack: [],
+    stamp: 'in development',
+    theme: 'mystery',
   },
 ];

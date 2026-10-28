@@ -26,19 +26,25 @@ export function About() {
       <div className="about__story">
         <SectionHeading id="about-heading" text="About me" color="var(--crayon-blue)" />
         <p>
-          I'm Ali Hussain, a Computer Science student at FAST National University in Karachi. I like building
-          things people actually use, from real-time web apps to computer-vision prototypes.
+          I'm Ali Hussain, a Computer Science student at FAST NUCES in Karachi (class of '29). I'm a backend and
+          systems person: I like building things that don't fall over. Failover architectures, real-time systems,
+          and infrastructure that holds up under actual load.
         </p>
         <p>
-          So far that's meant crypto and stock-trading simulators that held up under 100+ live traders, a real-time
-          puzzle game for DevDay '26, <em>Ishara</em> (AR wayfinding for visually impaired students), a registration
-          portal for a Model UN and the GitHub Campus Club website. Along the way: hackathons like NASA Space Apps
-          and Trustworthy AI × GES UCLA.
+          So far that's meant live trading platforms that held up under 100+ traders at once for the Synergy and
+          Negotium competitions, a real-time team puzzle game for DevDay '26, a registration portal for a Model UN
+          and the GitHub Campus Club website. Right now I'm fine-tuning vision models for <em>Ishara</em>, which helps
+          visually impaired students get around campus.
         </p>
         <p>
-          Most days I'm in TypeScript, Python and C++: React and Next.js up front; Node, Express, MongoDB and Supabase
-          behind it; YOLO and OpenVINO when there's a camera involved; Power BI when the data needs a picture. In
-          between, I grind Codeforces problems for ICPC.
+          Outside class I wear a few hats: Tech Competition Co-head at ACM NUCES, Product Design Head at the GitHub
+          Campus Club, Marketing Co-head at AWS SBG, Programs &amp; Initiatives Co-head at Youth Intelligentsia, and a
+          student TA for Functional English.
+        </p>
+        <p>
+          Most days I'm in TypeScript, Python and C++: Node, Express, Postgres, MongoDB and Supabase on the back end;
+          React and Next.js up front; YOLO and OpenVINO when there's a camera involved. In between, I grind Codeforces
+          for ICPC: this year my team placed 47th and qualified for the regional onsite.
         </p>
       </div>
 

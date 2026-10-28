@@ -13,14 +13,14 @@ export const skillGroups: SkillGroup[] = [
     skills: ['TypeScript', 'JavaScript', 'Python', 'C++', 'C', 'SQL', 'HTML', 'CSS'],
   },
   {
+    title: 'Backend & Systems',
+    colour: 'green',
+    skills: ['Node.js', 'Express', 'Next.js Route Handlers', 'Serverless Functions', 'Real-time updates', 'JWT Auth', 'Nodemailer'],
+  },
+  {
     title: 'Frontend',
     colour: 'blue',
     skills: ['React', 'Next.js', 'Vite', 'Tailwind CSS', 'React Router', 'Leaflet', 'Spline 3D'],
-  },
-  {
-    title: 'Backend',
-    colour: 'green',
-    skills: ['Node.js', 'Express', 'Next.js Route Handlers', 'Serverless Functions', 'JWT Auth', 'Nodemailer'],
   },
   {
     title: 'Data & AI',

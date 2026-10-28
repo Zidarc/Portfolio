@@ -1,0 +1,676 @@
+/* GeoCode: a crayon treasure map of Karachi's coast. All classes map-. */
+
+.map-scene {
+  --map-teal: #1b766f;
+  --map-sea: #3a6fc4;
+  --map-ink: var(--crayon-graphite);
+  --map-paper: #fdf6e3;
+  container-type: size;
+  overflow: hidden;
+  font-family: var(--font-hand);
+  background:
+    radial-gradient(circle at 18% 28%, rgba(196, 150, 80, 0.13) 0 7%, transparent 16%),
+    radial-gradient(circle at 78% 70%, rgba(196, 150, 80, 0.1) 0 5%, transparent 13%),
+    radial-gradient(ellipse 75% 70% at 50% 45%, #f6ebcf 55%, #ead6a8 100%),
+    #f1e4c4;
+}
+
+.map-base {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.map-scene text {
+  font-family: var(--font-hand);
+  fill: var(--map-ink);
+}
+
+/* every moving thing is its own little layer */
+.map-layer {
+  position: absolute;
+  display: block;
+  overflow: visible;
+  will-change: transform;
+}
+
+/* ---------- static map ---------- */
+
+.map-grid path {
+  fill: none;
+  stroke: rgba(130, 96, 50, 0.22);
+  stroke-width: 0.5;
+  stroke-dasharray: 1.5 3;
+}
+
+.map-sea-fill {
+  fill: rgba(96, 150, 222, 0.3);
+}
+
+.map-sea-hatch {
+  stroke: var(--map-sea);
+  stroke-width: 0.7;
+  opacity: 0.5;
+}
+
+.map-coast,
+.map-coast-echo,
+.map-road,
+.map-mainroad,
+.map-mainroad-mid,
+.map-river,
+.map-hill,
+.map-scale,
+.map-frame,
+.map-search-edge,
+.map-search-echo {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.map-coast {
+  stroke: #2f5ea8;
+  stroke-width: 1.7;
+}
+
+.map-coast-echo {
+  stroke: #2f5ea8;
+  stroke-width: 0.8;
+  opacity: 0.5;
+}
+
+.map-mainroad {
+  stroke: #d9b57a;
+  stroke-width: 3.2;
+  opacity: 0.85;
+}
+
+.map-mainroad-mid {
+  stroke: #8a6a44;
+  stroke-width: 0.6;
+  stroke-dasharray: 3 2.5;
+  opacity: 0.8;
+}
+
+.map-road {
+  stroke: #7d6447;
+  stroke-width: 0.95;
+  opacity: 0.6;
+}
+
+.map-river {
+  stroke: var(--map-sea);
+  stroke-width: 1.3;
+  opacity: 0.6;
+}
+
+.map-hill {
+  stroke: #8a6a44;
+  stroke-width: 0.9;
+  opacity: 0.7;
+}
+
+.map-school path {
+  fill: #f6d3b8;
+  stroke: var(--crayon-red);
+  stroke-width: 0.9;
+  stroke-linejoin: round;
+}
+
+.map-school .map-school-flag {
+  fill: var(--crayon-yellow);
+  stroke: var(--crayon-orange);
+  stroke-width: 0.6;
+}
+
+.map-uni path {
+  fill: #6a5590;
+  stroke: var(--crayon-purple);
+  stroke-width: 0.8;
+  stroke-linejoin: round;
+}
+
+.map-uni .map-uni-top {
+  fill: #4a3a68;
+}
+
+.map-uni .map-uni-tassel {
+  fill: none;
+  stroke: var(--crayon-yellow);
+  stroke-width: 0.8;
+  stroke-linecap: round;
+}
+
+/* compass rose */
+.map-rose-ring {
+  fill: rgba(253, 246, 227, 0.75);
+  stroke: #8a6a44;
+  stroke-width: 1;
+}
+
+.map-rose-ring2 {
+  fill: none;
+  stroke: #8a6a44;
+  stroke-width: 0.6;
+  stroke-dasharray: 1.4 1.8;
+}
+
+.map-rose-point {
+  fill: none;
+  stroke: var(--map-ink);
+  stroke-width: 0.8;
+  stroke-linejoin: round;
+}
+
+.map-rose-point--minor {
+  stroke-width: 0.6;
+  opacity: 0.75;
+}
+
+.map-rose-shade {
+  fill: var(--map-teal);
+  opacity: 0.55;
+}
+
+.map-scene .map-rose-n {
+  font-size: 9px;
+  text-anchor: middle;
+  fill: var(--crayon-red);
+}
+
+.map-scale {
+  stroke: var(--map-ink);
+  stroke-width: 1.1;
+}
+
+.map-frame {
+  stroke: #8a6a44;
+  stroke-width: 1;
+  opacity: 0.55;
+}
+
+/* labels get a paper halo so they read over the hatching */
+.map-label {
+  paint-order: stroke;
+  stroke: rgba(246, 235, 207, 0.85);
+  stroke-width: 2.4;
+  stroke-linejoin: round;
+}
+
+.map-scene .map-label--sea {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  fill: #2f5ea8;
+}
+
+.map-scene .map-label--city {
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  fill: #7d6447;
+  opacity: 0.85;
+}
+
+.map-scene .map-label--scale {
+  font-size: 7.5px;
+  text-anchor: middle;
+}
+
+.map-scene .map-label--lat {
+  font-size: 7px;
+  fill: #7d6447;
+}
+
+/* search box */
+.map-search-fill {
+  fill: var(--map-paper);
+}
+
+.map-search-edge {
+  stroke: var(--map-teal);
+  stroke-width: 1.4;
+}
+
+.map-search-echo {
+  stroke: var(--map-teal);
+  stroke-width: 0.6;
+  opacity: 0.45;
+}
+
+.map-query {
+  position: absolute;
+  left: 5%;
+  top: 4%;
+  width: 49%;
+  height: 11%;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 3.5cqw;
+  line-height: 1;
+  color: var(--map-ink);
+}
+
+.map-placeholder {
+  color: #9a8f7e;
+}
+
+.map-caret {
+  width: 0.09em;
+  height: 1.05em;
+  margin-left: 0.06em;
+  background: var(--map-teal);
+  opacity: 0;
+}
+
+.map-mag circle,
+.map-mag path {
+  fill: none;
+  stroke: var(--map-teal);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.map-mag {
+  transform-origin: 43% 44%;
+}
+
+/* ---------- idle motion ---------- */
+
+.map-surf path {
+  fill: none;
+  stroke: #2f5ea8;
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  stroke-dasharray: 4 3.5;
+}
+
+.map-surf--1 {
+  opacity: 0.55;
+  animation: map-surf 3.6s ease-in-out infinite alternate;
+}
+
+.map-surf--2 {
+  opacity: 0.3;
+  animation: map-surf 3.6s ease-in-out -1.8s infinite alternate;
+}
+
+@keyframes map-surf {
+  from {
+    transform: translate(-0.4%, -1.2%);
+    opacity: 0.2;
+  }
+  to {
+    transform: translate(0.4%, 1.4%);
+    opacity: 0.6;
+  }
+}
+
+.map-wave path {
+  fill: none;
+  stroke: #2f5ea8;
+  stroke-width: 1;
+  stroke-linecap: round;
+}
+
+.map-wave {
+  animation: map-wave 2.8s ease-in-out infinite alternate;
+}
+
+@keyframes map-wave {
+  from {
+    transform: translateX(-12%);
+    opacity: 0.35;
+  }
+  to {
+    transform: translateX(12%);
+    opacity: 0.85;
+  }
+}
+
+.map-boat-hull {
+  fill: #a4703f;
+  stroke: #6b4a2a;
+  stroke-width: 0.6;
+  stroke-linejoin: round;
+}
+
+.map-boat-sail {
+  fill: var(--map-paper);
+  stroke: var(--crayon-red);
+  stroke-width: 0.7;
+  stroke-linejoin: round;
+}
+
+.map-boat-sail--small {
+  fill: #f6d3b8;
+}
+
+.map-boat {
+  transform-origin: 50% 80%;
+  animation: map-bob 3.2s ease-in-out infinite alternate;
+}
+
+@keyframes map-bob {
+  from {
+    transform: translateY(-3%) rotate(-5deg);
+  }
+  to {
+    transform: translateY(5%) rotate(4deg);
+  }
+}
+
+.map-needle-n {
+  fill: var(--crayon-red);
+  stroke: #9c2b25;
+  stroke-width: 0.4;
+  stroke-linejoin: round;
+}
+
+.map-needle-s {
+  fill: var(--map-paper);
+  stroke: var(--map-ink);
+  stroke-width: 0.5;
+  stroke-linejoin: round;
+}
+
+.map-needle-pin {
+  fill: var(--crayon-yellow);
+  stroke: var(--map-ink);
+  stroke-width: 0.5;
+}
+
+.map-needle {
+  transform-origin: 50% 50%;
+  animation: map-wobble 2.6s ease-in-out infinite alternate;
+}
+
+@keyframes map-wobble {
+  from {
+    transform: rotate(-11deg);
+  }
+  to {
+    transform: rotate(8deg);
+  }
+}
+
+/* when the search starts, the needle swings round to find its bearings, then keeps wobbling */
+.map-go2 .map-needle {
+  animation:
+    map-swing 1.5s cubic-bezier(0.3, 0.6, 0.3, 1),
+    map-wobble 2.6s ease-in-out 1.5s infinite alternate;
+}
+
+@keyframes map-swing {
+  from {
+    transform: rotate(-11deg);
+  }
+  45% {
+    transform: rotate(52deg);
+  }
+  75% {
+    transform: rotate(-24deg);
+  }
+}
+
+/* ---------- the geocoding run ---------- */
+
+.map-go1 .map-placeholder {
+  display: none;
+}
+
+.map-go1 .map-caret {
+  opacity: 1;
+  animation: map-blink 1.1s steps(1) infinite;
+}
+
+.map-go4 .map-caret {
+  opacity: 0;
+  animation: none;
+}
+
+@keyframes map-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.map-go2 .map-mag {
+  animation: map-press 0.45s ease-out;
+}
+
+.map-go3 .map-mag {
+  animation: map-press-again 0.45s ease-out;
+}
+
+@keyframes map-press {
+  40% {
+    transform: scale(0.75) rotate(-12deg);
+  }
+}
+
+@keyframes map-press-again {
+  40% {
+    transform: scale(0.75) rotate(-12deg);
+  }
+}
+
+.map-acts {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.38s ease;
+}
+
+.map-leaving .map-acts {
+  opacity: 0;
+}
+
+/* pins */
+.map-pin-body {
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+.map-pin--a .map-pin-body {
+  fill: var(--map-teal);
+  stroke: #0f4d48;
+}
+
+.map-pin--b .map-pin-body {
+  fill: var(--crayon-orange);
+  stroke: #a24f15;
+}
+
+.map-pin-shine {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.6);
+  stroke-width: 1.1;
+  stroke-linecap: round;
+}
+
+.map-pin-hole {
+  fill: var(--map-paper);
+}
+
+.map-shadow ellipse {
+  fill: rgba(80, 56, 24, 0.3);
+}
+
+.map-pin,
+.map-shadow {
+  opacity: 0;
+}
+
+.map-pin {
+  transform-origin: 50% 96%;
+}
+
+.map-go2 .map-pin--a,
+.map-go3 .map-pin--b,
+.map-go2 .map-shadow--a,
+.map-go3 .map-shadow--b {
+  opacity: 1;
+}
+
+.map-go2 .map-pin--a,
+.map-go3 .map-pin--b {
+  animation: map-drop 0.85s cubic-bezier(0.3, 0, 0.4, 1) backwards;
+}
+
+.map-go2 .map-shadow--a,
+.map-go3 .map-shadow--b {
+  animation: map-shadow 0.85s ease-out backwards;
+}
+
+@keyframes map-drop {
+  0% {
+    transform: translateY(-240%);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  45% {
+    transform: translateY(0) scale(1.12, 0.82);
+    animation-timing-function: ease-out;
+  }
+  64% {
+    transform: translateY(-34%) scale(0.95, 1.06);
+    animation-timing-function: ease-in;
+  }
+  80% {
+    transform: translateY(0) scale(1.05, 0.93);
+    animation-timing-function: ease-out;
+  }
+  90% {
+    transform: translateY(-6%);
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes map-shadow {
+  0% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+  45% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  64% {
+    transform: scale(0.75);
+  }
+  80% {
+    transform: scale(1.05);
+  }
+}
+
+/* measuring line: dots pop in one after another */
+.map-dots circle {
+  fill: var(--map-ink);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.map-go4 .map-dots circle {
+  opacity: 0.85;
+  animation: map-dot 0.3s ease-out backwards;
+  animation-delay: calc(var(--i) * 45ms);
+}
+
+@keyframes map-dot {
+  from {
+    opacity: 0;
+    transform: scale(0.1);
+  }
+}
+
+.map-tag {
+  opacity: 0;
+}
+
+.map-tag-box {
+  fill: var(--map-paper);
+  stroke: var(--map-teal);
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+.map-scene .map-tag-text {
+  font-size: 10.5px;
+  text-anchor: middle;
+  fill: var(--map-teal);
+}
+
+.map-go4 .map-tag {
+  opacity: 1;
+  animation: map-pop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) backwards;
+  /* delay comes inline: after the last dot */
+}
+
+@keyframes map-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.3) rotate(-14deg);
+  }
+}
+
+/* X marks the spot: two crayon strokes, then the note */
+.map-x-stroke {
+  fill: none;
+  stroke: var(--crayon-red);
+  stroke-width: 2.3;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.map-go5 .map-x-stroke {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.28s ease-in;
+}
+
+.map-go5 .map-x-stroke--2 {
+  transition-delay: 0.32s;
+}
+
+.map-scene .map-x-note {
+  font-size: 9.5px;
+  fill: var(--crayon-red);
+  opacity: 0;
+  paint-order: stroke;
+  stroke: rgba(246, 235, 207, 0.9);
+  stroke-width: 2.4;
+  stroke-linejoin: round;
+}
+
+.map-go5 .map-x-note {
+  opacity: 1;
+  transition: opacity 0.4s ease 0.62s;
+}
+
+/* ---------- pausing and reduced motion ---------- */
+
+.map-paused * {
+  animation-play-state: paused !important;
+}
+
+.map-still *,
+.map-still {
+  animation: none !important;
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-scene * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

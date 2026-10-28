@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { CrayonDoodle } from '../crayon/CrayonDoodle.tsx';
 import { CrayonText } from '../crayon/CrayonText.tsx';
 import { usePrefersReducedMotion } from '../crayon/usePrefersReducedMotion.ts';
+import { hunaLine, useHunaMood } from '../hooks/useHunaMood.ts';
+import { startWarmup } from '../projects/warmup.ts';
 import './Hero.css';
 
 /** The intro plays in this order; each step starts when the previous one finishes. */
@@ -28,10 +30,16 @@ export function Hero() {
   const [phase, setPhase] = useState(TEXT);
   const [skipped, setSkipped] = useState(false);
   const [photoOk, setPhotoOk] = useState(true);
+  const huna = useHunaMood();
 
   const instant = skipped || reducedMotion;
   const shown = instant ? DONE : phase;
   const advanceTo = (step: number) => () => setPhase((p) => Math.max(p, step));
+
+  // the landing drawing is done: get the project boxes ready while the visitor reads
+  useEffect(() => {
+    if (shown === DONE) startWarmup();
+  }, [shown]);
 
   useEffect(() => {
     if (shown !== PHOTO) return;
@@ -71,8 +79,7 @@ export function Hero() {
             className="hero__sparkle"
           />
           <p className={`hero__tagline ${shown >= PHOTO ? 'is-visible' : ''}`}>
-            Computer Science student at FAST NUCES, Karachi. I build real-time web apps, games and
-            AI tools people actually use.
+            CS '29 at FAST NUCES, Karachi. Backend &amp; systems: I build things that don't fall over.
           </p>
         </div>
 
@@ -113,7 +120,7 @@ export function Hero() {
             className={`hero__huna ${shown >= DONE ? 'is-visible' : ''}`}
             tabIndex={shown >= DONE ? undefined : -1}
           >
-            <span aria-hidden="true">↖ </span>psst, that's Huna. She's hungry! Go feed her on my GitHub 🐟
+            <span aria-hidden="true">↖ </span>psst, that's Huna. {hunaLine(huna)}
           </a>
           <CrayonDoodle
             {...common}

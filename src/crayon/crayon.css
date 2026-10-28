@@ -13,7 +13,7 @@
   stroke-dasharray: 1 2;
   stroke-dashoffset: 1;
   /* hidden until its animation starts, so round caps don't leave dots before the pen arrives */
-  opacity: 0;
+  visibility: hidden;
 }
 
 .crayon-shape {
@@ -23,5 +23,5 @@
 
 .crayon--static path {
   stroke-dashoffset: 0;
-  opacity: 1;
+  visibility: visible;
 }

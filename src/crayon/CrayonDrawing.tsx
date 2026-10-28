@@ -83,21 +83,34 @@ export function CrayonDrawing({
       const stroke = plan.strokes[i];
       if (!stroke) return;
       g.querySelectorAll('path').forEach((path) => {
-        animations.push(
-          path.animate(
-            [
-              { strokeDashoffset: 1, opacity: 1 },
-              { strokeDashoffset: 0, opacity: 1 },
-            ],
-            {
-              delay: delay + stroke.delay,
-              duration: stroke.duration,
-              // slow push-off, quick middle, slight slow-down at the end
-              easing: 'cubic-bezier(0.4, 0.05, 0.55, 0.95)',
-              fill: 'forwards',
-            },
-          ),
+        // a previous run baked its end state in; start hidden again
+        path.style.removeProperty('visibility');
+        path.style.removeProperty('stroke-dashoffset');
+        // visibility, not opacity: an opacity animation puts every stroke on its own GPU layer,
+        // and a screenful of strokes drawing at once is hundreds of layers
+        const animation = path.animate(
+          [
+            { strokeDashoffset: 1, visibility: 'visible' },
+            { strokeDashoffset: 0, visibility: 'visible' },
+          ],
+          {
+            delay: delay + stroke.delay,
+            duration: stroke.duration,
+            // slow push-off, quick middle, slight slow-down at the end
+            easing: 'cubic-bezier(0.4, 0.05, 0.55, 0.95)',
+            fill: 'forwards',
+          },
         );
+        // bake the end state in and let the animation go, so finished drawings cost nothing
+        // (commitStyles() sometimes commits the starting offset, so it's written by hand)
+        animation.finished
+          .then(() => {
+            path.style.strokeDashoffset = '0';
+            path.style.visibility = 'visible';
+            animation.cancel();
+          })
+          .catch(() => {});
+        animations.push(animation);
       });
     });
 
