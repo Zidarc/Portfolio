@@ -39,12 +39,12 @@ interface Drop {
 
 const DROPS: Drop[] = (() => {
   const rng = createRng(11);
-  // front rows lie in front of the piggy bank, the top ones heap up beside it
+  // front rows lie in front of the piggy bank, the top ones heap up beside it. Every coin is two
+  // layers while it falls, so the pile is kept to 11 coins (spaced wider) to stay light on hover.
   const rows = [
-    { y: 190, xs: [106, 118, 130, 142, 154, 166, 178], d: [0.05, 0.6] },
-    { y: 185, xs: [112, 124, 136, 148, 160, 172], d: [0.5, 1.1] },
-    { y: 180, xs: [104, 118, 166, 177], d: [1.0, 1.55] },
-    { y: 175, xs: [109, 121], d: [1.5, 1.9] },
+    { y: 190, xs: [108, 124, 140, 156, 172], d: [0.05, 0.6] },
+    { y: 184, xs: [116, 132, 148, 164], d: [0.5, 1.1] },
+    { y: 178, xs: [106, 174], d: [1.0, 1.55] },
   ];
   const out: Drop[] = [];
   rows.forEach((row, ri) => {
@@ -286,10 +286,10 @@ export default function Scene({ active, visible, reducedMotion }: ThemeSceneProp
         </div>
       </div>
 
-      {/* the big NEGO coin, floating and spinning */}
+      {/* the big NGTM coin, floating and spinning */}
       <div className="cr-at cr-hero" style={at(118, 64, 56, 56)}>
         <div className="cr-spin cr-spin--hero">
-          <CoinFace sym="NEGO" ids={ids} />
+          <CoinFace sym="NGTM" ids={ids} />
         </div>
       </div>
 
@@ -323,7 +323,7 @@ export default function Scene({ active, visible, reducedMotion }: ThemeSceneProp
         <SlipPaper ids={ids} />
         <span className="cr-slip__label">my wallet</span>
         <span className="cr-slip__num" ref={numRef} />
-        <span className="cr-slip__unit">NEGO</span>
+        <span className="cr-slip__unit">NGTM</span>
         <span className="cr-slip__pct cr-up" ref={pctRef} />
       </div>
       <div className="cr-at cr-wallet" style={at(213, 124, 98, 54)}>

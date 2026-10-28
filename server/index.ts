@@ -23,6 +23,7 @@ const TYPES: Record<string, string> = {
   '.ico': 'image/x-icon',
   '.json': 'application/json',
   '.txt': 'text/plain; charset=utf-8',
+  '.xml': 'application/xml; charset=utf-8',
   '.woff2': 'font/woff2',
 };
 
@@ -61,6 +62,19 @@ async function contact(req: IncomingMessage, res: ServerResponse) {
   return json(result.status, result.body);
 }
 
+/** The site is a single page, so any other address gets the crayon 404 page (with a real 404 status). */
+async function notFound(req: IncomingMessage, res: ServerResponse) {
+  try {
+    const page = await readFile(join(DIST, '404.html'));
+    send(res, 404, req.method === 'HEAD' ? '' : page, {
+      'content-type': TYPES['.html']!,
+      'cache-control': 'no-cache',
+    });
+  } catch {
+    send(res, 404, 'Not found');
+  }
+}
+
 async function staticFile(req: IncomingMessage, res: ServerResponse, pathname: string) {
   if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 405, 'Method not allowed');
 
@@ -70,9 +84,7 @@ async function staticFile(req: IncomingMessage, res: ServerResponse, pathname: s
   try {
     if ((await stat(file)).isDirectory()) file = join(file, 'index.html');
   } catch {
-    // unknown extension-less paths fall back to the page itself; missing assets are real 404s
-    if (extname(file)) return send(res, 404, 'Not found');
-    file = join(DIST, 'index.html');
+    return notFound(req, res);
   }
 
   try {
@@ -83,7 +95,7 @@ async function staticFile(req: IncomingMessage, res: ServerResponse, pathname: s
       'cache-control': hashed ? 'public, max-age=31536000, immutable' : 'no-cache',
     });
   } catch {
-    send(res, 404, 'Not found');
+    return notFound(req, res);
   }
 }
 

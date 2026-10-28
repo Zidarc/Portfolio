@@ -16,8 +16,9 @@ const LINKS = [
 type LinkId = (typeof LINKS)[number]['id'];
 const IDS = LINKS.map((l) => l.id);
 
-export function Navbar() {
-  const active = useActiveSection(IDS) as LinkId;
+/** `sectionsReady`: the sections under the hero are in the page (they render just after the first paint). */
+export function Navbar({ sectionsReady = true }: { sectionsReady?: boolean }) {
+  const active = useActiveSection(IDS, sectionsReady) as LinkId;
   const [hovered, setHovered] = useState<LinkId | null>(null);
   /** Bumping an id's counter remounts its arrow, so every reveal is a freshly drawn one. */
   const [drawCount, setDrawCount] = useState<Partial<Record<LinkId, number>>>({});

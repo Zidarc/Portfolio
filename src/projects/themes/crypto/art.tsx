@@ -99,7 +99,7 @@ export function SharedDefs({ ids }: { ids: Ids }) {
 
 /* ---------- coins ---------- */
 
-export const SYMBOLS = ['NEGO', 'CEDR', 'WAXX', 'CRYN'] as const;
+export const SYMBOLS = ['NGTM', 'CEDR', 'WAXX', 'CRYN'] as const;
 export type Sym = (typeof SYMBOLS)[number];
 
 /** One face-on coin path set per symbol, so every copy of a coin wobbles the same way. */

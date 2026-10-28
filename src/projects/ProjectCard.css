@@ -65,7 +65,7 @@ li > .project-card.is-active {
   padding: 0.15rem 0.9rem;
   border: 3px solid var(--crayon-red);
   border-radius: 6px 3px 7px 4px;
-  color: var(--crayon-red);
+  color: var(--ink-red);
   font-size: 1.1rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -94,7 +94,8 @@ li > .project-card.is-active {
 }
 
 .project-card__tagline {
-  color: var(--accent);
+  /* the accent, darkened enough to read as small text */
+  color: color-mix(in srgb, var(--accent) 78%, #000);
   font-size: 1.15rem;
   line-height: 1.3;
 }

@@ -1,0 +1,54 @@
+/* the page's reserved scrollbar gutter would show as a strip down the card's right edge */
+html:has(.og) {
+  overflow: hidden;
+  scrollbar-gutter: auto;
+}
+
+/* exactly the size link previews use; screenshot the top-left 1200 x 630 */
+.og {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 420px;
+  gap: 40px;
+  align-items: center;
+  width: 1200px;
+  height: 630px;
+  padding: 60px 90px 60px 80px;
+}
+
+.og__tagline {
+  margin: 34px 0 0;
+  color: var(--ink-soft);
+  font-size: 32px;
+  line-height: 1.35;
+}
+
+.og__url {
+  display: inline-block;
+  margin: 28px 0 0;
+  color: var(--ink);
+  font-size: 28px;
+  text-decoration: underline wavy var(--crayon-blue);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 8px;
+}
+
+.og__portrait {
+  position: relative;
+}
+
+.og__sparkle {
+  position: absolute;
+  top: -6%;
+  left: -12%;
+  width: 24%;
+}
+
+.og__cat {
+  position: absolute;
+  bottom: -6%;
+  left: -16%;
+  width: 26%;
+}

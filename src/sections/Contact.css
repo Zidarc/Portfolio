@@ -88,7 +88,7 @@
 .field__error,
 .contact__error {
   margin: 0;
-  color: var(--crayon-red);
+  color: var(--ink-red);
   font-size: 1rem;
 }
 

@@ -1,0 +1,37 @@
+.nf {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 1.25rem;
+  min-height: 100svh;
+  padding: var(--gutter);
+  text-align: center;
+}
+
+.nf__code {
+  margin: 0;
+  font-size: inherit;
+}
+
+.nf__line {
+  max-width: 30ch;
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: clamp(1.25rem, 2.6vw, 1.6rem);
+}
+
+.nf__cat {
+  width: clamp(90px, 14vw, 130px);
+}
+
+.nf__home {
+  color: var(--ink);
+  font-size: 1.3rem;
+  text-decoration: underline wavy var(--crayon-red);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 6px;
+}
+
+.nf__home:hover {
+  color: var(--ink-red);
+}

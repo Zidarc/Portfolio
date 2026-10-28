@@ -23,7 +23,7 @@
 }
 
 .hats__icpc strong {
-  color: var(--crayon-red);
+  color: var(--ink-red);
   font-weight: 400;
 }
 
@@ -67,12 +67,12 @@
   padding: 0 0.4rem;
   border-radius: 999px;
   background: color-mix(in srgb, var(--crayon-green) 20%, transparent);
-  color: var(--crayon-green);
+  color: var(--ink-green);
 }
 
 .hat-card__title {
   margin: 0.15rem 0 0;
-  color: var(--card-colour);
+  color: var(--card-ink);
   font-size: 1.35rem;
   font-weight: 400;
   line-height: 1.2;
@@ -80,12 +80,6 @@
 
 .hat-card__org {
   font-size: 1.05rem;
-}
-
-.section .hat-card__note {
-  margin: 0.5rem 0 0;
-  color: var(--ink-soft);
-  font-size: 1rem;
 }
 
 .hat-card__chips {

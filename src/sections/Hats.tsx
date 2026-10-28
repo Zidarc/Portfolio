@@ -12,15 +12,15 @@ const earlier = roles.filter((r) => r.end);
 function RoleCards({ list, play }: { list: Role[]; play: boolean }) {
   return list.map((role, i) => {
     const colour = `var(--crayon-${role.colour})`;
+    const style = { '--card-colour': colour, '--card-ink': `var(--ink-${role.colour})` } as CSSProperties;
     return (
-      <li key={role.title + role.org} className="hat-card" style={{ '--card-colour': colour } as CSSProperties}>
+      <li key={role.title + role.org} className="hat-card" style={style}>
         <CrayonShape shape="box" play={play} delay={i * 200} tempo={1.6} color={colour} />
         <span className="hat-card__dates">
           {role.start} – {role.end ?? <span className="hat-card__now">now</span>}
         </span>
         <h4 className="hat-card__title">{role.title}</h4>
         <span className="hat-card__org">{role.org}</span>
-        {role.note && <p className="hat-card__note">{role.note}</p>}
         {role.skills.length > 0 && (
           <ul className="hat-card__chips">
             {role.skills.map((skill) => (
@@ -46,7 +46,7 @@ export function Hats() {
   return (
     <section id="roles" className="section hats" aria-labelledby="roles-heading">
       <SectionHeading id="roles-heading" text="Hats I wear" color="var(--crayon-red)" />
-      <p className="hats__intro">The societies and teams I'm part of, and what I do there.</p>
+      <p className="hats__intro">The societies and teams I'm part of.</p>
 
       <div ref={icpcRef} className="hats__icpc">
         <span className="hats__icpc-star" aria-hidden="true">

@@ -9,11 +9,21 @@
   --crayon-blue: #3a6fc4;
   --crayon-green: #3f9a4f;
   --crayon-yellow: #e8b931;
-  --crayon-orange: #ea7a2c;
+  /* deep enough for big crayon lettering to read on the paper (3:1) */
+  --crayon-orange: #de6a1e;
   --crayon-purple: #7b52ab;
 
   --ink: var(--crayon-graphite);
   --ink-soft: #6b6660;
+
+  /* each crayon darkened just enough for small text on the paper (4.5:1); crayon lines keep the bright ones */
+  --ink-graphite: var(--crayon-graphite);
+  --ink-red: #c53f38;
+  --ink-blue: #396dc0;
+  --ink-green: #2d6d38;
+  --ink-yellow: #876b1c;
+  --ink-orange: #a85820;
+  --ink-purple: var(--crayon-purple);
 
   --font-hand: 'Patrick Hand', 'Comic Sans MS', 'Segoe Print', cursive;
 

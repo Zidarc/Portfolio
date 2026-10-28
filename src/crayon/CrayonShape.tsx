@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useInView } from '../hooks/useInView.ts';
 import { CrayonDrawing, type CrayonCommonProps } from './CrayonDrawing.tsx';
 import { randomSeed } from './random.ts';
 import { planShape, shapePad, type ShapeName } from './shapes.ts';
@@ -34,6 +35,9 @@ export function CrayonShape({
   const wrapRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<{ w: number; h: number } | null>(null);
   const drawnRef = useRef(false);
+  // Planning a long outline is real work, and a page of boxes adds up on a slow phone, so a shape is only
+  // planned once it comes near the screen. It's an overlay, so waiting never moves anything on the page.
+  const near = useInView(wrapRef, { rootMargin: '600px 0px' });
 
   useEffect(() => {
     const el = wrapRef.current;
@@ -51,10 +55,10 @@ export function CrayonShape({
   }, [pad]);
 
   const plan = useMemo(() => {
-    if (!size) return null;
+    if (!size || !near) return null;
     const style = resolveStyle(seed, { messiness, speed, weight });
     return planShape(shape, size.w, size.h, { seed, ...style, speed: style.speed * tempo });
-  }, [shape, size, seed, messiness, speed, weight, tempo]);
+  }, [shape, size, near, seed, messiness, speed, weight, tempo]);
 
   return (
     <div ref={wrapRef} className="crayon-shape" style={{ inset: -pad }} aria-hidden="true">

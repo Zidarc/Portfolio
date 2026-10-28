@@ -27,24 +27,15 @@ export function About() {
         <SectionHeading id="about-heading" text="About me" color="var(--crayon-blue)" />
         <p>
           I'm Ali Hussain, a Computer Science student at FAST NUCES in Karachi (class of '29). I'm a backend and
-          systems person: I like building things that don't fall over. Failover architectures, real-time systems,
-          and infrastructure that holds up under actual load.
+          systems person: I like building things that don't fall over, like failover setups, real-time systems and
+          infrastructure that holds up under actual load. Most days that's TypeScript, Python and C++, with Node,
+          Postgres, MongoDB and Supabase behind React or Next.js.
         </p>
         <p>
-          So far that's meant live trading platforms that held up under 100+ traders at once for the Synergy and
-          Negotium competitions, a real-time team puzzle game for DevDay '26, a registration portal for a Model UN
+          So far that's meant live trading platforms that held 100+ traders at once for the Synergy and Negotium
+          competitions, a real-time team puzzle game for DevDay '26, the registration portal for The Grand Debate '26
           and the GitHub Campus Club website. Right now I'm fine-tuning vision models for <em>Ishara</em>, which helps
           visually impaired students get around campus.
-        </p>
-        <p>
-          Outside class I wear a few hats: Tech Competition Co-head at ACM NUCES, Product Design Head at the GitHub
-          Campus Club, Assistant Director of Registration &amp; Web Dev for The Grand Debate '26, Marketing Co-head at
-          AWS SBG, Programs &amp; Initiatives Co-head at Youth Intelligentsia, and a student TA for Functional English.
-        </p>
-        <p>
-          Most days I'm in TypeScript, Python and C++: Node, Express, Postgres, MongoDB and Supabase on the back end;
-          React and Next.js up front; YOLO and OpenVINO when there's a camera involved. In between, I grind Codeforces
-          for ICPC: this year my team placed 47th and qualified for the regional onsite.
         </p>
       </div>
 

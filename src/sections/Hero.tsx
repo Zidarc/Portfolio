@@ -2,33 +2,49 @@ import { useEffect, useState } from 'react';
 import { CrayonDoodle } from '../crayon/CrayonDoodle.tsx';
 import { CrayonText } from '../crayon/CrayonText.tsx';
 import { usePrefersReducedMotion } from '../crayon/usePrefersReducedMotion.ts';
+import { GITHUB_URL, RESUME_URL } from '../data/links.ts';
 import { hunaLine, useHunaMood } from '../hooks/useHunaMood.ts';
 import { startWarmup } from '../projects/warmup.ts';
 import './Hero.css';
 
-/** The intro plays in this order; each step starts when the previous one finishes. */
+/**
+ * The intro plays in this order; each step starts when the previous one finishes.
+ * The photo doesn't wait its turn: it's there from the start, and the rings are drawn around it last.
+ */
 const TEXT = 0;
 const SPARKLE = 1;
 const CAT = 2;
 const FLOWER = 3;
-const PHOTO = 4;
-const RINGS = 5;
-const DONE = 6;
-
-/** How long the photo takes to settle before the circles start. Matches the CSS transition. */
-const PHOTO_SETTLE_MS = 650;
+const RINGS = 4;
+const DONE = 5;
 
 /** Background-removed cutout made by scripts/make-portrait.py. */
 const PHOTO_SRC = `${import.meta.env.BASE_URL}ali.webp`;
 
-/** Huna lives on the GitHub profile README; visitors feed her by opening an issue. */
-const HUNA_URL = 'https://github.com/Zidarc';
+/** The intro plays once per visit; reloading after that shows the finished drawing. */
+const INTRO_SEEN_KEY = 'hero-intro-seen';
+
+const introSeen = () => {
+  try {
+    return sessionStorage.getItem(INTRO_SEEN_KEY) === '1';
+  } catch {
+    return false; // storage blocked: just play it
+  }
+};
+
+const rememberIntro = () => {
+  try {
+    sessionStorage.setItem(INTRO_SEEN_KEY, '1');
+  } catch {
+    // storage blocked: it plays again next time, which is fine
+  }
+};
 
 export function Hero() {
   const reducedMotion = usePrefersReducedMotion();
   const [run, setRun] = useState(0);
   const [phase, setPhase] = useState(TEXT);
-  const [skipped, setSkipped] = useState(false);
+  const [skipped, setSkipped] = useState(introSeen);
   const [photoOk, setPhotoOk] = useState(true);
   const huna = useHunaMood();
 
@@ -38,13 +54,9 @@ export function Hero() {
 
   // the landing drawing is done: get the project boxes ready while the visitor reads
   useEffect(() => {
-    if (shown === DONE) startWarmup();
-  }, [shown]);
-
-  useEffect(() => {
-    if (shown !== PHOTO) return;
-    const t = setTimeout(() => setPhase(RINGS), PHOTO_SETTLE_MS);
-    return () => clearTimeout(t);
+    if (shown !== DONE) return;
+    rememberIntro();
+    startWarmup();
   }, [shown]);
 
   const replay = () => {
@@ -54,6 +66,7 @@ export function Hero() {
   };
 
   const common = { instant, texture: true };
+  const named = shown >= SPARKLE;
 
   return (
     <section className="hero" id="home" aria-label="Introduction" key={run}>
@@ -78,18 +91,27 @@ export function Hero() {
             onDone={advanceTo(CAT)}
             className="hero__sparkle"
           />
-          <p className={`hero__tagline ${shown >= PHOTO ? 'is-visible' : ''}`}>
+          <p className={`hero__tagline ${named ? 'is-visible' : ''}`}>
             CS '29 at FAST NUCES, Karachi. Backend &amp; systems: I build things that don't fall over.
           </p>
+          <a
+            href={RESUME_URL}
+            target="_blank"
+            rel="noreferrer"
+            className={`hero__resume ${named ? 'is-visible' : ''}`}
+            tabIndex={named ? undefined : -1}
+          >
+            my résumé ↗
+          </a>
         </div>
 
         <div className="hero__portrait">
           <div className="hero__frame">
-            <div className={`hero__photo ${shown >= PHOTO ? 'is-visible' : ''}`}>
+            <div className="hero__photo">
               {photoOk ? (
                 <img src={PHOTO_SRC} alt="Ali Hussain" onError={() => setPhotoOk(false)} />
               ) : (
-                <CrayonDoodle {...common} name="smiley" color="var(--crayon-graphite)" tempo={2} play={shown >= PHOTO} />
+                <CrayonDoodle {...common} name="smiley" color="var(--crayon-graphite)" tempo={2} />
               )}
             </div>
             <CrayonDoodle
@@ -101,7 +123,7 @@ export function Hero() {
               className="hero__rings"
             />
           </div>
-          <a href={HUNA_URL} target="_blank" rel="noreferrer" className="hero__cat" title="Feed Huna on GitHub">
+          <a href={GITHUB_URL} target="_blank" rel="noreferrer" className="hero__cat" title="Feed Huna on GitHub">
             <span className="sr-only">Huna the cat: feed her on my GitHub</span>
             <CrayonDoodle
               {...common}
@@ -114,7 +136,7 @@ export function Hero() {
             />
           </a>
           <a
-            href={HUNA_URL}
+            href={GITHUB_URL}
             target="_blank"
             rel="noreferrer"
             className={`hero__huna ${shown >= DONE ? 'is-visible' : ''}`}
@@ -127,7 +149,7 @@ export function Hero() {
             name="flower"
             tempo={2.2}
             play={shown >= FLOWER}
-            onDone={advanceTo(PHOTO)}
+            onDone={advanceTo(RINGS)}
             className="hero__flower"
           />
         </div>

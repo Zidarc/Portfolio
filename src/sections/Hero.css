@@ -50,6 +50,32 @@
   transform: none;
 }
 
+.hero__resume {
+  display: inline-block;
+  margin-top: 1rem;
+  color: var(--ink);
+  font-size: clamp(1.15rem, 1.7vw, 1.3rem);
+  text-decoration: underline wavy var(--crayon-red);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 6px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.6s ease 0.15s,
+    transform 0.6s ease 0.15s;
+  pointer-events: none;
+}
+
+.hero__resume.is-visible {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.hero__resume:hover {
+  color: var(--ink-red);
+}
+
 /* ---------- portrait ---------- */
 
 .hero__portrait {
@@ -74,16 +100,23 @@
   /* sunny wash behind the cutout so the white shirt doesn't vanish into the paper */
   background: radial-gradient(circle at 50% 38%, #fcebb4 0%, #f5d98a 70%, #efcd78 100%);
   box-shadow: 0 8px 22px rgba(70, 50, 20, 0.16);
-  opacity: 0;
-  transform: scale(0.82) rotate(-8deg);
-  transition:
-    opacity 0.35s ease,
-    transform 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform: rotate(-2deg);
+  /* the photo pops in straight away; the crayon rings are drawn around it at the end of the intro */
+  animation: hero-photo-in 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
-.hero__photo.is-visible {
-  opacity: 1;
-  transform: rotate(-2deg);
+/* scale only, no fade: a photo faded in from opacity 0 on the GPU isn't seen as painted by the
+   browser's page-speed timing (LCP) until something else repaints, which made the page look ~9s slow */
+@keyframes hero-photo-in {
+  from {
+    transform: scale(0.82) rotate(-8deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__photo {
+    animation: none;
+  }
 }
 
 .hero__photo img {
@@ -219,5 +252,14 @@
   .hero__flower {
     right: -22%;
     width: 25%;
+  }
+
+  /* the portrait is narrower here, so centre the note under it on the screen instead */
+  .hero__huna {
+    left: 50%;
+    translate: -50% 0;
+    width: min(88vw, 24rem);
+    max-width: none;
+    text-align: center;
   }
 }

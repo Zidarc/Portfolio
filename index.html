@@ -3,19 +3,57 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ali Hussain · Backend &amp; Systems · CS at FAST NUCES</title>
     <meta
       name="description"
-      content="Ali Hussain — Computer Science student at FAST NUCES Karachi. Web apps, games and data projects, drawn in crayon."
+      content="Ali Hussain is a Computer Science student at FAST NUCES Karachi who builds backends and systems that don't fall over: live trading platforms, a real-time game, an MUN portal and more, all drawn in crayon."
     />
     <meta name="theme-color" content="#fbf7ee" />
-    <title>Ali Hussain</title>
+    <!-- the live address: also in public/robots.txt and public/sitemap.xml -->
+    <link rel="canonical" href="https://ali-hussain-portfolio.netlify.app/" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap"
-      rel="stylesheet"
+
+    <!-- link previews (LinkedIn, WhatsApp, Slack, X): public/og.jpg is made with `?og` (see src/lab/OgCard.tsx) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Ali Hussain" />
+    <meta property="og:url" content="https://ali-hussain-portfolio.netlify.app/" />
+    <meta property="og:title" content="Ali Hussain · Backend &amp; Systems" />
+    <meta
+      property="og:description"
+      content="CS '29 at FAST NUCES, Karachi. I build things that don't fall over. Projects, roles and a cat named Huna, all drawn in crayon."
     />
+    <meta property="og:image" content="https://ali-hussain-portfolio.netlify.app/og.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="“Hello, I am Ali Hussain” written in red crayon next to his photo" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- who this page is about, for search engines -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Ali Hussain",
+        "url": "https://ali-hussain-portfolio.netlify.app/",
+        "image": "https://ali-hussain-portfolio.netlify.app/ali.webp",
+        "jobTitle": "Computer Science student",
+        "description": "Backend and systems-focused Computer Science student at FAST NUCES Karachi.",
+        "affiliation": {
+          "@type": "CollegeOrUniversity",
+          "name": "FAST NUCES (National University of Computer and Emerging Sciences), Karachi",
+          "url": "https://www.nu.edu.pk/"
+        },
+        "address": { "@type": "PostalAddress", "addressLocality": "Karachi", "addressCountry": "PK" },
+        "sameAs": [
+          "https://github.com/Zidarc",
+          "https://www.linkedin.com/in/codewithali/",
+          "https://www.instagram.com/_zodarcli_/"
+        ]
+      }
+    </script>
+
+    <!-- the handwriting font is served from this site (public/fonts), so preload it with the page -->
+    <link rel="preload" href="/fonts/patrick-hand-latin.woff2" as="font" type="font/woff2" crossorigin />
   </head>
   <body>
     <div id="root"></div>

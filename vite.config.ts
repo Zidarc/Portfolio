@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { fileURLToPath } from 'node:url';
 import { defineConfig, loadEnv, type Connect, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { handleContact, mailConfigFromEnv } from './server/contact.ts';
@@ -43,4 +44,13 @@ function contactApi(env: Record<string, string>): Plugin {
 
 export default defineConfig(({ mode }) => ({
   plugins: [react(), contactApi(loadEnv(mode, process.cwd(), ''))],
+  build: {
+    rolldownOptions: {
+      // the site, plus the crayon page shown for addresses that don't exist (Netlify serves dist/404.html)
+      input: {
+        main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        notFound: fileURLToPath(new URL('./404.html', import.meta.url)),
+      },
+    },
+  },
 }));

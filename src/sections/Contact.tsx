@@ -2,6 +2,7 @@ import { useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { CrayonDoodle } from '../crayon/CrayonDoodle.tsx';
 import { CrayonShape } from '../crayon/CrayonShape.tsx';
 import { SectionHeading } from '../components/SectionHeading.tsx';
+import { GITHUB_URL, INSTAGRAM_URL, LINKEDIN_URL, RESUME_URL } from '../data/links.ts';
 import { useInView } from '../hooks/useInView.ts';
 import {
   LIMITS,
@@ -14,9 +15,10 @@ import {
 import './Contact.css';
 
 const SOCIALS = [
-  { label: 'GitHub', href: 'https://github.com/Zidarc', colour: 'graphite' },
-  { label: 'LinkedIn', href: 'https://www.linkedin.com/in/codewithali/', colour: 'blue' },
-  { label: 'Instagram', href: 'https://www.instagram.com/_zodarcli_/', colour: 'red' },
+  { label: 'Résumé', href: RESUME_URL, colour: 'orange' },
+  { label: 'GitHub', href: GITHUB_URL, colour: 'graphite' },
+  { label: 'LinkedIn', href: LINKEDIN_URL, colour: 'blue' },
+  { label: 'Instagram', href: INSTAGRAM_URL, colour: 'red' },
 ];
 
 type Status = { kind: 'idle' } | { kind: 'sending' } | { kind: 'sent'; name: string } | { kind: 'error'; message: string };
@@ -98,8 +100,8 @@ export function Contact() {
       <div className="contact__intro">
         <SectionHeading id="contact-heading" text="Say hi!" color="var(--crayon-purple)" />
         <p>
-          Got a project, an internship, or just want to talk data and web stuff? Drop me a message and it'll land
-          straight in my inbox.
+          Got a project, an internship, or just want to talk backend, systems or web stuff? Drop me a message and
+          it'll land straight in my inbox.
         </p>
         <ul className="contact__socials">
           {SOCIALS.map((s) => (

@@ -18,7 +18,7 @@
 
 .skill-card__title {
   margin: 0 0 0.9rem;
-  color: var(--card-colour);
+  color: var(--card-ink);
   font-size: 1.45rem;
   font-weight: 400;
 }

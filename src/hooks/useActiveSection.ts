@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 
 /**
  * Which of the given section ids is currently under the middle of the viewport.
- * Returns the first id until the observer reports in.
+ * Returns the first id until the observer reports in. Pass `ready` once sections that render
+ * later are in the page, so they get observed too.
  */
-export function useActiveSection(ids: string[]): string {
+export function useActiveSection(ids: string[], ready = true): string {
   const [active, setActive] = useState(ids[0] ?? '');
   const key = ids.join(',');
 
@@ -23,7 +24,7 @@ export function useActiveSection(ids: string[]): string {
     );
     sections.forEach((s) => observer.observe(s));
     return () => observer.disconnect();
-  }, [key]);
+  }, [key, ready]);
 
   return active;
 }

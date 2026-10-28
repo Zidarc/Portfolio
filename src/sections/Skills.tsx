@@ -17,8 +17,9 @@ export function Skills() {
       <ul ref={gridRef} className="skills__grid">
         {skillGroups.map((group, i) => {
           const colour = `var(--crayon-${group.colour})`;
+          const style = { '--card-colour': colour, '--card-ink': `var(--ink-${group.colour})` } as CSSProperties;
           return (
-            <li key={group.title} className="skill-card" style={{ '--card-colour': colour } as CSSProperties}>
+            <li key={group.title} className="skill-card" style={style}>
               <CrayonShape shape="box" play={inView} delay={i * 220} tempo={1.6} color={colour} />
               <h3 className="skill-card__title">{group.title}</h3>
               <ul className="skill-card__chips">
