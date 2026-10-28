@@ -1,0 +1,316 @@
+/* Project ???: something under a sheet in a spotlight. All classes my-.
+ * The scene is a 320 x 200 sheet; one sheet unit is --u, so HTML layers line up with the SVG. */
+
+.my-scene {
+  container-type: size;
+  overflow: hidden;
+  background: #1d1830;
+  --u: calc(100cqw / 320);
+  font-family: var(--font-hand);
+}
+
+.my-art {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.my-at {
+  position: absolute;
+  left: calc(var(--x) * var(--u));
+  top: calc(var(--y) * var(--u));
+  width: calc(var(--w) * var(--u));
+  height: calc(var(--h) * var(--u));
+}
+
+.my-at svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* ---------- static art ---------- */
+
+.my-scribble {
+  fill: #5d5288;
+  font-size: 30px;
+}
+
+.my-scribble--small {
+  font-size: 20px;
+}
+
+.my-stone {
+  fill: #6e6889;
+  stroke: #0e0b18;
+  stroke-width: 1.1;
+}
+
+.my-stone--top {
+  fill: #8c87a6;
+}
+
+.my-cloth {
+  fill: #e9e4f5;
+}
+
+.my-cloth-edge {
+  fill: none;
+  stroke: #4a4166;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.my-fold {
+  fill: none;
+  stroke: #b9b2cf;
+  stroke-width: 1.3;
+  stroke-linecap: round;
+}
+
+.my-text {
+  fill: #d8d2ee;
+  font-size: 6.5px;
+  text-anchor: middle;
+}
+
+.my-text--folder {
+  fill: #5e4220;
+  font-size: 7px;
+}
+
+.my-text--tape {
+  fill: #1d1b1a;
+  font-size: 6.5px;
+  text-anchor: start;
+  letter-spacing: 0.04em;
+}
+
+/* ---------- the moving parts, at rest: hushed ---------- */
+
+.my-cone {
+  transform-origin: 50% 0;
+  clip-path: polygon(50% 0, 0 100%, 100% 100%);
+  background: linear-gradient(rgba(255, 244, 194, 0.42), rgba(255, 244, 194, 0.08));
+}
+
+.my-pool {
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 244, 194, 0.32), rgba(255, 244, 194, 0));
+}
+
+.my-progress {
+  border-radius: calc(1 * var(--u));
+  background: #7fe0ff;
+  transform: scaleX(0.63);
+  transform-origin: 0 50%;
+}
+
+.my-glow {
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(127, 224, 255, 0.85), rgba(127, 224, 255, 0));
+  opacity: 0;
+}
+
+/* the flap hinges on its top corner, where it meets the rest of the sheet */
+.my-flap {
+  transform-origin: 37.5% 7.7%;
+}
+
+.my-mark {
+  color: var(--c);
+  font-size: calc(22 * var(--u));
+  line-height: 1;
+  text-align: center;
+}
+
+.my-eyes__blink {
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 50%;
+}
+
+.my-stamp {
+  border: calc(1.2 * var(--u)) solid #d6453d;
+  border-radius: calc(1.5 * var(--u));
+  color: #d6453d;
+  font-size: calc(8 * var(--u));
+  letter-spacing: 0.12em;
+  line-height: calc(10.6 * var(--u));
+  text-align: center;
+  transform: rotate(-14deg);
+}
+
+/* ---------- live ---------- */
+
+.my-live .my-cone {
+  animation: my-sway 3.2s ease-in-out infinite alternate;
+}
+
+.my-live .my-pool {
+  animation: my-pool 3.2s ease-in-out infinite alternate;
+}
+
+.my-live .my-flap {
+  animation: my-peek 5s ease-in-out infinite both;
+}
+
+.my-live .my-glow {
+  animation: my-glow 5s ease-in-out infinite both;
+}
+
+.my-live .my-mark {
+  animation: my-float 3.6s ease-in var(--d) infinite both;
+}
+
+.my-live .my-eyes {
+  animation: my-look 4s ease-in-out infinite;
+}
+
+.my-live .my-eyes__blink {
+  animation: my-blink 3.3s infinite;
+}
+
+.my-live .my-stamp {
+  animation: my-stamp 5s ease-out infinite both;
+}
+
+.my-live .my-progress {
+  animation: my-progress 5s steps(9, end) infinite both;
+}
+
+/* rotating the cone clockwise swings its foot left, so the pool goes the other way */
+@keyframes my-sway {
+  from {
+    transform: rotate(-7deg);
+  }
+  to {
+    transform: rotate(7deg);
+  }
+}
+
+@keyframes my-pool {
+  from {
+    transform: translateX(calc(20 * var(--u)));
+  }
+  to {
+    transform: translateX(calc(-20 * var(--u)));
+  }
+}
+
+@keyframes my-peek {
+  0%,
+  18% {
+    transform: none;
+  }
+  30% {
+    transform: rotate(-24deg);
+  }
+  34% {
+    transform: rotate(-19deg);
+  }
+  48% {
+    transform: rotate(-22deg);
+  }
+  60%,
+  100% {
+    transform: none;
+  }
+}
+
+@keyframes my-glow {
+  0%,
+  20% {
+    opacity: 0;
+  }
+  32%,
+  50% {
+    opacity: 1;
+  }
+  60%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes my-float {
+  0% {
+    opacity: 0;
+    transform: translateY(calc(6 * var(--u))) rotate(-10deg);
+  }
+  20% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(calc(-16 * var(--u))) rotate(12deg);
+  }
+}
+
+@keyframes my-look {
+  0%,
+  20% {
+    transform: none;
+  }
+  30%,
+  50% {
+    transform: translateX(calc(4 * var(--u)));
+  }
+  60%,
+  80% {
+    transform: translateX(calc(-3 * var(--u)));
+  }
+  90%,
+  100% {
+    transform: none;
+  }
+}
+
+@keyframes my-blink {
+  0%,
+  44%,
+  50%,
+  88%,
+  94%,
+  100% {
+    transform: none;
+  }
+  47%,
+  91% {
+    transform: scaleY(0.1);
+  }
+}
+
+@keyframes my-stamp {
+  0%,
+  64% {
+    opacity: 0;
+    transform: rotate(-14deg) scale(1.7);
+  }
+  69% {
+    opacity: 1;
+    transform: rotate(-14deg) scale(0.94);
+  }
+  72%,
+  100% {
+    opacity: 1;
+    transform: rotate(-14deg);
+  }
+}
+
+/* creeps toward done, never gets there, starts over */
+@keyframes my-progress {
+  from {
+    transform: scaleX(0.12);
+  }
+  to {
+    transform: scaleX(0.94);
+  }
+}

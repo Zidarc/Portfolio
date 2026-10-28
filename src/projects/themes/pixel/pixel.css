@@ -1,0 +1,276 @@
+/* Pixel Town: a pixel-game town. All classes px-.
+ * The scene is a 320 x 200 sheet (80 x 50 game pixels of 4 units); one sheet unit is --u. */
+
+.px-scene {
+  container-type: size;
+  overflow: hidden;
+  background: #58b8f0;
+  --u: calc(100cqw / 320);
+  --px: calc(4 * var(--u));
+}
+
+.px-scene svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  shape-rendering: crispEdges;
+}
+
+.px-art {
+  position: absolute;
+  inset: 0;
+}
+
+.px-at {
+  position: absolute;
+  left: calc(var(--x) * var(--u));
+  top: calc(var(--y) * var(--u));
+  width: calc(var(--w) * var(--u));
+  height: calc(var(--h) * var(--u));
+}
+
+/* ---------- resting: the title screen ---------- */
+
+/* the hero waits on the road, left of the first coin */
+.px-hero {
+  transform: translateX(calc(8 * var(--px)));
+}
+
+.px-hero__hop,
+.px-coin__bob {
+  width: 100%;
+  height: 100%;
+}
+
+.px-hero__frame {
+  position: absolute;
+  inset: 0;
+}
+
+.px-hero__frame--b {
+  opacity: 0;
+}
+
+.px-tens {
+  overflow: hidden;
+}
+
+.px-tens__strip {
+  height: calc(48 * var(--u));
+}
+
+/* ---------- live: one walk across town every 8s ---------- */
+
+.px-live .px-hero {
+  animation: px-walk 8s steps(92, end) infinite;
+}
+
+.px-live .px-hero__hop {
+  animation: px-hop 8s infinite;
+}
+
+.px-live .px-hero__frame--a {
+  animation: px-frame-a 0.36s infinite;
+}
+
+.px-live .px-hero__frame--b {
+  animation: px-frame-b 0.36s infinite;
+}
+
+.px-live .px-coin__bob {
+  animation: px-bob 0.7s steps(1, end) infinite;
+}
+
+.px-live .px-coin--1 {
+  animation: px-coin-1 8s infinite;
+}
+
+.px-live .px-coin--2 {
+  animation: px-coin-2 8s infinite;
+}
+
+.px-live .px-coin--3 {
+  animation: px-coin-3 8s infinite;
+}
+
+.px-live .px-tens__strip {
+  animation: px-score 8s infinite;
+}
+
+.px-live .px-start {
+  animation: px-blink 1s steps(1, end) infinite;
+}
+
+.px-live .px-cloud--1 {
+  animation: px-drift 9s steps(9, end) infinite alternate;
+}
+
+.px-live .px-cloud--2 {
+  animation: px-drift 7s steps(7, end) infinite alternate-reverse;
+}
+
+/* from just off the left edge to just off the right: 92 game pixels, one per step */
+@keyframes px-walk {
+  from {
+    transform: translateX(calc(-8 * var(--px)));
+  }
+  to {
+    transform: translateX(calc(84 * var(--px)));
+  }
+}
+
+@keyframes px-hop {
+  0%,
+  24.6%,
+  32%,
+  46.3%,
+  53.7%,
+  68%,
+  75.4%,
+  100% {
+    transform: none;
+    animation-timing-function: steps(3, end);
+  }
+  28.3%,
+  50%,
+  71.7% {
+    transform: translateY(calc(-6 * var(--px)));
+    animation-timing-function: steps(3, end);
+  }
+}
+
+@keyframes px-frame-a {
+  0%,
+  49.9% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes px-frame-b {
+  0%,
+  49.9% {
+    opacity: 0;
+  }
+  50%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes px-bob {
+  0% {
+    transform: none;
+  }
+  50% {
+    transform: translateY(calc(-0.5 * var(--px)));
+  }
+}
+
+/* each coin is grabbed as the hero hops under it, then respawns before the next walk */
+@keyframes px-coin-1 {
+  0%,
+  27.6% {
+    opacity: 1;
+    transform: none;
+  }
+  31.5% {
+    opacity: 0;
+    transform: translateY(calc(-4 * var(--px)));
+  }
+  31.6%,
+  95% {
+    opacity: 0;
+    transform: none;
+  }
+  98%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes px-coin-2 {
+  0%,
+  49.3% {
+    opacity: 1;
+    transform: none;
+  }
+  53.2% {
+    opacity: 0;
+    transform: translateY(calc(-4 * var(--px)));
+  }
+  53.3%,
+  95% {
+    opacity: 0;
+    transform: none;
+  }
+  98%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes px-coin-3 {
+  0%,
+  71% {
+    opacity: 1;
+    transform: none;
+  }
+  74.9% {
+    opacity: 0;
+    transform: translateY(calc(-4 * var(--px)));
+  }
+  75%,
+  95% {
+    opacity: 0;
+    transform: none;
+  }
+  98%,
+  100% {
+    opacity: 1;
+  }
+}
+
+/* the tens digit rolls 2 → 3 → 4 → 5 as the coins land: 420, 430, 440, 450 */
+@keyframes px-score {
+  0%,
+  28.2% {
+    transform: none;
+  }
+  28.5%,
+  49.9% {
+    transform: translateY(calc(-12 * var(--u)));
+  }
+  50.2%,
+  71.6% {
+    transform: translateY(calc(-24 * var(--u)));
+  }
+  71.9%,
+  99.7% {
+    transform: translateY(calc(-36 * var(--u)));
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@keyframes px-blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes px-drift {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translateX(calc(4 * var(--px)));
+  }
+}

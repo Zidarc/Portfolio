@@ -1,0 +1,408 @@
+/* Astralis-7: mission control watching a tidally-locked exoplanet. All classes ast-.
+ * The scene is a 320 x 200 sheet; one sheet unit is --u, so HTML layers line up with the SVG. */
+
+.ast-scene {
+  container-type: size;
+  overflow: hidden;
+  background: #121a2b;
+  --u: calc(100cqw / 320);
+  --ast-green: #7dffa8;
+  font-family: var(--font-hand);
+}
+
+.ast-art {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ast-at {
+  position: absolute;
+  left: calc(var(--x) * var(--u));
+  top: calc(var(--y) * var(--u));
+  width: calc(var(--w) * var(--u));
+  height: calc(var(--h) * var(--u));
+}
+
+.ast-at svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* ---------- static art ---------- */
+
+.ast-bezel {
+  fill: #2a3550;
+  stroke: #0b1020;
+  stroke-width: 1.4;
+}
+
+.ast-orbit {
+  fill: none;
+  stroke: #9fd3ff;
+  stroke-width: 0.8;
+  stroke-dasharray: 3 3;
+  opacity: 0.55;
+}
+
+.ast-dunes {
+  fill: none;
+  stroke: #c96f2a;
+  stroke-width: 1.3;
+  stroke-linecap: round;
+}
+
+.ast-crater {
+  fill: none;
+  stroke: rgba(11, 16, 32, 0.45);
+  stroke-width: 1;
+}
+
+.ast-atmo {
+  fill: none;
+  stroke: #9fd3ff;
+  stroke-width: 2;
+  opacity: 0.45;
+}
+
+.ast-outline {
+  fill: none;
+  stroke: #0b1020;
+  stroke-width: 1.3;
+}
+
+.ast-text {
+  fill: #cfe3ff;
+  font-size: 8px;
+}
+
+.ast-text--screen {
+  fill: #9fd3ff;
+  font-size: 7px;
+}
+
+.ast-text--title {
+  fill: #ffd166;
+  font-size: 11px;
+}
+
+.ast-text--day {
+  fill: #ffb070;
+}
+
+.ast-text--night {
+  fill: #9fc2ff;
+}
+
+.ast-text--end {
+  text-anchor: end;
+}
+
+.ast-text--zone {
+  fill: var(--ast-green);
+}
+
+.ast-text--tiny {
+  fill: #9aa4b8;
+  font-size: 5.5px;
+  text-anchor: middle;
+}
+
+.ast-text--patch {
+  fill: #fff;
+  font-size: 4.6px;
+  text-anchor: middle;
+}
+
+.ast-radar {
+  fill: none;
+  stroke: var(--ast-green);
+  stroke-width: 0.7;
+  opacity: 0.45;
+}
+
+.ast-edge {
+  fill: none;
+  stroke: #11182a;
+  stroke-width: 1.2;
+}
+
+.ast-reticle {
+  fill: none;
+  stroke: var(--ast-green);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+/* ---------- the moving parts, at rest: the scan is finished ---------- */
+
+.ast-glow {
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 140, 80, 0.38), rgba(255, 140, 80, 0) 70%);
+}
+
+/* the satellite rests out front, lower right of the planet */
+.ast-sat__x {
+  transform: translateX(calc(35 * var(--u)));
+}
+
+.ast-sat__y {
+  transform: translateY(calc(13.9 * var(--u)));
+}
+
+.ast-zone {
+  color: var(--ast-green);
+  font-size: calc(8 * var(--u));
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-align: center;
+}
+
+.ast-life {
+  font-size: calc(8 * var(--u));
+  line-height: 1;
+}
+
+.ast-life--unknown {
+  color: #cfe3ff;
+  opacity: 0;
+}
+
+.ast-life--maybe {
+  color: var(--ast-green);
+}
+
+.ast-sweep {
+  border-radius: 50%;
+  background: conic-gradient(rgba(125, 255, 168, 0) 0deg, rgba(125, 255, 168, 0.5) 90deg, transparent 90deg);
+  transform: rotate(110deg);
+}
+
+.ast-blip {
+  border-radius: 50%;
+  background: var(--ast-green);
+  opacity: 0.85;
+}
+
+/* ---------- live ---------- */
+
+.ast-live .ast-glow {
+  animation: ast-glow 2.4s ease-in-out infinite alternate;
+}
+
+/* an ellipse from two sine-ish swings a quarter turn apart; hidden while it's behind the planet */
+.ast-live .ast-sat__x {
+  animation: ast-sat-x 3s ease-in-out infinite alternate both;
+}
+
+.ast-live .ast-sat__y {
+  animation:
+    ast-sat-y 3s ease-in-out -1.5s infinite alternate both,
+    ast-sat-behind 6s linear infinite;
+}
+
+.ast-live .ast-reticle-box {
+  animation: ast-reticle 6s ease-out infinite both;
+}
+
+.ast-live .ast-zone {
+  animation: ast-zone 6s ease-out infinite both;
+}
+
+.ast-live .ast-life--unknown {
+  animation: ast-unknown 6s linear infinite both;
+}
+
+.ast-live .ast-life--maybe {
+  animation: ast-maybe 6s ease-out infinite both;
+}
+
+.ast-live .ast-sweep {
+  animation: ast-sweep 2.4s linear infinite;
+}
+
+.ast-live .ast-blip--1 {
+  animation: ast-blip-1 2.4s linear infinite;
+}
+
+.ast-live .ast-blip--2 {
+  animation: ast-blip-2 2.4s linear infinite;
+}
+
+.ast-live .ast-lights--a {
+  animation: ast-blink 0.9s steps(1, end) infinite;
+}
+
+.ast-live .ast-lights--b {
+  animation: ast-blink 0.9s steps(1, end) -0.45s infinite;
+}
+
+@keyframes ast-glow {
+  from {
+    opacity: 0.6;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ast-sat-x {
+  from {
+    transform: translateX(calc(70 * var(--u)));
+  }
+  to {
+    transform: translateX(calc(-70 * var(--u)));
+  }
+}
+
+@keyframes ast-sat-y {
+  from {
+    transform: translateY(calc(-16 * var(--u)));
+  }
+  to {
+    transform: translateY(calc(16 * var(--u)));
+  }
+}
+
+/* behind the planet for the part of the top arc that crosses its disc */
+@keyframes ast-sat-behind {
+  0%,
+  62% {
+    opacity: 1;
+  }
+  64.5%,
+  85.5% {
+    opacity: 0;
+  }
+  88%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes ast-reticle {
+  0% {
+    opacity: 0;
+    transform: translateX(calc(-62 * var(--u)));
+  }
+  8% {
+    opacity: 1;
+  }
+  40% {
+    transform: none;
+  }
+  44% {
+    transform: scale(1.12);
+  }
+  48%,
+  92% {
+    opacity: 1;
+    transform: none;
+  }
+  98%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+
+@keyframes ast-zone {
+  0%,
+  46% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  51% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  54%,
+  92% {
+    opacity: 1;
+    transform: none;
+  }
+  98%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes ast-unknown {
+  0%,
+  47% {
+    opacity: 1;
+  }
+  49%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes ast-maybe {
+  0%,
+  48% {
+    opacity: 0;
+    transform: translateY(calc(2 * var(--u)));
+  }
+  52%,
+  94% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes ast-sweep {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* each blip flares as the beam's leading edge passes it, then fades */
+@keyframes ast-blip-1 {
+  0% {
+    opacity: 0.55;
+  }
+  14%,
+  87% {
+    opacity: 0.12;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes ast-blip-2 {
+  0%,
+  41% {
+    opacity: 0.12;
+  }
+  42% {
+    opacity: 1;
+  }
+  70%,
+  100% {
+    opacity: 0.12;
+  }
+}
+
+@keyframes ast-blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.15;
+  }
+}

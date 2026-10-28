@@ -1,0 +1,358 @@
+/* Data-Dash: messy spreadsheets turned into a Power BI report. All classes dd-.
+ * The scene is a 320 x 200 sheet; one sheet unit is --u, so HTML layers line up with the SVG. */
+
+.dd-scene {
+  container-type: size;
+  overflow: hidden;
+  background: #efe7d6;
+  --u: calc(100cqw / 320);
+  --dd-ink: #3a3836;
+  --dd-card: #fbfbf8;
+  font-family: var(--font-hand);
+}
+
+.dd-art {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.dd-at {
+  position: absolute;
+  left: calc(var(--x) * var(--u));
+  top: calc(var(--y) * var(--u));
+  width: calc(var(--w) * var(--u));
+  height: calc(var(--h) * var(--u));
+}
+
+.dd-at svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* ---------- static art ---------- */
+
+.dd-text {
+  fill: var(--dd-ink);
+  font-size: 5.5px;
+}
+
+.dd-text--sheet {
+  fill: #fff;
+  font-size: 6px;
+}
+
+.dd-text--grid {
+  fill: #8c918c;
+  font-size: 4.6px;
+}
+
+.dd-text--cell {
+  font-size: 5.4px;
+}
+
+.dd-text--error {
+  fill: #d6453d;
+  font-size: 5.4px;
+}
+
+.dd-text--note {
+  fill: #7a6a4f;
+  font-size: 5.6px;
+  text-anchor: middle;
+}
+
+.dd-text--sticky {
+  font-size: 7.5px;
+  text-anchor: middle;
+}
+
+.dd-text--title {
+  font-size: 9px;
+}
+
+.dd-text--label {
+  fill: #7a756b;
+  font-size: 6.2px;
+}
+
+.dd-text--kpi {
+  font-size: 12px;
+}
+
+.dd-text--up {
+  fill: #2f8a43;
+  font-size: 6px;
+}
+
+.dd-text--axis {
+  fill: #7a756b;
+  font-size: 4.8px;
+  text-anchor: middle;
+}
+
+.dd-text--legend {
+  text-anchor: start;
+}
+
+.dd-arrow {
+  fill: none;
+  stroke: #7a6a4f;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---------- the moving parts, at rest: the finished report ---------- */
+
+.dd-packet {
+  border: calc(0.6 * var(--u)) solid var(--dd-ink);
+  border-radius: calc(1 * var(--u));
+  background: var(--c);
+  opacity: 0;
+}
+
+.dd-pill {
+  border-radius: calc(2 * var(--u));
+  background: #f2c811;
+}
+
+.dd-chip {
+  color: var(--dd-ink);
+  font-size: calc(6.5 * var(--u));
+  line-height: calc(11 * var(--u));
+  text-align: center;
+}
+
+.dd-kpi {
+  overflow: hidden;
+}
+
+.dd-kpi__strip {
+  transform: translateY(calc(-24 * var(--u)));
+}
+
+.dd-kpi__strip span {
+  display: block;
+  height: calc(12 * var(--u));
+  color: var(--dd-ink);
+  font-size: calc(12 * var(--u));
+  line-height: calc(12 * var(--u));
+}
+
+.dd-bar {
+  transform-origin: 50% 100%;
+}
+
+.dd-reveal {
+  overflow: hidden;
+}
+
+.dd-reveal__cover {
+  width: 100%;
+  height: 100%;
+  background: var(--dd-card);
+  transform: translateX(101%);
+}
+
+.dd-end {
+  border-radius: 50%;
+  background: #b8860b;
+  box-shadow: 0 0 0 calc(1.2 * var(--u)) rgba(242, 200, 17, 0.45);
+}
+
+/* ---------- live: one refresh every 7s ---------- */
+
+.dd-live .dd-errors {
+  animation: dd-errors 7s ease-in-out infinite both;
+}
+
+.dd-live .dd-packet {
+  animation: dd-packet 7s ease-in-out var(--d) infinite both;
+}
+
+.dd-live .dd-pill {
+  animation: dd-pill 7s ease-in-out infinite both;
+}
+
+.dd-live .dd-kpi__strip {
+  animation: dd-kpi 7s infinite both;
+}
+
+.dd-live .dd-bar {
+  animation: dd-bar 7s ease-out var(--d) infinite both;
+}
+
+.dd-live .dd-donut {
+  animation: dd-donut 7s ease-out infinite both;
+}
+
+.dd-live .dd-reveal__cover {
+  animation: dd-reveal 7s linear infinite both;
+}
+
+.dd-live .dd-end {
+  animation: dd-end 7s ease-out infinite both;
+}
+
+/* the red-pen errors are fixed as the data leaves the sheet */
+@keyframes dd-errors {
+  0%,
+  22% {
+    opacity: 1;
+  }
+  32%,
+  92% {
+    opacity: 0;
+  }
+  98%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes dd-packet {
+  0% {
+    opacity: 0;
+    transform: none;
+  }
+  3% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+  17% {
+    opacity: 1;
+    transform: translate(calc(var(--dx) * var(--u)), calc(var(--dy) * var(--u)));
+  }
+  21%,
+  100% {
+    opacity: 0;
+    transform: translate(calc(var(--dx) * var(--u)), calc(var(--dy) * var(--u))) scale(0.4);
+  }
+}
+
+@keyframes dd-bar {
+  0%,
+  14% {
+    transform: scaleY(0.06);
+  }
+  26% {
+    transform: scaleY(1.06);
+  }
+  30%,
+  56% {
+    transform: none;
+  }
+  64%,
+  86% {
+    transform: scaleY(var(--alt));
+  }
+  93% {
+    transform: none;
+  }
+  100% {
+    transform: scaleY(0.06);
+  }
+}
+
+/* the year slicer: 2024, then 2023 for a while, then back */
+@keyframes dd-pill {
+  0%,
+  56% {
+    transform: none;
+  }
+  61%,
+  86% {
+    transform: translateY(calc(14 * var(--u)));
+  }
+  92%,
+  100% {
+    transform: none;
+  }
+}
+
+@keyframes dd-donut {
+  0%,
+  14% {
+    opacity: 0;
+    transform: rotate(-140deg) scale(0.5);
+  }
+  30%,
+  58% {
+    opacity: 1;
+    transform: none;
+  }
+  66%,
+  86% {
+    opacity: 1;
+    transform: rotate(28deg);
+  }
+  93%,
+  96% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(-140deg) scale(0.5);
+  }
+}
+
+/* revenue counts up: 0.4M → 0.9M → 1.2M */
+@keyframes dd-kpi {
+  0%,
+  20% {
+    transform: none;
+  }
+  21%,
+  30% {
+    transform: translateY(calc(-12 * var(--u)));
+  }
+  31%,
+  97% {
+    transform: translateY(calc(-24 * var(--u)));
+  }
+  100% {
+    transform: none;
+  }
+}
+
+/* the sales line draws itself as a cover slides off it */
+@keyframes dd-reveal {
+  0%,
+  16% {
+    transform: none;
+  }
+  42%,
+  96% {
+    transform: translateX(101%);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@keyframes dd-end {
+  0%,
+  41% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+  48%,
+  95% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+}
