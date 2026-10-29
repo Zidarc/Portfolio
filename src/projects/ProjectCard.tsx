@@ -72,15 +72,8 @@ export function ProjectCard({ project, delay = 0, forceActive = false }: Project
       <div className="project-card__body">
         <h3 id={titleId} className="project-card__title">
           <span className="sr-only">{project.name}</span>
-          <CrayonText
-            text={project.name}
-            decorative
-            play={drawn}
-            delay={delay + 300}
-            capHeight={narrow ? 22 : 28}
-            tempo={1.5}
-            color={accent}
-          />
+          {/* written already, not stroke by stroke: twelve names animating was a lot of work for little */}
+          <CrayonText text={project.name} decorative instant capHeight={narrow ? 22 : 28} color={accent} />
         </h3>
         <p className="project-card__tagline">{project.tagline}</p>
         <p className="project-card__description">{project.description}</p>

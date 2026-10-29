@@ -135,7 +135,8 @@ export function CrayonDrawing({
   return (
     <svg
       ref={svgRef}
-      className={['crayon', className].filter(Boolean).join(' ')}
+      // instant drawings are finished from the first paint, not one frame later
+      className={['crayon', instant && 'crayon--static', className].filter(Boolean).join(' ')}
       viewBox={plan.viewBox}
       style={{ ...style, aspectRatio: `${plan.width} / ${plan.height}` }}
       {...(decorative ? { 'aria-hidden': true } : { role: 'img', 'aria-label': label })}
