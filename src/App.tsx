@@ -11,6 +11,7 @@ import { Contact } from './sections/Contact.tsx';
 import { Hats } from './sections/Hats.tsx';
 import { Hero } from './sections/Hero.tsx';
 import { Projects } from './sections/Projects.tsx';
+import { Sketch } from './sections/Sketch.tsx';
 import { Skills } from './sections/Skills.tsx';
 
 /** `?lab` opens the crayon test bench, `?projects` the project box bench; otherwise the site. */
@@ -53,6 +54,7 @@ function Site() {
             <Hats />
             <Skills />
             <Projects />
+            <Sketch />
             <Contact />
           </>
         )}

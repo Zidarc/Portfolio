@@ -7,6 +7,7 @@ const SECTION_COLOURS: Record<string, string> = {
   roles: 'red',
   skills: 'green',
   projects: 'orange',
+  draw: 'red',
   contact: 'purple',
 };
 

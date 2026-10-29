@@ -1,0 +1,87 @@
+.sketch {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: clamp(2rem, 6vw, 5rem);
+  align-items: center;
+}
+
+.sketch__words p {
+  max-width: 50ch;
+  font-size: clamp(1.15rem, 1.6vw, 1.3rem);
+}
+
+.sketch__note {
+  color: var(--ink-soft);
+}
+
+.sketch__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem 1.2rem;
+  margin-top: 1.5rem;
+}
+
+.section .sketch__button {
+  padding: 0.35rem 1.1rem;
+  border: 2.5px solid var(--crayon-red);
+  border-radius: 16px 6px 14px 8px / 8px 14px 6px 16px;
+  background: color-mix(in srgb, var(--crayon-red) 10%, var(--paper));
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.15rem;
+  text-decoration: none;
+}
+
+.section .sketch__button:hover {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--crayon-red) 20%, var(--paper));
+}
+
+.section .sketch__button--ghost {
+  border-color: var(--crayon-graphite);
+  background: none;
+}
+
+/* a box of crayons standing up, with a doodle beside them */
+.sketch__box {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 2rem 1.75rem 1.75rem;
+}
+
+.sketch__crayons {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.4rem;
+}
+
+.sketch__crayon {
+  width: 20px;
+  height: calc(88px + var(--i) * 3px);
+  border: 2px solid var(--crayon-graphite);
+  border-radius: 9px 9px 3px 3px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.55)) 0 55% / 100% 26% no-repeat,
+    var(--c);
+  clip-path: polygon(50% 0, 100% 18%, 100% 100%, 0 100%, 0 18%);
+  transform: rotate(calc((var(--i) - 4) * 2deg));
+}
+
+.sketch__doodle {
+  flex: none;
+  width: clamp(70px, 9vw, 110px);
+}
+
+@media (max-width: 820px) {
+  .sketch {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sketch__crayon {
+    width: 16px;
+    height: calc(70px + var(--i) * 2px);
+  }
+}

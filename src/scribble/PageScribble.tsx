@@ -5,6 +5,9 @@ import { Toolbar } from './Toolbar.tsx';
 import { useScribbles } from './useScribbles.ts';
 import './scribble.css';
 
+/** Fire this on `window` to hand the visitor a crayon (the "Grab a crayon" section does). */
+export const START_SCRIBBLE = 'scribble:start';
+
 /**
  * Scribble on the site itself: a sheet as tall as the page sits over everything, so the drawings
  * scroll with the content. It only takes the pointer while drawing is switched on.
@@ -12,6 +15,12 @@ import './scribble.css';
 export function PageScribble() {
   const sb = useScribbles('scribbles-page');
   const [on, setOn] = useState(false);
+
+  useEffect(() => {
+    const start = () => setOn(true);
+    window.addEventListener(START_SCRIBBLE, start);
+    return () => window.removeEventListener(START_SCRIBBLE, start);
+  }, []);
   const [height, setHeight] = useState(0);
   useToolCursor(sb, on);
 
@@ -39,8 +48,8 @@ export function PageScribble() {
       {on ? (
         <div className="scribble-dock">
           <Toolbar sb={sb}>
-            <a className="scribble-toolbar__text" href="/draw" target="_blank" rel="noreferrer">
-              sketchpad ↗
+            <a className="scribble-toolbar__text" href="/draw">
+              sketchpad →
             </a>
             <button
               type="button"
