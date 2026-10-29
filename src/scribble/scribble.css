@@ -1,0 +1,246 @@
+/* ---------- the drawing surface ---------- */
+
+.scribble-surface {
+  pointer-events: none;
+}
+
+.scribble-surface.is-active {
+  pointer-events: auto;
+  /* a finger draws instead of scrolling while the crayon is out */
+  touch-action: none;
+}
+
+.scribble-surface__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* how far the eraser reaches */
+.scribble-surface__ring {
+  fill: rgba(244, 166, 192, 0.12);
+  stroke: var(--ink-soft);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  pointer-events: none;
+}
+
+/* on the site: a sheet as tall as the page, over the content and under the navbar */
+.scribble-surface--page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 45;
+  width: 100%;
+}
+
+/* ---------- switching it on ---------- */
+
+.scribble-toggle {
+  position: fixed;
+  right: max(12px, calc(var(--gutter) / 2));
+  bottom: 52px;
+  z-index: 40;
+  padding: 0.15rem 0.7rem;
+  border: 2px solid color-mix(in srgb, var(--crayon-red) 70%, transparent);
+  border-radius: 4px 14px 5px 12px / 12px 5px 14px 4px;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.95rem;
+}
+
+.scribble-toggle:hover {
+  color: var(--ink-red);
+}
+
+/* ---------- the crayon box ---------- */
+
+.scribble-dock {
+  position: fixed;
+  bottom: 12px;
+  left: 50%;
+  z-index: 70;
+  display: grid;
+  justify-items: center;
+  gap: 0.25rem;
+  width: max-content;
+  max-width: calc(100vw - 24px);
+  translate: -50% 0;
+}
+
+.scribble-dock__hint {
+  margin: 0;
+  padding: 0 0.6rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--paper) 90%, transparent);
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+
+.scribble-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 100%;
+  padding: 0.45rem 0.7rem;
+  overflow-x: auto;
+  border: 2px solid var(--crayon-graphite);
+  border-radius: 16px 6px 14px 8px / 8px 14px 6px 16px;
+  background: var(--paper);
+  box-shadow: 0 6px 18px rgba(70, 50, 20, 0.18);
+}
+
+.scribble-toolbar__group {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.scribble-toolbar__group + .scribble-toolbar__group {
+  padding-left: 0.5rem;
+  border-left: 2px dashed color-mix(in srgb, var(--ink-soft) 45%, transparent);
+}
+
+.scribble-toolbar button,
+.scribble-toolbar a {
+  font: inherit;
+}
+
+/* each colour is a little crayon standing up; the picked one sticks up higher */
+.scribble-toolbar__crayon {
+  width: 14px;
+  height: 30px;
+  padding: 0;
+  border: 1.5px solid var(--crayon-graphite);
+  border-radius: 7px 7px 2px 2px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.55)) 0 58% / 100% 28% no-repeat,
+    var(--c);
+  clip-path: polygon(50% 0, 100% 22%, 100% 100%, 0 100%, 0 22%);
+  transform: translateY(4px);
+  transition: transform 0.15s ease;
+}
+
+.scribble-toolbar__crayon[aria-checked='true'] {
+  transform: translateY(-3px);
+}
+
+.scribble-toolbar__size {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  background: none;
+}
+
+.scribble-toolbar__size[aria-checked='true'] {
+  border-color: var(--ink-soft);
+}
+
+.scribble-toolbar__size span {
+  border-radius: 50%;
+}
+
+.scribble-toolbar__text {
+  flex: none;
+  padding: 0.1rem 0.5rem;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--ink);
+  font-size: 1rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.scribble-toolbar__text:hover,
+.scribble-toolbar__text[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--crayon-yellow) 30%, transparent);
+}
+
+.scribble-toolbar__modes {
+  display: flex;
+  flex: none;
+  padding: 2px;
+  border: 1.5px solid color-mix(in srgb, var(--ink-soft) 50%, transparent);
+  border-radius: 10px;
+}
+
+.scribble-toolbar__mode {
+  padding: 0 0.45rem;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  white-space: nowrap;
+}
+
+.scribble-toolbar__mode[aria-checked='true'] {
+  background: color-mix(in srgb, #f4a6c0 45%, transparent);
+  color: var(--ink);
+}
+
+.scribble-toolbar__text:disabled {
+  opacity: 0.4;
+}
+
+.scribble-toolbar__done {
+  color: var(--ink-green);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scribble-toolbar__crayon {
+    transition: none;
+  }
+}
+
+/* ---------- the sketchpad page ---------- */
+
+.sketchpad {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100svh;
+}
+
+.sketchpad__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  padding: 0.75rem var(--gutter) 0;
+}
+
+.sketchpad__title {
+  margin: 0;
+  font-size: inherit;
+}
+
+.sketchpad__back {
+  color: var(--ink);
+  text-decoration: underline wavy var(--crayon-red);
+  text-underline-offset: 5px;
+}
+
+.sketchpad__sheet {
+  position: relative;
+  overflow: hidden;
+  margin: 0.75rem var(--gutter) 6.5rem;
+  border: 2px dashed color-mix(in srgb, var(--ink-soft) 40%, transparent);
+  border-radius: 10px;
+}
+
+.sketchpad__sheet .scribble-surface {
+  position: absolute;
+  inset: 0;
+  /* the sketchpad is always in drawing mode */
+  pointer-events: auto;
+  touch-action: none;
+}

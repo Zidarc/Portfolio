@@ -84,7 +84,9 @@ async function staticFile(req: IncomingMessage, res: ServerResponse, pathname: s
   try {
     if ((await stat(file)).isDirectory()) file = join(file, 'index.html');
   } catch {
-    return notFound(req, res);
+    // pretty addresses: /draw is draw.html
+    if (extname(file) || !(await stat(`${file}.html`).catch(() => null))) return notFound(req, res);
+    file = `${file}.html`;
   }
 
   try {

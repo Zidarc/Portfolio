@@ -1,6 +1,9 @@
 import { lazy, startTransition, Suspense, useEffect, useState } from 'react';
+import { CrayonCursor } from './components/CrayonCursor.tsx';
 import { Footer } from './components/Footer.tsx';
 import { Navbar } from './components/Navbar.tsx';
+import { SoundToggle } from './components/SoundToggle.tsx';
+import { PageScribble } from './scribble/PageScribble.tsx';
 import { CrayonLab } from './lab/CrayonLab.tsx';
 import { ProjectLab } from './lab/ProjectLab.tsx';
 import { About } from './sections/About.tsx';
@@ -55,6 +58,9 @@ function Site() {
         )}
       </main>
       {below && <Footer />}
+      <SoundToggle />
+      {below && <PageScribble />}
+      <CrayonCursor />
     </>
   );
 }

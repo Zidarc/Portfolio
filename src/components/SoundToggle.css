@@ -1,0 +1,18 @@
+.sound-toggle {
+  position: fixed;
+  right: max(12px, calc(var(--gutter) / 2));
+  bottom: 12px;
+  z-index: 40;
+  padding: 0.15rem 0.7rem;
+  border: 2px solid color-mix(in srgb, var(--ink-soft) 60%, transparent);
+  border-radius: 14px 4px 12px 5px / 5px 12px 4px 14px;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.95rem;
+}
+
+.sound-toggle:hover,
+.sound-toggle[aria-pressed='true'] {
+  color: var(--ink);
+}

@@ -42,14 +42,28 @@ function contactApi(env: Record<string, string>): Plugin {
   };
 }
 
+/** `/draw` opens the sketchpad (draw.html) in dev and preview, the way Netlify serves it live. */
+function prettyDrawUrl(): Plugin {
+  const rewrite: Connect.NextHandleFunction = (req, _res, next) => {
+    if (req.url === '/draw' || req.url?.startsWith('/draw?')) req.url = req.url.replace('/draw', '/draw.html');
+    next();
+  };
+  return {
+    name: 'pretty-draw-url',
+    configureServer: (server) => void server.middlewares.use(rewrite),
+    configurePreviewServer: (server) => void server.middlewares.use(rewrite),
+  };
+}
+
 export default defineConfig(({ mode }) => ({
-  plugins: [react(), contactApi(loadEnv(mode, process.cwd(), ''))],
+  plugins: [react(), contactApi(loadEnv(mode, process.cwd(), '')), prettyDrawUrl()],
   build: {
     rolldownOptions: {
       // the site, plus the crayon page shown for addresses that don't exist (Netlify serves dist/404.html)
       input: {
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         notFound: fileURLToPath(new URL('./404.html', import.meta.url)),
+        sketchpad: fileURLToPath(new URL('./draw.html', import.meta.url)),
       },
     },
   },
