@@ -12,16 +12,13 @@ import './ProjectCard.css';
 
 interface ProjectCardProps {
   project: Project;
-  /** Stagger for the outline drawing when several boxes appear together. */
-  delay?: number;
   /** Lab only: keep the scene in its active state. */
   forceActive?: boolean;
 }
 
 /** One crayon box per project: a themed scene on top, the write-up underneath. */
-export function ProjectCard({ project, delay = 0, forceActive = false }: ProjectCardProps) {
+export function ProjectCard({ project, forceActive = false }: ProjectCardProps) {
   const ref = useRef<HTMLElement>(null);
-  const drawn = useInView(ref);
   const nearby = useInView(ref, { rootMargin: '400px 0px' });
   const warm = useWarm(project.id);
   const centred = useInView(ref, { once: false, rootMargin: '-35% 0px -35% 0px' });
@@ -54,7 +51,7 @@ export function ProjectCard({ project, delay = 0, forceActive = false }: Project
       onFocus={() => setFocused(true)}
       onBlur={onBlur}
     >
-      <CrayonShape shape="box" play={drawn} delay={delay} tempo={1.6} color={accent} />
+      <CrayonShape shape="box" instant color={accent} />
 
       <div
         className={`project-card__scene ${active ? '' : 'is-asleep'}`}
@@ -72,7 +69,7 @@ export function ProjectCard({ project, delay = 0, forceActive = false }: Project
       <div className="project-card__body">
         <h3 id={titleId} className="project-card__title">
           <span className="sr-only">{project.name}</span>
-          {/* written already, not stroke by stroke: twelve names animating was a lot of work for little */}
+          {/* box and name are already drawn: twelve cards drawing in was a lot of work for little */}
           <CrayonText text={project.name} decorative instant capHeight={narrow ? 22 : 28} color={accent} />
         </h3>
         <p className="project-card__tagline">{project.tagline}</p>

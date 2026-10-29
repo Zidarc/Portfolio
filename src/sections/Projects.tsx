@@ -24,9 +24,9 @@ export function Projects() {
         phone) to wake it up.
       </p>
       <ul className="projects__grid">
-        {projects.map((project, i) => (
+        {projects.map((project) => (
           <li key={project.id}>
-            <ProjectCard project={project} delay={(i % 2) * 250} />
+            <ProjectCard project={project} />
           </li>
         ))}
       </ul>
