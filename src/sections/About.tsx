@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { CrayonDoodle } from '../crayon/CrayonDoodle.tsx';
 import { CrayonShape } from '../crayon/CrayonShape.tsx';
+import { MarginDoodles } from '../components/MarginDoodles.tsx';
 import { SectionHeading } from '../components/SectionHeading.tsx';
 import { useInView } from '../hooks/useInView.ts';
 import './About.css';
@@ -23,6 +24,7 @@ export function About() {
 
   return (
     <section id="about" className="section about" aria-labelledby="about-heading">
+      <MarginDoodles set="about" />
       <div className="about__story">
         <SectionHeading id="about-heading" text="About me" color="var(--crayon-blue)" />
         <p>

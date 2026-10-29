@@ -1,0 +1,44 @@
+/* a sheet over the section, so doodles can sit in its margins; it never takes the pointer */
+.margin-doodles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.margin-doodle {
+  position: absolute;
+  top: var(--top);
+  width: var(--size);
+  rotate: var(--tilt);
+}
+
+/* in the page margin, just outside the content column */
+.margin-doodle--left {
+  right: calc(100% - var(--gutter) + 12px);
+}
+
+.margin-doodle--right {
+  left: calc(100% - var(--gutter) + 12px);
+}
+
+/* narrower than the content plus two margins: only the first doodle, small, in the space above the heading */
+@media (max-width: 1279px) {
+  .margin-doodle {
+    display: none;
+  }
+
+  .margin-doodle--lead {
+    display: block;
+    top: 0.75rem;
+    right: var(--gutter);
+    left: auto;
+    width: min(56px, calc(var(--size) * 0.6));
+  }
+}
+
+@media (max-width: 600px) {
+  .margin-doodle--lead {
+    top: 0.5rem;
+    width: 44px;
+  }
+}

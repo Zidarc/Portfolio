@@ -1,6 +1,7 @@
 import { useRef, type CSSProperties } from 'react';
 import { CrayonDoodle } from '../crayon/CrayonDoodle.tsx';
 import { CrayonShape } from '../crayon/CrayonShape.tsx';
+import { MarginDoodles } from '../components/MarginDoodles.tsx';
 import { SectionHeading } from '../components/SectionHeading.tsx';
 import { useInView } from '../hooks/useInView.ts';
 import { CRAYONS } from '../scribble/brush.ts';
@@ -14,6 +15,7 @@ export function Sketch() {
 
   return (
     <section id="draw" className="section sketch" aria-labelledby="draw-heading">
+      <MarginDoodles set="draw" />
       <div className="sketch__words">
         <SectionHeading id="draw-heading" text="Grab a crayon" color="var(--crayon-red)" />
         <p>

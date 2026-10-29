@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type CSSProperties } from 'react';
 import { CrayonFilter } from './CrayonFilter.tsx';
 import type { CrayonPlan } from './strokes.ts';
+import { whenScrollSettles } from './scrollIdle.ts';
 import { usePrefersReducedMotion } from './usePrefersReducedMotion.ts';
 import './crayon.css';
 
@@ -79,47 +80,54 @@ export function CrayonDrawing({
     svg.classList.remove('crayon--static');
 
     const animations: Animation[] = [];
-    svg.querySelectorAll<SVGGElement>('[data-stroke]').forEach((g, i) => {
-      const stroke = plan.strokes[i];
-      if (!stroke) return;
-      g.querySelectorAll('path').forEach((path) => {
-        // a previous run baked its end state in; start hidden again
-        path.style.removeProperty('visibility');
-        path.style.removeProperty('stroke-dashoffset');
-        // visibility, not opacity: an opacity animation puts every stroke on its own GPU layer,
-        // and a screenful of strokes drawing at once is hundreds of layers
-        const animation = path.animate(
-          [
-            { strokeDashoffset: 1, visibility: 'visible' },
-            { strokeDashoffset: 0, visibility: 'visible' },
-          ],
-          {
-            delay: delay + stroke.delay,
-            duration: stroke.duration,
-            // slow push-off, quick middle, slight slow-down at the end
-            easing: 'cubic-bezier(0.4, 0.05, 0.55, 0.95)',
-            fill: 'forwards',
-          },
-        );
-        // bake the end state in and let the animation go, so finished drawings cost nothing
-        // (commitStyles() sometimes commits the starting offset, so it's written by hand)
-        animation.finished
-          .then(() => {
-            path.style.strokeDashoffset = '0';
-            path.style.visibility = 'visible';
-            animation.cancel();
-          })
-          .catch(() => {});
-        animations.push(animation);
-      });
-    });
-
     let cancelled = false;
-    Promise.all(animations.map((a) => a.finished))
-      .then(() => !cancelled && onDoneRef.current?.())
-      .catch(() => {}); // cancelled on unmount/replay
+
+    const draw = () => {
+      svg.querySelectorAll<SVGGElement>('[data-stroke]').forEach((g, i) => {
+        const stroke = plan.strokes[i];
+        if (!stroke) return;
+        g.querySelectorAll('path').forEach((path) => {
+          // a previous run baked its end state in; start hidden again
+          path.style.removeProperty('visibility');
+          path.style.removeProperty('stroke-dashoffset');
+          // visibility, not opacity: an opacity animation puts every stroke on its own GPU layer,
+          // and a screenful of strokes drawing at once is hundreds of layers
+          const animation = path.animate(
+            [
+              { strokeDashoffset: 1, visibility: 'visible' },
+              { strokeDashoffset: 0, visibility: 'visible' },
+            ],
+            {
+              delay: delay + stroke.delay,
+              duration: stroke.duration,
+              // slow push-off, quick middle, slight slow-down at the end
+              easing: 'cubic-bezier(0.4, 0.05, 0.55, 0.95)',
+              fill: 'forwards',
+            },
+          );
+          // bake the end state in and let the animation go, so finished drawings cost nothing
+          // (commitStyles() sometimes commits the starting offset, so it's written by hand)
+          animation.finished
+            .then(() => {
+              path.style.strokeDashoffset = '0';
+              path.style.visibility = 'visible';
+              animation.cancel();
+            })
+            .catch(() => {});
+          animations.push(animation);
+        });
+      });
+
+      Promise.all(animations.map((a) => a.finished))
+        .then(() => !cancelled && onDoneRef.current?.())
+        .catch(() => {}); // cancelled on unmount/replay
+    };
+
+    // don't draw while the page is scrolling: start once it settles, so scrolling never competes with it
+    const stopWaiting = whenScrollSettles(draw);
     return () => {
       cancelled = true;
+      stopWaiting();
       animations.forEach((a) => a.cancel());
     };
   }, [plan, play, instant, delay, reducedMotion]);

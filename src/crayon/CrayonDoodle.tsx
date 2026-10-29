@@ -16,6 +16,19 @@ const LABELS: Record<DoodleName, string> = {
   underline: 'Crayon line',
   check: 'Tick',
   dot: 'Crayon dot',
+  heart: 'Crayon heart',
+  sun: 'Crayon sun',
+  cloud: 'Crayon cloud',
+  fish: 'Crayon fish',
+  plane: 'Crayon paper plane',
+  bolt: 'Crayon lightning bolt',
+  spiral: 'Crayon spiral',
+  rocket: 'Crayon rocket',
+  note: 'Crayon music notes',
+  rainbow: 'Crayon rainbow',
+  moon: 'Crayon moon',
+  bulb: 'Crayon light bulb',
+  crown: 'Crayon crown',
 };
 
 export interface CrayonDoodleProps extends CrayonCommonProps, Partial<CrayonStyle> {

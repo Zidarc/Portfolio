@@ -1,6 +1,7 @@
 import { useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { CrayonDoodle } from '../crayon/CrayonDoodle.tsx';
 import { CrayonShape } from '../crayon/CrayonShape.tsx';
+import { MarginDoodles } from '../components/MarginDoodles.tsx';
 import { SectionHeading } from '../components/SectionHeading.tsx';
 import { GITHUB_URL, INSTAGRAM_URL, LINKEDIN_URL, RESUME_URL } from '../data/links.ts';
 import { useInView } from '../hooks/useInView.ts';
@@ -97,6 +98,7 @@ export function Contact() {
 
   return (
     <section id="contact" className="section contact" aria-labelledby="contact-heading">
+      <MarginDoodles set="contact" />
       <div className="contact__intro">
         <SectionHeading id="contact-heading" text="Say hi!" color="var(--crayon-purple)" />
         <p>

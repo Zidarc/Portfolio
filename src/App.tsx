@@ -33,35 +33,39 @@ export default function App() {
   return <Site />;
 }
 
+/** Everything under the hero, in page order. */
+const BELOW = [About, Hats, Skills, Projects, Sketch, Contact];
+
+// Safari has no requestIdleCallback
+const idle = (fn: () => void) =>
+  typeof requestIdleCallback === 'function' ? requestIdleCallback(fn, { timeout: 500 }) : setTimeout(fn, 50);
+
 function Site() {
-  // The hero fills the first screen, so everything under it is rendered just after the first paint, as a
-  // background update React can split into small slices. On a slow phone that's the difference between a
-  // second-long freeze at load and none. A link to a section (#projects) needs it all there to scroll to.
-  const [below, setBelow] = useState(() => window.location.hash.length > 1);
+  // The hero fills the first screen, so the sections under it are added after the first paint, one per
+  // idle moment, each as a background update React can slice up. Adding them all in one go was a long
+  // freeze on a slow phone; one at a time, no single step is big. A link to a section (#projects) needs
+  // everything there at once to scroll to.
+  const [shown, setShown] = useState(() => (window.location.hash.length > 1 ? BELOW.length : 0));
+  const all = shown >= BELOW.length;
 
   useEffect(() => {
-    if (!below) startTransition(() => setBelow(true));
-  }, [below]);
+    if (all) return;
+    const id = idle(() => startTransition(() => setShown((n) => n + 1)));
+    return () => (typeof cancelIdleCallback === 'function' ? cancelIdleCallback(id) : clearTimeout(id));
+  }, [shown, all]);
 
   return (
     <>
-      <Navbar sectionsReady={below} />
+      <Navbar sectionsReady={all} />
       <main>
         <Hero />
-        {below && (
-          <>
-            <About />
-            <Hats />
-            <Skills />
-            <Projects />
-            <Sketch />
-            <Contact />
-          </>
-        )}
+        {BELOW.slice(0, shown).map((Section, i) => (
+          <Section key={i} />
+        ))}
       </main>
-      {below && <Footer />}
+      {all && <Footer />}
       <SoundToggle />
-      {below && <PageScribble />}
+      {all && <PageScribble />}
       <CrayonCursor />
     </>
   );

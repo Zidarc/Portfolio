@@ -1,6 +1,7 @@
 import { useRef, type CSSProperties } from 'react';
 import { CrayonDoodle } from '../crayon/CrayonDoodle.tsx';
 import { CrayonShape } from '../crayon/CrayonShape.tsx';
+import { MarginDoodles } from '../components/MarginDoodles.tsx';
 import { SectionHeading } from '../components/SectionHeading.tsx';
 import { roles, type Role } from '../data/roles.ts';
 import { useInView } from '../hooks/useInView.ts';
@@ -45,6 +46,7 @@ export function Hats() {
 
   return (
     <section id="roles" className="section hats" aria-labelledby="roles-heading">
+      <MarginDoodles set="roles" />
       <SectionHeading id="roles-heading" text="Hats I wear" color="var(--crayon-red)" />
       <p className="hats__intro">The societies and teams I'm part of.</p>
 

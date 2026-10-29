@@ -11,6 +11,7 @@
 /* ---------- shared section layout ---------- */
 
 .section {
+  position: relative;
   width: min(var(--max-width), 100%);
   margin: 0 auto;
   padding: clamp(4rem, 10vw, 7rem) var(--gutter);

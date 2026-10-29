@@ -1,8 +1,10 @@
+import { MarginDoodles } from './MarginDoodles.tsx';
 import './Footer.css';
 
 export function Footer() {
   return (
     <footer className="footer">
+      <MarginDoodles set="footer" />
       <p>
         © {new Date().getFullYear()} Ali Hussain · Karachi, Pakistan
       </p>

@@ -198,6 +198,147 @@ const dot: DoodleFn = (rng, m) => [
   { pts: Array.from({ length: 6 }, (_, i) => p(i % 2 ? 8 : -8, -9 + i * 3.6)) },
 ];
 
+// ---------- margin doodles: the little drawings that turn up beside each section ----------
+
+/** ♥ in one go: up the left side, the dip, down the right side back to the point. */
+const heart: DoodleFn = () => [
+  {
+    pts: chain(
+      quad(p(0, 55), p(-78, 8), p(-50, -32)),
+      quad(p(-50, -32), p(-30, -64), p(0, -28)),
+      quad(p(0, -28), p(30, -64), p(50, -32)),
+      quad(p(50, -32), p(78, 8), p(0, 58)),
+    ),
+  },
+];
+
+/** A round sun, then rays all the way round. */
+const sun: DoodleFn = (rng, m) => [
+  { pts: loop(0, 0, 32, 32, rng, m) },
+  ...Array.from({ length: 8 }, (_, i) => {
+    const a = (i / 8) * Math.PI * 2 + gauss(rng) * 0.06 * m;
+    const r0 = 44 + gauss(rng) * 3 * m;
+    return { pts: [p(Math.cos(a) * r0, Math.sin(a) * r0), p(Math.cos(a) * (r0 + 20), Math.sin(a) * (r0 + 20))] };
+  }),
+];
+
+/** A bumpy cloud in one stroke, flat along the bottom. */
+const cloud: DoodleFn = () => [
+  {
+    pts: chain(
+      [p(62, 26), p(-62, 26)],
+      quad(p(-62, 26), p(-96, 14), p(-70, -6)),
+      quad(p(-70, -6), p(-66, -46), p(-24, -30)),
+      quad(p(-24, -30), p(2, -72), p(32, -34)),
+      quad(p(32, -34), p(72, -40), p(62, -2)),
+      quad(p(62, -2), p(88, 18), p(62, 26)),
+    ),
+  },
+];
+
+/** A fish swimming left, blowing two bubbles. */
+const fish: DoodleFn = (rng, m) => [
+  { pts: loop(0, 0, 55, 30, rng, m) },
+  { pts: [p(50, 0), p(86, -26), p(84, 26), p(50, 0)] },
+  { pts: loop(-28, -7, 4, 4, rng, m) },
+  { pts: quad(p(-48, 10), p(-40, 18), p(-30, 12)) },
+  { pts: loop(-80, -34, 7, 7, rng, m) },
+  { pts: loop(-94, -60, 4.5, 4.5, rng, m) },
+];
+
+/** A paper plane with a dashed swoosh behind it. */
+const plane: DoodleFn = () => [
+  { pts: [p(-70, 10), p(82, -42), p(-18, 42), p(-70, 10)] },
+  { pts: [p(82, -42), p(-24, 14), p(-18, 42)] },
+  { pts: [p(-88, 30), p(-106, 40)] },
+  { pts: [p(-120, 47), p(-138, 58)] },
+];
+
+/** ⚡ in one zigzag. */
+const bolt: DoodleFn = () => [
+  { pts: [p(12, -72), p(-30, 4), p(4, 4), p(-14, 72), p(40, -16), p(6, -16), p(26, -72), p(12, -72)] },
+];
+
+/** A spiral, wound out from the middle. */
+const spiral: DoodleFn = (rng, m) => {
+  const start = rng() * Math.PI * 2;
+  return [
+    {
+      pts: Array.from({ length: 70 }, (_, i) => {
+        const t = i / 69;
+        const a = start + t * Math.PI * 4.2;
+        const r = 4 + t * 48 * (1 + gauss(rng) * 0.02 * m);
+        return p(Math.cos(a) * r, Math.sin(a) * r);
+      }),
+    },
+  ];
+};
+
+/** A rocket: body, window, fins, then the flame in another crayon. */
+const rocket: DoodleFn = (rng, m) => [
+  {
+    pts: chain(
+      quad(p(0, -78), p(26, -56), p(22, -24)),
+      [p(22, -24), p(22, 36), p(-22, 36), p(-22, -24)],
+      quad(p(-22, -24), p(-26, -56), p(0, -78)),
+    ),
+  },
+  { pts: loop(0, -18, 9, 9, rng, m) },
+  { pts: [p(-22, 12), p(-42, 44), p(-22, 38)] },
+  { pts: [p(22, 12), p(42, 44), p(22, 38)] },
+  { pts: [p(-12, 40), p(0, 74), p(12, 40)], colour: crayon('orange') },
+];
+
+/** Two joined music notes. */
+const note: DoodleFn = (rng, m) => [
+  { pts: loop(-22, 42, 14, 10, rng, m) },
+  { pts: [p(-8, 42), p(-8, -44)] },
+  { pts: loop(36, 32, 14, 10, rng, m) },
+  { pts: [p(50, 32), p(50, -36)] },
+  { pts: [p(-8, -44), p(50, -36)] },
+];
+
+/** Three arcs, one crayon each. */
+const rainbow: DoodleFn = (rng, m) =>
+  [
+    ['red', 92],
+    ['yellow', 74],
+    ['blue', 56],
+  ].map(([colour, r]) => ({
+    pts: loop(0, 40, r as number, (r as number) * 0.8, rng, m, Math.PI, Math.PI),
+    colour: crayon(colour as string),
+  }));
+
+/** A crescent moon in one stroke, and a tiny star. */
+const moon: DoodleFn = () => [
+  { pts: chain(quad(p(12, -56), p(-82, 0), p(12, 56)), quad(p(12, 56), p(-36, 0), p(12, -56))) },
+  ...star(56, -40, 0.28),
+];
+
+/** A light bulb with its screw base and a few rays: an idea. */
+const bulb: DoodleFn = () => [
+  {
+    pts: chain(
+      quad(p(-18, 24), p(-52, -10), p(-32, -46)),
+      quad(p(-32, -46), p(0, -78), p(32, -46)),
+      quad(p(32, -46), p(52, -10), p(18, 24)),
+    ),
+  },
+  { pts: [p(-18, 26), p(18, 26)] },
+  { pts: [p(-16, 36), p(16, 36)] },
+  { pts: [p(-11, 46), p(11, 46)] },
+  { pts: [p(-56, -62), p(-70, -76)] },
+  { pts: [p(0, -90), p(0, -108)] },
+  { pts: [p(56, -62), p(70, -76)] },
+];
+
+/** A crown (it's a hat, after all), with two jewels. */
+const crown: DoodleFn = (rng, m) => [
+  { pts: [p(-56, 30), p(-62, -32), p(-30, 0), p(0, -48), p(30, 0), p(62, -32), p(56, 30), p(-56, 30)] },
+  { pts: loop(-22, 14, 6, 6, rng, m), colour: crayon('red') },
+  { pts: loop(22, 14, 6, 6, rng, m), colour: crayon('blue') },
+];
+
 export const DOODLES = {
   sparkle,
   cat,
@@ -210,6 +351,19 @@ export const DOODLES = {
   underline,
   check,
   dot,
+  heart,
+  sun,
+  cloud,
+  fish,
+  plane,
+  bolt,
+  spiral,
+  rocket,
+  note,
+  rainbow,
+  moon,
+  bulb,
+  crown,
 } satisfies Record<string, DoodleFn>;
 export type DoodleName = keyof typeof DOODLES;
 

@@ -10,7 +10,7 @@ interface CrayonFilterProps {
 /**
  * Wax-on-paper texture, applied to a whole group of strokes:
  *  1. displacement roughens the stroke edges
- *  2. fine noise punches specks where the paper's tooth stops the wax
+ *  2. fine noise punches specks where the paper's tooth stops the wax (the same noise as the chipping)
  *  3. broad noise varies how hard the crayon was pressed
  * Filter units are viewBox units, so every size below is converted from screen pixels.
  */
@@ -43,8 +43,9 @@ export function CrayonFilter({ id, seed = 1, pxPerUnit = 1, strokePx = 10 }: Cra
         result="ragged"
       />
 
-      <feTurbulence type="fractalNoise" baseFrequency={freq(1.4)} numOctaves={2} seed={seed + 7} result="grain" />
-      <feColorMatrix in="grain" type="matrix" values={`0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 6 ${toothOffset}`} result="tooth" />
+      {/* the paper's tooth reuses the chipping noise (its blue channel, independent of the red and green used
+          above): same fine scale, so one noise pass does both jobs instead of two */}
+      <feColorMatrix in="chipNoise" type="matrix" values={`0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 6 0 ${toothOffset}`} result="tooth" />
 
       <feTurbulence type="fractalNoise" baseFrequency={freq(40)} numOctaves={1} seed={seed + 13} result="pressureNoise" />
       <feColorMatrix

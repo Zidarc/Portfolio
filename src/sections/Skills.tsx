@@ -1,5 +1,6 @@
 import { useRef, type CSSProperties } from 'react';
 import { CrayonShape } from '../crayon/CrayonShape.tsx';
+import { MarginDoodles } from '../components/MarginDoodles.tsx';
 import { SectionHeading } from '../components/SectionHeading.tsx';
 import { skillGroups } from '../data/skills.ts';
 import { useInView } from '../hooks/useInView.ts';
@@ -11,6 +12,7 @@ export function Skills() {
 
   return (
     <section id="skills" className="section skills" aria-labelledby="skills-heading">
+      <MarginDoodles set="skills" />
       <SectionHeading id="skills-heading" text="Skills" color="var(--crayon-green)" />
       <p className="skills__intro">Everything I've used to ship the projects below, sorted into crayon boxes.</p>
 

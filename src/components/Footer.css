@@ -23,3 +23,18 @@
 .footer__link:hover {
   color: var(--ink-red);
 }
+
+/* the footer runs edge to edge, so its doodles sit inside it rather than in a margin */
+.footer {
+  position: relative;
+}
+
+.footer .margin-doodle--left {
+  right: auto;
+  left: max(4%, var(--gutter));
+}
+
+.footer .margin-doodle--right {
+  right: max(4%, var(--gutter));
+  left: auto;
+}

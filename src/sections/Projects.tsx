@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { MarginDoodles } from '../components/MarginDoodles.tsx';
 import { SectionHeading } from '../components/SectionHeading.tsx';
 import { projects } from '../data/projects.ts';
 import { ProjectCard } from '../projects/ProjectCard.tsx';
@@ -16,6 +17,7 @@ export function Projects() {
 
   return (
     <section id="projects" className="section projects" aria-labelledby="projects-heading">
+      <MarginDoodles set="projects" />
       <SectionHeading id="projects-heading" text="Projects" color="var(--crayon-orange)" />
       <p className="projects__intro">
         One box per project, and every box is decorated to match. Hover over one (or scroll it to the middle on your
