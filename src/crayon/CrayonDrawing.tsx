@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState, type CSSProperties } from 'react';
 import { CrayonFilter } from './CrayonFilter.tsx';
 import type { CrayonPlan } from './strokes.ts';
 import { whenScrollSettles } from './scrollIdle.ts';
+import { usePasses } from './usePasses.ts';
 import { usePrefersReducedMotion } from './usePrefersReducedMotion.ts';
 import './crayon.css';
 
@@ -54,6 +55,8 @@ export function CrayonDrawing({
   const reducedMotion = usePrefersReducedMotion();
   const onDoneRef = useRef(onDone);
   onDoneRef.current = onDone;
+  // the svg (and so its space on the page) is there straight away; the lines arrive from the worker
+  const { shown, ready } = usePasses(plan);
 
   // the texture filter works in viewBox units; track how big one unit is on screen
   const [pxPerUnit, setPxPerUnit] = useState(1);
@@ -70,7 +73,7 @@ export function CrayonDrawing({
 
   useEffect(() => {
     const svg = svgRef.current;
-    if (!svg || !play) return;
+    if (!svg || !play || !ready) return;
 
     if (reducedMotion || instant) {
       svg.classList.add('crayon--static');
@@ -130,7 +133,7 @@ export function CrayonDrawing({
       stopWaiting();
       animations.forEach((a) => a.cancel());
     };
-  }, [plan, play, instant, delay, reducedMotion]);
+  }, [plan, ready, play, instant, delay, reducedMotion]);
 
   return (
     <svg
@@ -147,9 +150,9 @@ export function CrayonDrawing({
         </defs>
       )}
       <g filter={texture ? `url(#${filterId})` : undefined} stroke={color}>
-        {plan.strokes.map((stroke, i) => (
+        {shown?.plan.strokes.map((stroke, i) => (
           <g key={i} data-stroke="" stroke={stroke.colour}>
-            {stroke.passes.map((pass, j) => (
+            {shown.passes[i]?.map((pass, j) => (
               <path key={j} d={pass.d} pathLength={1} strokeWidth={pass.width} strokeOpacity={pass.opacity} />
             ))}
           </g>

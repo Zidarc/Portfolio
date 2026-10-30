@@ -1,7 +1,7 @@
-import { memo, useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import { memo, useEffect, useId, useRef, useState, type CSSProperties } from 'react';
 import type { ThemeSceneProps } from '../../theme.ts';
 import { CANVAS, Chrome } from './Chrome.tsx';
-import { GRID_H, GRID_W, LAYERS, PIXELATE_BLOCK, layerPixels, paintLayer } from './picture.ts';
+import { GRID_H, GRID_W, LAYERS, PIXELATE_BLOCK, layerPainter, layerPixels } from './picture.ts';
 import './paint.css';
 
 /* ---------- scene units: the window is a 320 x 200 drawing, 1 unit = 100cqw / 320 ---------- */
@@ -110,12 +110,27 @@ let pixelsCache: ReturnType<typeof layerPixels> | null = null;
 
 const Layers = memo(function Layers({ under, over }: { under: number; over: number | null }) {
   const refs = useRef<(HTMLCanvasElement | null)[]>([]);
-  useLayoutEffect(() => {
+  // painted a band of rows at a time in idle moments, the untouched picture first, so no single frame waits on it
+  useEffect(() => {
     pixelsCache ??= layerPixels();
-    refs.current.forEach((cv, i) => {
+    const painters = refs.current.flatMap((cv, i) => {
       const px = pixelsCache?.[i];
-      if (cv && px) paintLayer(cv, px, LAYERS[i]?.id === 'pixelate' ? PIXELATE_BLOCK : 1);
+      return cv && px ? [layerPainter(cv, px, LAYERS[i]?.id === 'pixelate' ? PIXELATE_BLOCK : 1)] : [];
     });
+    let handle = 0;
+    const work = (timeLeft: () => number) => {
+      while (painters.length && timeLeft() > 2) if (!painters[0]!()) painters.shift();
+      if (painters.length) handle = schedule();
+    };
+    const schedule = (): number => {
+      if (typeof requestIdleCallback === 'function') return requestIdleCallback((d) => work(() => d.timeRemaining()));
+      return window.setTimeout(() => {
+        const start = performance.now();
+        work(() => 8 - (performance.now() - start));
+      });
+    };
+    handle = schedule();
+    return () => (typeof cancelIdleCallback === 'function' ? cancelIdleCallback(handle) : clearTimeout(handle));
   }, []);
   return (
     <>

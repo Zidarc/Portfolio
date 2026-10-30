@@ -10,13 +10,13 @@ import './Hats.css';
 const current = roles.filter((r) => !r.end);
 const earlier = roles.filter((r) => r.end);
 
-function RoleCards({ list, play }: { list: Role[]; play: boolean }) {
-  return list.map((role, i) => {
+function RoleCards({ list }: { list: Role[] }) {
+  return list.map((role) => {
     const colour = `var(--crayon-${role.colour})`;
     const style = { '--card-colour': colour, '--card-ink': `var(--ink-${role.colour})` } as CSSProperties;
     return (
       <li key={role.title + role.org} className="hat-card" style={style}>
-        <CrayonShape shape="box" play={play} delay={i * 200} tempo={1.6} color={colour} />
+        <CrayonShape shape="box" instant color={colour} />
         <span className="hat-card__dates">
           {role.start} – {role.end ?? <span className="hat-card__now">now</span>}
         </span>
@@ -37,11 +37,7 @@ function RoleCards({ list, play }: { list: Role[]; play: boolean }) {
 }
 
 export function Hats() {
-  const nowRef = useRef<HTMLUListElement>(null);
-  const beforeRef = useRef<HTMLUListElement>(null);
   const icpcRef = useRef<HTMLDivElement>(null);
-  const nowInView = useInView(nowRef);
-  const beforeInView = useInView(beforeRef);
   const icpcInView = useInView(icpcRef);
 
   return (
@@ -60,13 +56,13 @@ export function Hats() {
       </div>
 
       <h3 className="hats__group">Right now</h3>
-      <ul ref={nowRef} className="hats__grid">
-        <RoleCards list={current} play={nowInView} />
+      <ul className="hats__grid">
+        <RoleCards list={current} />
       </ul>
 
       <h3 className="hats__group">Before that</h3>
-      <ul ref={beforeRef} className="hats__grid">
-        <RoleCards list={earlier} play={beforeInView} />
+      <ul className="hats__grid">
+        <RoleCards list={earlier} />
       </ul>
     </section>
   );

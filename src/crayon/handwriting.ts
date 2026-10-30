@@ -2,7 +2,7 @@ import { glyphs } from './font/hersheySans.ts';
 import { createNoise1D, createRng, gauss, range } from './random.ts';
 import type { Point } from './geometry.ts';
 import type { CrayonStyle } from './style.ts';
-import { CAP, finishPlan, handDrawn, type CrayonPlan, type RawStroke } from './strokes.ts';
+import { CAP, finishPlan, handDrawn, pointSpacing, type CrayonPlan, type RawStroke } from './strokes.ts';
 
 export interface HandwritingOptions extends CrayonStyle {
   seed: number;
@@ -11,6 +11,10 @@ export interface HandwritingOptions extends CrayonStyle {
   lineHeight?: number;
   letterSpacing?: number;
   wordSpacing?: number;
+  /** Roughly how many screen px one unit will be, if known: small text gets fewer points. */
+  pxPerUnit?: number;
+  /** pxPerUnit is exact (text sized by its cap height), so edge lines too thin to see can be left out. */
+  exactSize?: boolean;
 }
 
 /** Kids draw the round part of these before the stem, and dot i/j last. */
@@ -24,6 +28,7 @@ export function planHandwriting(text: string, opts: HandwritingOptions): CrayonP
   const letterSpacing = (opts.letterSpacing ?? 0.22) * CAP;
   const wordSpacing = (opts.wordSpacing ?? 0.6) * CAP;
 
+  const spacing = pointSpacing(opts.pxPerUnit);
   const rng = createRng(opts.seed);
   const baselineDrift = createNoise1D(rng);
   const slantDrift = createNoise1D(rng);
@@ -71,7 +76,7 @@ export function planHandwriting(text: string, opts: HandwritingOptions): CrayonP
           pts.push({ x: x + pivot.x + lx * cos - ly * sin, y: baseY + pivot.y + lx * sin + ly * cos });
         }
         strokes.push({
-          pts: handDrawn(pts, m, rng),
+          pts: handDrawn(pts, m, rng, spacing),
           pause: pendingPause + (k === 0 ? range(rng, 70, 140) : range(rng, 40, 90)) + (rng() < 0.08 * m ? range(rng, 80, 180) : 0),
         });
         pendingPause = 0;
@@ -95,5 +100,5 @@ export function planHandwriting(text: string, opts: HandwritingOptions): CrayonP
     });
   }
 
-  return finishPlan(lineStrokes.flat(), m, opts.speed, opts.weight, rng);
+  return finishPlan(lineStrokes.flat(), m, opts.speed, opts.weight, rng, undefined, opts.exactSize ? opts.pxPerUnit : undefined);
 }

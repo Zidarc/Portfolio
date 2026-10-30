@@ -4,7 +4,6 @@ import { CrayonShape } from '../crayon/CrayonShape.tsx';
 import { MarginDoodles } from '../components/MarginDoodles.tsx';
 import { SectionHeading } from '../components/SectionHeading.tsx';
 import { GITHUB_URL, INSTAGRAM_URL, LINKEDIN_URL, RESUME_URL } from '../data/links.ts';
-import { useInView } from '../hooks/useInView.ts';
 import {
   LIMITS,
   validateContact,
@@ -28,7 +27,6 @@ const EMPTY: ContactInput = { name: '', email: '', message: '' };
 
 export function Contact() {
   const formRef = useRef<HTMLFormElement>(null);
-  const inView = useInView(formRef);
   const [values, setValues] = useState<ContactInput>(EMPTY);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
@@ -117,7 +115,7 @@ export function Contact() {
       </div>
 
       <div className="contact__card">
-        <CrayonShape shape="box" play={inView} tempo={1.4} lineWidth={3.5} color="var(--crayon-purple)" />
+        <CrayonShape shape="box" instant lineWidth={3.5} color="var(--crayon-purple)" />
 
         {status.kind === 'sent' ? (
           <div className="contact__sent" role="status">
@@ -147,7 +145,7 @@ export function Contact() {
 
             <div className="contact__actions">
               <button type="submit" className="contact__send" disabled={status.kind === 'sending'}>
-                <CrayonShape shape="box" play={inView} delay={900} tempo={2} lineWidth={2.5} color="var(--crayon-graphite)" />
+                <CrayonShape shape="box" instant lineWidth={2.5} color="var(--crayon-graphite)" />
                 {status.kind === 'sending' ? 'sending…' : 'Send it ✉'}
               </button>
               {status.kind === 'error' && (

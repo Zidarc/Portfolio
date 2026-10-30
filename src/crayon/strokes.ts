@@ -1,5 +1,5 @@
-import { createNoise1D, gauss, range, type Rng } from './random.ts';
-import { extendEnds, normals, polylineLength, resample, smoothPath, type Point } from './geometry.ts';
+import { gauss, range, type Rng } from './random.ts';
+import { extendEnds, polylineLength, resample, type Point } from './geometry.ts';
 
 /** Internal unit: a letter's cap height (and 1/100 of a doodle's design box). */
 export const CAP = 100;
@@ -20,7 +20,15 @@ export interface PlannedPass {
 }
 
 export interface PlannedStroke {
-  passes: PlannedPass[];
+  /**
+   * Centre line as flat x, y pairs; its crayon passes are built from it off the main thread (see passes.ts).
+   * A typed array, because sending it to the worker is then a plain copy instead of a slow clone.
+   */
+  line: Float32Array;
+  /** Width of the main pass. */
+  width: number;
+  /** Seeds the wobble of the passes. */
+  seed: number;
   /** ms from the start of drawing. */
   delay: number;
   duration: number;
@@ -35,14 +43,23 @@ export interface CrayonPlan {
   totalDuration: number;
   /** Main line width in viewBox units (the texture filter adapts to it). */
   lineWidth: number;
+  messiness: number;
+  /** Exact on-screen px per unit, if known: edge lines too thin to see are then left out. */
+  pxPerUnit?: number;
 }
 
-/** Makes a clean stroke hand-made: shifted a bit, started/ended early or late, densely resampled for wobble. */
-export function handDrawn(pts: Point[], m: number, rng: Rng): Point[] {
+/**
+ * How far apart (in units) to put the points that carry the wobble: about one per 3 screen px, never closer
+ * than 4 units. Small drawings don't need more; every point is path data to build, parse, lay out and paint.
+ */
+export const pointSpacing = (pxPerUnit = 1) => Math.min(12, Math.max(4, 3 / pxPerUnit));
+
+/** Makes a clean stroke hand-made: shifted a bit, started/ended early or late, resampled for wobble. */
+export function handDrawn(pts: Point[], m: number, rng: Rng, spacing = 4): Point[] {
   const offX = gauss(rng) * 0.022 * m * CAP;
   const offY = gauss(rng) * 0.022 * m * CAP;
   const shifted = pts.map((p) => ({ x: p.x + offX, y: p.y + offY }));
-  return resample(extendEnds(shifted, range(rng, -0.02, 0.05) * m * CAP, range(rng, -0.03, 0.07) * m * CAP), 4);
+  return resample(extendEnds(shifted, range(rng, -0.02, 0.05) * m * CAP, range(rng, -0.03, 0.07) * m * CAP), spacing);
 }
 
 /** A fixed viewBox, for drawings that must line up with something else (e.g. rings around a photo). */
@@ -53,8 +70,20 @@ export interface Frame {
   h: number;
 }
 
-/** Turns hand-made centre lines into layered crayon passes with timing. */
-export function finishPlan(raw: RawStroke[], m: number, speed: number, weight: number, rng: Rng, frame?: Frame): CrayonPlan {
+/**
+ * Lays out hand-made centre lines with timing and works out the drawing's size. Turning them into crayon
+ * passes is the expensive part, and happens in a worker (passes.ts).
+ * `pxPerUnit`: the drawing's exact on-screen scale, if known, so edge lines too thin to see can be dropped.
+ */
+export function finishPlan(
+  raw: RawStroke[],
+  m: number,
+  speed: number,
+  weight: number,
+  rng: Rng,
+  frame?: Frame,
+  pxPerUnit?: number,
+): CrayonPlan {
   const W = weight * CAP;
   // crayon moves ~1.2 cap heights per 100ms at speed 1
   const penSpeed = 1.2 * speed;
@@ -62,22 +91,24 @@ export function finishPlan(raw: RawStroke[], m: number, speed: number, weight: n
   const allPts: Point[] = [];
 
   const strokes = raw.map((s): PlannedStroke => {
-    const passes = crayonPasses(s.pts, W * (1 + gauss(rng) * 0.08), m, rng);
-    for (const p of passes) allPts.push(...p.pts);
+    const width = W * (1 + gauss(rng) * 0.08);
+    const seed = Math.floor(rng() * 4294967296);
+    for (const p of s.pts) allPts.push(p);
     t += s.pause / speed;
     const duration = Math.max(70, (polylineLength(s.pts) / penSpeed) * (1 + gauss(rng) * 0.12));
-    const planned = {
-      delay: t,
-      duration,
-      colour: s.colour,
-      passes: passes.map((p) => ({ d: smoothPath(p.pts), width: round(p.width), opacity: p.opacity })),
-    };
+    const line = new Float32Array(s.pts.length * 2);
+    s.pts.forEach((p, i) => {
+      line[i * 2] = p.x;
+      line[i * 2 + 1] = p.y;
+    });
+    const planned = { line, width, seed, delay: t, duration, colour: s.colour };
     t += duration;
     return planned;
   });
 
   const b = bounds(allPts);
-  const pad = W * 1.5;
+  // room for the line's width, plus how far the passes can wander off the centre line (see crayonPasses)
+  const pad = W * 1.9 + 2.3 * m;
   const vb = frame ?? { x: b.minX - pad, y: b.minY - pad, w: b.maxX - b.minX + pad * 2, h: b.maxY - b.minY + pad * 2 };
   return {
     strokes,
@@ -86,36 +117,9 @@ export function finishPlan(raw: RawStroke[], m: number, speed: number, weight: n
     height: vb.h,
     totalDuration: t,
     lineWidth: W,
+    messiness: m,
+    pxPerUnit,
   };
-}
-
-/**
- * A crayon line isn't one clean stroke: the wax skips and smears. We draw a main
- * wobbly line plus two thinner ones riding its edges with their own wobble.
- */
-function crayonPasses(base: Point[], W: number, m: number, rng: Rng) {
-  const wobble = createNoise1D(rng);
-  const jitter = createNoise1D(rng);
-  const edgeA = createNoise1D(rng);
-  const edgeB = createNoise1D(rng);
-  const n = normals(base);
-
-  let s = 0;
-  const arc = base.map((p, i) => {
-    if (i > 0) s += Math.hypot(p.x - base[i - 1]!.x, p.y - base[i - 1]!.y);
-    return s;
-  });
-
-  const along = (offset: (i: number) => number): Point[] =>
-    base.map((p, i) => ({ x: p.x + n[i]!.x * offset(i), y: p.y + n[i]!.y * offset(i) }));
-
-  const centre = (i: number) => (wobble(arc[i]! / 45) * 1.8 + jitter(arc[i]! / 12) * 0.5) * m;
-
-  return [
-    { pts: along(centre), width: W, opacity: 0.88 },
-    { pts: along((i) => centre(i) + W * 0.24 + edgeA(arc[i]! / 20) * W * 0.15), width: W * 0.55, opacity: 0.55 },
-    { pts: along((i) => centre(i) - W * 0.26 + edgeB(arc[i]! / 18) * W * 0.15), width: W * 0.4, opacity: 0.5 },
-  ];
 }
 
 export function bounds(pts: Point[]) {

@@ -59,7 +59,7 @@ const SETS = {
 function MarginDoodle({ d, index }: { d: Doodle; index: number }) {
   const ref = useRef<HTMLSpanElement>(null);
   // planned only once it's close, drawn once it's in view, then it's just a still picture
-  const near = useInView(ref, { rootMargin: '300px 0px' });
+  const near = useInView(ref, { rootMargin: '300px 0px', background: true });
   const seen = useInView(ref);
   const style = { '--top': `${d.top}%`, '--size': `${d.size}px`, '--tilt': `${d.tilt}deg` } as CSSProperties;
 

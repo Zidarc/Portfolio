@@ -172,12 +172,15 @@ const css = ([r, g, b]: RGB, k = 1) => `rgb(${clamp(r * k)} ${clamp(g * k)} ${cl
  * Chunky squares coloured in with a crayon: each square is a touch uneven, has a slightly darker
  * rim where the wax piled up, and a few pale streaks where the paper shows through.
  * `block` > 1 merges squares (the pixelate layer).
+ *
+ * Returns a painter that does one band of rows per call (false once the picture is finished), so the
+ * work can be spread over idle moments: all five layers at once was a ~300ms freeze on a slow phone.
  */
-export function paintLayer(canvas: HTMLCanvasElement, pixels: RGB[], block = 1) {
+export function layerPainter(canvas: HTMLCanvasElement, pixels: RGB[], block = 1): () => boolean {
   canvas.width = GRID_W * CELL;
   canvas.height = GRID_H * CELL;
   const ctx = canvas.getContext('2d');
-  if (!ctx) return;
+  if (!ctx) return () => false;
   ctx.fillStyle = '#fdfcf7';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.lineJoin = 'round';
@@ -185,7 +188,9 @@ export function paintLayer(canvas: HTMLCanvasElement, pixels: RGB[], block = 1) 
 
   const rng = createRng(77);
   const size = CELL * block;
-  for (let by = 0; by < GRID_H; by += block)
+  let by = 0;
+  return () => {
+    if (by >= GRID_H) return false;
     for (let bx = 0; bx < GRID_W; bx += block) {
       const c = pixels[by * GRID_W + bx]!;
       const w = Math.min(block, GRID_W - bx) * CELL;
@@ -222,4 +227,7 @@ export function paintLayer(canvas: HTMLCanvasElement, pixels: RGB[], block = 1) 
         ctx.stroke();
       }
     }
+    by += block;
+    return by < GRID_H;
+  };
 }

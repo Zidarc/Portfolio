@@ -19,7 +19,7 @@ interface ProjectCardProps {
 /** One crayon box per project: a themed scene on top, the write-up underneath. */
 export function ProjectCard({ project, forceActive = false }: ProjectCardProps) {
   const ref = useRef<HTMLElement>(null);
-  const nearby = useInView(ref, { rootMargin: '400px 0px' });
+  const nearby = useInView(ref, { rootMargin: '400px 0px', background: true });
   const warm = useWarm(project.id);
   const centred = useInView(ref, { once: false, rootMargin: '-35% 0px -35% 0px' });
   const touch = useMediaQuery('(hover: none)');

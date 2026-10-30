@@ -15,6 +15,27 @@
   width: min(var(--max-width), 100%);
   margin: 0 auto;
   padding: clamp(4rem, 10vw, 7rem) var(--gutter);
+  /* far-off sections aren't laid out or painted until they come close. The clip margin keeps the doodles
+     that sit out in the page margin from being cut off. The sizes below are only first guesses (they
+     size the scrollbar); once a section has been on screen its real height is remembered. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 1000px;
+  overflow-clip-margin: 160px;
+}
+
+#about { contain-intrinsic-size: auto 720px; }
+#roles { contain-intrinsic-size: auto 1340px; }
+#projects { contain-intrinsic-size: auto 4960px; }
+#draw { contain-intrinsic-size: auto 580px; }
+#contact { contain-intrinsic-size: auto 760px; }
+
+@media (max-width: 600px) {
+  #about { contain-intrinsic-size: auto 1030px; }
+  #roles { contain-intrinsic-size: auto 2170px; }
+  #skills { contain-intrinsic-size: auto 1650px; }
+  #projects { contain-intrinsic-size: auto 9330px; }
+  #draw { contain-intrinsic-size: auto 730px; }
+  #contact { contain-intrinsic-size: auto 960px; }
 }
 
 .section p {

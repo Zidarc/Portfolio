@@ -4,6 +4,7 @@ import { CrayonText } from '../crayon/CrayonText.tsx';
 import { usePrefersReducedMotion } from '../crayon/usePrefersReducedMotion.ts';
 import { GITHUB_URL, RESUME_URL } from '../data/links.ts';
 import { hunaLine, useHunaMood } from '../hooks/useHunaMood.ts';
+import { useMediaQuery } from '../hooks/useMediaQuery.ts';
 import { startWarmup } from '../projects/warmup.ts';
 import './Hero.css';
 
@@ -47,6 +48,7 @@ export function Hero() {
   const [skipped, setSkipped] = useState(introSeen);
   const [photoOk, setPhotoOk] = useState(true);
   const huna = useHunaMood();
+  const narrow = useMediaQuery('(max-width: 600px)');
 
   const instant = skipped || reducedMotion;
   const shown = instant ? DONE : phase;
@@ -76,6 +78,8 @@ export function Hero() {
             <CrayonText
               {...common}
               text={'Hello,\nI am Ali Hussain'}
+              // the name fills the column: about 0.3px per unit on a phone, 0.5 on a laptop (measured)
+              pxPerUnit={narrow ? 0.3 : 0.5}
               color="var(--crayon-red)"
               tempo={1.2}
               delay={400}

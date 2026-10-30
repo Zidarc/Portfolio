@@ -51,12 +51,13 @@ export function planShape(name: ShapeName, w: number, h: number, opts: ShapeOpti
   const m = opts.messiness;
   const rng = createRng(opts.seed);
   const raw = SHAPES[name](w, h, rng, m).map((pts, i) => ({
-    pts: handDrawn(pts, m, rng),
+    // units are px; a long, nearly straight edge only needs a point every 8px to carry its wobble
+    pts: handDrawn(pts, m, rng, 8),
     pause: i === 0 ? 0 : range(rng, 40, 110),
   }));
   // room around the element for overshoot and the line's own width
   const pad = opts.weight * 100 * 2 + 10;
-  return finishPlan(raw, m, opts.speed, opts.weight, rng, { x: -pad, y: -pad, w: w + pad * 2, h: h + pad * 2 });
+  return finishPlan(raw, m, opts.speed, opts.weight, rng, { x: -pad, y: -pad, w: w + pad * 2, h: h + pad * 2 }, 1);
 }
 
 /** Padding (px) planShape leaves around the element; the overlay is offset by this much. */

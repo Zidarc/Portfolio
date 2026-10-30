@@ -68,6 +68,32 @@ const WIRES = ROWS.map((_, r) => {
   return d;
 });
 
+/*
+ * The 26 bulbs are merged into a handful of shapes (one path per part and colour) and the letters
+ * into one <text> per row: six copies of the room as separate elements were ~1,400 nodes to lay out.
+ */
+const n2 = (v: number) => v.toFixed(2);
+const ellipse = (cx: number, cy: number, rx: number, ry: number) =>
+  `M ${n2(cx - rx)} ${n2(cy)} a ${rx} ${ry} 0 1 0 ${2 * rx} 0 a ${rx} ${ry} 0 1 0 ${-2 * rx} 0 Z`;
+const byColour = (shape: (b: Bulb) => string) =>
+  COLORS.map((color) => ({ color, d: BULBS.filter((b) => b.color === color).map(shape).join(' ') })).filter((g) => g.d);
+
+const SOCKETS = BULBS.map((b) => `M ${n2(b.x - 0.6)} ${n2(b.wireY - 0.2)} h 1.2 v 1.5 h -1.2 Z`).join(' ');
+const GLASS_BACK = BULBS.map((b) => ellipse(b.x, b.gy, 1.05, 1.6)).join(' ');
+const GLASS = byColour((b) => ellipse(b.x, b.gy, 1.05, 1.6));
+const HALOS = byColour((b) => ellipse(b.x, b.gy, 3.6, 3.6));
+const PANEL_SEAMS = Array.from({ length: 17 }, (_, k) => `M ${k * 10 - 0.25} 64 h 0.5 v 36 h -0.5 Z`).join(' ');
+/** per-glyph x/y/rotate lists; each x starts its own chunk, so text-anchor still centres every letter */
+const LETTER_ROWS = ROWS.map((row) => {
+  const bulbs = BULBS.filter((b) => row.includes(b.ch));
+  return {
+    text: row,
+    x: bulbs.map((b) => n2(b.lx)).join(' '),
+    y: bulbs.map((b) => n2(b.ly)).join(' '),
+    rotate: bulbs.map((b) => b.rot.toFixed(1)).join(' '),
+  };
+});
+
 /** Vines grouped by the corner they creep in from; `origin` is that root, as % of the window. */
 export const VINE_GROUPS = [
   {
@@ -204,25 +230,16 @@ export function TitleTubes() {
 /** Vines creeping in from the edges of the upside down (one corner group, or all of them). */
 export function Vines({ group }: { group?: number }) {
   const groups = group === undefined ? VINE_GROUPS : VINE_GROUPS.slice(group, group + 1);
+  // each stroke layer is one path for all the vines; where two meet in a corner they now blend into one
+  const vines = groups.flatMap((g) => g.vines).join(' ');
+  const tendrils = groups.flatMap((g) => g.tendrils).join(' ');
   return (
     <g fill="none" strokeLinecap="round">
-      {groups.map((g, gi) => (
-        <g key={gi}>
-          {g.vines.map((d, k) => (
-            <g key={k}>
-              <path d={d} stroke="#110a0d" strokeWidth="2.9" />
-              <path d={d} stroke="#3b232b" strokeWidth="1.7" />
-              <path d={d} stroke="#7a515b" strokeWidth="0.4" />
-            </g>
-          ))}
-          {g.tendrils.map((d, k) => (
-            <g key={`t${k}`}>
-              <path d={d} stroke="#140c10" strokeWidth="0.95" />
-              <path d={d} stroke="#6a444d" strokeWidth="0.25" />
-            </g>
-          ))}
-        </g>
-      ))}
+      <path d={vines} stroke="#110a0d" strokeWidth="2.9" />
+      <path d={vines} stroke="#3b232b" strokeWidth="1.7" />
+      <path d={vines} stroke="#7a515b" strokeWidth="0.4" />
+      <path d={tendrils} stroke="#140c10" strokeWidth="0.95" />
+      <path d={tendrils} stroke="#6a444d" strokeWidth="0.25" />
     </g>
   );
 }
@@ -261,11 +278,7 @@ export function Room({ ids, world, depth, live }: RoomProps) {
         </g>
       )}
       <rect y="64" width="160" height="36" fill={up ? '#1c252e' : '#3a2516'} />
-      <g fill={up ? '#111820' : '#24160c'}>
-        {Array.from({ length: 17 }, (_, k) => (
-          <rect key={k} x={k * 10 - 0.25} y="64" width="0.5" height="36" />
-        ))}
-      </g>
+      <path d={PANEL_SEAMS} fill={up ? '#111820' : '#24160c'} />
       <rect y="61.6" width="160" height="2.6" fill={up ? '#29333d' : '#5a3b22'} />
       {!up && <rect y="61.6" width="160" height="0.45" fill="#7d5634" />}
 
@@ -275,23 +288,32 @@ export function Room({ ids, world, depth, live }: RoomProps) {
           <path key={k} d={d} />
         ))}
       </g>
-      {BULBS.map((b) => (
-        <g key={b.ch}>
-          {!live && !up && <circle cx={b.x} cy={b.gy} r="3.6" fill={b.color} opacity="0.3" />}
-          <rect x={b.x - 0.6} y={b.wireY - 0.2} width="1.2" height="1.5" rx="0.2" fill="#1c2a1b" />
-          <ellipse cx={b.x} cy={b.gy} rx="1.05" ry="1.6" fill="#1a1512" />
-          <ellipse cx={b.x} cy={b.gy} rx="1.05" ry="1.6" fill={b.color} opacity={glass} />
-          <text
-            className={up ? 'st-letter st-letter--up' : 'st-letter'}
-            x={b.lx}
-            y={b.ly}
-            fontSize="10"
-            textAnchor="middle"
-            transform={`rotate(${b.rot.toFixed(1)} ${b.lx.toFixed(2)} ${(b.ly - 3.5).toFixed(2)})`}
-          >
-            {b.ch}
-          </text>
+      {!live && !up && (
+        <g fillOpacity="0.3">
+          {HALOS.map((g) => (
+            <path key={g.color} d={g.d} fill={g.color} />
+          ))}
         </g>
+      )}
+      <path d={SOCKETS} fill="#1c2a1b" />
+      <path d={GLASS_BACK} fill="#1a1512" />
+      <g fillOpacity={glass}>
+        {GLASS.map((g) => (
+          <path key={g.color} d={g.d} fill={g.color} />
+        ))}
+      </g>
+      {LETTER_ROWS.map((r) => (
+        <text
+          key={r.text}
+          className={up ? 'st-letter st-letter--up' : 'st-letter'}
+          x={r.x}
+          y={r.y}
+          rotate={r.rotate}
+          fontSize="10"
+          textAnchor="middle"
+        >
+          {r.text}
+        </text>
       ))}
 
       {/* ---------- the picture on the wall: this room, again ---------- */}

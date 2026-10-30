@@ -13,6 +13,8 @@ export interface CrayonTextProps extends CrayonCommonProps, Partial<Omit<Handwri
    * so words with descenders or different lengths still match each other.
    */
   capHeight?: number;
+  /** Rough on-screen px per unit (a capital is 100) for text sized by its container; lets small text be lighter. */
+  pxPerUnit?: number;
 }
 
 /**
@@ -31,6 +33,7 @@ export function CrayonText({
   wordSpacing,
   tempo = 1,
   capHeight,
+  pxPerUnit,
   style,
   ...common
 }: CrayonTextProps) {
@@ -47,8 +50,10 @@ export function CrayonText({
       lineHeight,
       letterSpacing,
       wordSpacing,
+      pxPerUnit: capHeight ? capHeight / 100 : pxPerUnit,
+      exactSize: !!capHeight,
     });
-  }, [text, seed, messiness, speed, weight, tempo, align, lineHeight, letterSpacing, wordSpacing]);
+  }, [text, seed, messiness, speed, weight, tempo, align, lineHeight, letterSpacing, wordSpacing, capHeight, pxPerUnit]);
 
   // viewBox units are 1/100 of a capital letter
   const sized = capHeight ? { width: `${(plan.width * capHeight) / 100}px`, height: 'auto', ...style } : style;

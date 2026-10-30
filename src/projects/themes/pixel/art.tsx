@@ -30,13 +30,43 @@ export function sprite(rows: string[], palette: Record<string, string>, x0 = 0, 
   return out;
 }
 
-export const Rects = ({ rects }: { rects: Rect[] }) => (
-  <>
-    {rects.map((r, i) => (
-      <rect key={i} x={r.x} y={r.y} width={r.w} height={r.h} fill={r.c} />
-    ))}
-  </>
-);
+const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+
+/**
+ * Rects → one path per colour where that keeps the stacking: a rect joins an earlier path of its colour
+ * unless something painted after that path overlaps it. The town was ~670 separate elements to lay out.
+ */
+function merge(rects: Rect[]): { c: string; d: string }[] {
+  const groups: { c: string; rects: Rect[] }[] = [];
+  for (const r of rects) {
+    let target: (typeof groups)[number] | undefined;
+    for (let k = groups.length - 1; k >= 0; k--) {
+      const g = groups[k]!;
+      if (g.c === r.c) {
+        target = g;
+        break;
+      }
+      if (g.rects.some((o) => overlaps(o, r))) break;
+    }
+    if (target) target.rects.push(r);
+    else groups.push({ c: r.c, rects: [r] });
+  }
+  return groups.map((g) => ({ c: g.c, d: g.rects.map((r) => `M${r.x} ${r.y}h${r.w}v${r.h}h${-r.w}z`).join('') }));
+}
+
+const merged = new WeakMap<Rect[], { c: string; d: string }[]>();
+
+export function Rects({ rects }: { rects: Rect[] }) {
+  let paths = merged.get(rects);
+  if (!paths) merged.set(rects, (paths = merge(rects)));
+  return (
+    <>
+      {paths.map((p, i) => (
+        <path key={i} d={p.d} fill={p.c} />
+      ))}
+    </>
+  );
+}
 
 /* ---------- a 3 x 5 arcade font ---------- */
 

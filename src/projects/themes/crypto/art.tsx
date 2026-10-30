@@ -182,8 +182,7 @@ export function Block({ n, color, ids }: { n: number; color: string; ids: Ids })
   return (
     <svg viewBox="-11 0 37 30" focusable="false" style={{ color }}>
       <g filter={`url(#${ids.rough})`}>
-        <path d={a.linkA} className="cr-link" />
-        <path d={a.linkB} className="cr-link" />
+        <path d={a.linkA + a.linkB} className="cr-link" />
         <path d={a.side} className="cr-block-side" />
         <path d={a.top} className="cr-block-top" />
         <path d={a.front} className="cr-block-front" />
@@ -400,41 +399,41 @@ const BACKDROP = (() => {
   };
 })();
 
+/** The backdrop's still stars and dots, each kind joined into one path (they don't overlap). */
+const sparkle = (x: number, y: number, r: number, k: number) =>
+  `M${x} ${y - r}L${x + k} ${y - k}L${x + r} ${y}L${x + k} ${y + k}` +
+  `L${x} ${y + r}L${x - k} ${y + k}L${x - r} ${y}L${x - k} ${y - k}Z`;
+const dot = (x: number, y: number, r: number) => `M${x - r} ${y}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0Z`;
+const STILL_STARS = STARS.slice(6)
+  .map((s) => (s.big ? sparkle(s.x, s.y, 4, 1.1) : sparkle(s.x, s.y, 3, 0.8)))
+  .join('');
+const DOTS = [
+  [40, 30],
+  [150, 24],
+  [228, 42],
+  [302, 92],
+  [168, 40],
+  [80, 42],
+  [138, 120],
+  [30, 140],
+]
+  .map(([x, y]) => dot(x!, y!, 0.9))
+  .join('');
+
 export function Backdrop({ ids }: { ids: Ids }) {
   const b = BACKDROP;
   return (
     <svg className="cr-backdrop" viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" focusable="false">
       <rect width="320" height="200" fill={`url(#${ids.sky})`} />
       <g filter={`url(#${ids.rough})`}>
-        {STARS.map((s, i) =>
-          i < 6 ? null : (
-            <path
-              key={i}
-              transform={`translate(${s.x} ${s.y})`}
-              d={s.big ? 'M0 -4L1.1 -1.1L4 0L1.1 1.1L0 4L-1.1 1.1L-4 0L-1.1 -1.1Z' : 'M0 -3L.8 -.8L3 0L.8 .8L0 3L-.8 .8L-3 0L-.8 -.8Z'}
-              className="cr-star"
-            />
-          ),
-        )}
-        {[
-          [40, 30],
-          [150, 24],
-          [228, 42],
-          [302, 92],
-          [168, 40],
-          [80, 42],
-          [138, 120],
-          [30, 140],
-        ].map(([x, y], i) => (
-          <circle key={i} cx={x} cy={y} r="0.9" className="cr-dot" />
-        ))}
+        <path d={STILL_STARS} className="cr-star" />
+        <path d={DOTS} className="cr-dot" />
 
         <path d={b.moon} className="cr-moon" />
         <path d={b.moonShade} className="cr-moon-shade" />
         <path d={b.craters} className="cr-moon-crater" />
         <path d="M280 37q2 1.6 4.5 0" className="cr-moon-smile" />
-        <circle cx="279.5" cy="33" r="0.9" className="cr-moon-eye" />
-        <circle cx="286" cy="32.6" r="0.9" className="cr-moon-eye" />
+        <path d={dot(279.5, 33, 0.9) + dot(286, 32.6, 0.9)} className="cr-moon-eye" />
 
         <path d={b.motion} className="cr-motion" />
         <path d={b.sparkles} className="cr-motion" />

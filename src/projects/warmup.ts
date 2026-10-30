@@ -23,6 +23,12 @@ async function warm() {
     await nextIdle();
     await load().catch(() => {}); // a failed chunk just loads again when its box scrolls in
   }
+  // the fonts those scenes brought with them: laying out text whose web font hadn't loaded yet was the
+  // biggest part of the freeze when Projects scrolled in (not awaited, so a slow network holds nothing up)
+  await nextIdle();
+  if ('fonts' in document) {
+    for (const font of document.fonts) if (font.status === 'unloaded') font.load().catch(() => {});
+  }
   // then build the boxes' scenes, top to bottom, one per idle slot
   for (let id = queue.shift(); id !== undefined; id = queue.shift()) {
     await nextIdle();

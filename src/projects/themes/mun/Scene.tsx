@@ -81,13 +81,13 @@ function Shape({ d, fill, color, width }: { d: string; fill: string; color?: str
 const ROOM = {
   wallLine: wob([[-2, FLOOR], [322, FLOOR]], 0.6),
   rail: wob([[-2, 84], [322, 84]], 0.5),
-  planks: [108, 121, 137, 156, 178].map((y, i) => wob([[-2, y + (i % 2)], [322, y - (i % 2)]], 0.7)),
+  planks: [108, 121, 137, 156, 178].map((y, i) => wob([[-2, y + (i % 2)], [322, y - (i % 2)]], 0.7)).join(''),
   seams: Array.from({ length: 14 }, (_, i) => {
     const row = i % 5;
     const ys = [98, 108, 121, 137, 156, 178, 200];
     const x = 14 + ((i * 83) % 300);
     return wob([[x, ys[row]! + 1], [x - 1.5, ys[row + 1]! - 1]], 0.3);
-  }),
+  }).join(''),
   banner: wob(
     [
       [100, 6],
@@ -111,8 +111,13 @@ const ROOM = {
 
 const POLES = [12, 32, 52, 250, 270, 290];
 const POLE_TOP = 28;
-const poleLines = POLES.map((x) => wob([[x, POLE_TOP], [x + 0.4, FLOOR + 2]], 0.25));
-const poleFeet = POLES.map((x) => wob([[x - 5, FLOOR + 2.5], [x + 5, FLOOR + 2]], 0.3));
+// repeated pieces that share a style are one path each (they don't overlap, so they look the same):
+// separate elements were most of what the scene cost to lay out
+const poleLines = POLES.map((x) => wob([[x, POLE_TOP], [x + 0.4, FLOOR + 2]], 0.25)).join('');
+const poleFeet = POLES.map((x) => wob([[x - 5, FLOOR + 2.5], [x + 5, FLOOR + 2]], 0.3)).join('');
+/** A circle as path data, so several can share one path. */
+const dot = (cx: number, cy: number, r: number) => `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0Z`;
+const poleKnobs = POLES.map((x) => dot(x + 0.1, POLE_TOP - 1, 1.7)).join('');
 
 /* made-up flags, nothing real: star, sunset split, sun, cloud, zigzag, polka dots */
 const FLAG_W = 17;
@@ -183,7 +188,7 @@ const DAIS = {
     0.4,
     true,
   ),
-  folds: [136, 157, 186, 207].map((x) => wob([[x, 66], [x + 0.5, 97]], 0.5)),
+  folds: [136, 157, 186, 207].map((x) => wob([[x, 66], [x + 0.5, 97]], 0.5)).join(''),
   block: box(204, 56.6, 220, 59.8, 0.2),
 };
 
@@ -260,8 +265,7 @@ function PersonArt({ p, bottom, fill }: { p: Person; bottom: number; fill: Fill 
         />
       ) : (
         <>
-          <circle cx={x - 2.1} cy={hy - 0.2} r={0.75} fill={C.ink} />
-          <circle cx={x + 2.1} cy={hy - 0.2} r={0.75} fill={C.ink} />
+          <path d={dot(x - 2.1, hy - 0.2, 0.75) + dot(x + 2.1, hy - 0.2, 0.75)} fill={C.ink} />
           <path d={`M${x - 2.2} ${hy + 2.2}q2.2 2 4.4 0`} className="mun-face" />
         </>
       )}
@@ -429,7 +433,7 @@ const STAMP = {
   outer: box(160, 151.5, 300, 188.5, 0.35),
   inner: box(164, 155.5, 296, 184.5, 0.3),
   check: 'M272 170l4.5 5 9 -11',
-  specks: Array.from({ length: 70 }, () => [150 + pen() * 160, 144 + pen() * 52, 0.35 + pen() * 1.1] as const),
+  specks: Array.from({ length: 70 }, () => dot(150 + pen() * 160, 144 + pen() * 52, 0.35 + pen() * 1.1)).join(''),
 };
 
 const COMMITTEES = ['UNSC', 'DISEC', 'SOCHUM', 'UN Women', 'PNA'];
@@ -460,12 +464,8 @@ const Room = memo(function Room({ uid }: { uid: string }) {
       <rect y={FLOOR} width={W} height={H - FLOOR} fill="#dcb683" />
       <rect y={FLOOR} width={W} height={H - FLOOR} fill={fill('woodLight')} opacity={0.55} />
       <Ink d={ROOM.rail} width={0.8} halo={false} />
-      {ROOM.planks.map((d, i) => (
-        <path key={i} d={d} className="mun-plank" />
-      ))}
-      {ROOM.seams.map((d, i) => (
-        <path key={i} d={d} className="mun-plank" />
-      ))}
+      <path d={ROOM.planks} className="mun-plank" />
+      <path d={ROOM.seams} className="mun-plank" />
       <Ink d={ROOM.wallLine} width={1.2} />
 
       {/* banner */}
@@ -479,22 +479,16 @@ const Room = memo(function Room({ uid }: { uid: string }) {
       </text>
 
       {/* flag poles (the cloth flutters in its own pieces) */}
-      {POLES.map((x, i) => (
-        <g key={x}>
-          <Ink d={poleLines[i]!} color="#7a5332" width={1.3} halo={false} />
-          <Ink d={poleFeet[i]!} width={1.2} halo={false} />
-          <circle cx={x + 0.1} cy={POLE_TOP - 1} r={1.7} fill={C.yellow} stroke={C.orange} strokeWidth={0.5} />
-        </g>
-      ))}
+      <Ink d={poleLines} color="#7a5332" width={1.3} halo={false} />
+      <Ink d={poleFeet} width={1.2} halo={false} />
+      <path d={poleKnobs} fill={C.yellow} stroke={C.orange} strokeWidth={0.5} />
 
       {/* the chair: two people behind a long table */}
       {CHAIRS.map((p) => (
         <PersonArt key={p.x} p={p} bottom={62} fill={fill} />
       ))}
       <Shape d={DAIS.cloth} fill={fill('blue')} color={C.blue} />
-      {DAIS.folds.map((d, i) => (
-        <path key={i} d={d} className="mun-fold" />
-      ))}
+      <path d={DAIS.folds} className="mun-fold" />
       <Shape d={DAIS.top} fill={fill('wood')} />
       <Shape d={DAIS.block} fill={fill('wood')} width={0.8} />
 
@@ -792,9 +786,7 @@ export default function Scene({ active, visible, reducedMotion }: ThemeSceneProp
         <defs>
           <mask id={`${uid}-worn`} maskUnits="userSpaceOnUse" x={STAMP_BOX[0]} y={STAMP_BOX[1]} width={STAMP_BOX[2]} height={STAMP_BOX[3]}>
             <rect x={STAMP_BOX[0]} y={STAMP_BOX[1]} width={STAMP_BOX[2]} height={STAMP_BOX[3]} fill="#fff" />
-            {STAMP.specks.map(([x, y, r], i) => (
-              <circle key={i} cx={x} cy={y} r={r} fill="#000" />
-            ))}
+            <path d={STAMP.specks} fill="#000" />
           </mask>
         </defs>
         <g mask={`url(#${uid}-worn)`} className="mun-stamp-ink">

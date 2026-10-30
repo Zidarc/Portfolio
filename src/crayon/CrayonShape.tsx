@@ -37,7 +37,7 @@ export function CrayonShape({
   const drawnRef = useRef(false);
   // Planning a long outline is real work, and a page of boxes adds up on a slow phone, so a shape is only
   // planned once it comes near the screen. It's an overlay, so waiting never moves anything on the page.
-  const near = useInView(wrapRef, { rootMargin: '600px 0px' });
+  const near = useInView(wrapRef, { rootMargin: '600px 0px', background: true });
 
   useEffect(() => {
     const el = wrapRef.current;

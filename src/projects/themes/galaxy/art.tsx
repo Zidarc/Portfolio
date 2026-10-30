@@ -50,37 +50,36 @@ const SKY = (() => {
       );
     }),
     planetFill: scribble(cx - r - 6, cy - r - 4, cx + r + 6, cy + r + 4, 3, 10, rng),
-    craters: [
-      blob(cx - 14, cy - 15, 4.2, rng, 0.12, 8),
-      blob(cx + 13, cy - 5, 3, rng, 0.12, 8),
-      blob(cx - 4, cy + 8, 2.4, rng, 0.12, 8),
-    ],
+    craters:
+      blob(cx - 14, cy - 15, 4.2, rng, 0.12, 8) + blob(cx + 13, cy - 5, 3, rng, 0.12, 8) + blob(cx - 4, cy + 8, 2.4, rng, 0.12, 8),
     ringRot,
     ring: ellipse(cx, cy - 2, r * 1.75, r * 0.36, ringRot, rng, 0.02),
     ring2: ellipse(cx, cy - 2, r * 1.55, r * 0.27, ringRot, rng, 0.03),
 
     moon: blob(MOON.cx, MOON.cy, MOON.r, rng, 0.05, 10),
     moonFill: scribble(MOON.cx - 16, MOON.cy - 16, MOON.cx + 16, MOON.cy + 16, 2.6, -7, rng),
-    moonCraters: [
-      blob(MOON.cx - 4, MOON.cy - 3, 2.6, rng, 0.15, 7),
-      blob(MOON.cx + 4.5, MOON.cy + 3.5, 1.8, rng, 0.15, 7),
-    ],
+    moonCraters:
+      blob(MOON.cx - 4, MOON.cy - 3, 2.6, rng, 0.15, 7) + blob(MOON.cx + 4.5, MOON.cy + 3.5, 1.8, rng, 0.15, 7),
     moonlet: blob(MOON.cx - 22, MOON.cy - 15, 3.2, rng, 0.08, 8),
 
     graphStars: GRAPH_NODES.map((n) =>
       n.big ? star(n.x, n.y, 6, rng, 5, 0.45) : star(n.x, n.y, 3.6, rng, 4, 0.36, -90 + rng() * 20),
     ),
-    gccStars: GCC_NODES.map((n) => star(n.x, n.y, 2.6, rng, 4, 0.36, -90 + rng() * 25)),
+    gccStars: GCC_NODES.map((n) => star(n.x, n.y, 2.6, rng, 4, 0.36, -90 + rng() * 25)).join(''),
   };
 })();
 
+// shapes that share a style are joined into one path each (none of them overlap, so they look the same):
+// separate elements were most of what the scene cost to lay out
 const TWINKLE = BG_STARS.map((group, g) => {
   const rng = createRng(70 + g);
-  return group.map((s) =>
-    s.kind === 'plus'
-      ? star(s.x, s.y, s.r * 1.6, rng, 4, 0.3, -90 + rng() * 30)
-      : blob(s.x, s.y, s.r, rng, 0.15, 6),
-  );
+  return group
+    .map((s) =>
+      s.kind === 'plus'
+        ? star(s.x, s.y, s.r * 1.6, rng, 4, 0.3, -90 + rng() * 30)
+        : blob(s.x, s.y, s.r, rng, 0.15, 6),
+    )
+    .join('');
 });
 
 const HERO = HERO_STARS.map((_, i) => star(10, 10, 8.4, createRng(90 + i), 5, 0.47));
@@ -125,9 +124,7 @@ export function Sky({ uid }: { uid: string }) {
       <g filter={`url(#${uid}-wax-thin)`}>
         <path d={SKY.moon} className="gx-moon-base" />
         <path d={SKY.moonFill} className="gx-moon-fill" clipPath={`url(#${uid}-moon)`} />
-        {SKY.moonCraters.map((d, i) => (
-          <path key={i} d={d} className="gx-crater" />
-        ))}
+        <path d={SKY.moonCraters} className="gx-crater" />
         <path d={SKY.moon} className="gx-outline" />
         <path d={SKY.moonlet} className="gx-moonlet" />
       </g>
@@ -139,13 +136,11 @@ export function Sky({ uid }: { uid: string }) {
         <path d={SKY.planet} className="gx-planet-base" />
         <g clipPath={`url(#${uid}-planet)`}>
           <path d={SKY.planetFill} className="gx-planet-fill" />
-          {SKY.planetBands.map((d, i) => (
-            <path key={i} d={d} className={`gx-band gx-band--${i % 3}`} />
+          {[0, 1, 2].map((k) => (
+            <path key={k} d={SKY.planetBands.filter((_, i) => i % 3 === k).join('')} className={`gx-band gx-band--${k}`} />
           ))}
         </g>
-        {SKY.craters.map((d, i) => (
-          <path key={i} d={d} className="gx-crater gx-crater--planet" />
-        ))}
+        <path d={SKY.craters} className="gx-crater gx-crater--planet" />
         <path d={SKY.planet} className="gx-outline" />
         <g clipPath={`url(#${uid}-front)`}>
           <path d={SKY.ring} className="gx-ring" />
@@ -155,12 +150,9 @@ export function Sky({ uid }: { uid: string }) {
 
       {/* constellation stars (their lines are drawn by Scene) */}
       <g filter={`url(#${uid}-wax-thin)`}>
-        {SKY.graphStars.map((d, i) => (
-          <path key={i} d={d} className={GRAPH_NODES[i]?.big ? 'gx-node gx-node--merge' : 'gx-node'} />
-        ))}
-        {SKY.gccStars.map((d, i) => (
-          <path key={i} d={d} className="gx-node gx-node--gcc" />
-        ))}
+        <path d={SKY.graphStars.filter((_, i) => !GRAPH_NODES[i]?.big).join('')} className="gx-node" />
+        <path d={SKY.graphStars.filter((_, i) => GRAPH_NODES[i]?.big).join('')} className="gx-node gx-node--merge" />
+        <path d={SKY.gccStars} className="gx-node gx-node--gcc" />
       </g>
     </svg>
   );
@@ -175,9 +167,7 @@ export function TwinkleLayer({ group }: { group: number }) {
       preserveAspectRatio="xMidYMid slice"
       focusable="false"
     >
-      {TWINKLE[group]?.map((d, i) => (
-        <path key={i} d={d} className="gx-bgstar" />
-      ))}
+      <path d={TWINKLE[group]} className="gx-bgstar" />
     </svg>
   );
 }
@@ -209,7 +199,12 @@ const SPIRAL = (() => {
     const rr = 2 + t * 4.6 + (rng() - 0.5) * 3;
     return blob(Math.cos(a) * rr, Math.sin(a) * rr, 0.5 + rng() * 0.5, rng, 0.2, 6);
   });
-  return { arms: [arm(0), arm(Math.PI)], inner: [arm(0.5), arm(Math.PI + 0.5)], core: blob(0, 0, 3.3, rng, 0.1, 8), dots };
+  return {
+    arms: arm(0) + arm(Math.PI),
+    inner: arm(0.5) + arm(Math.PI + 0.5),
+    core: blob(0, 0, 3.3, rng, 0.1, 8),
+    dots: dots.join(''),
+  };
 })();
 
 export function Spiral({ uid }: { uid: string }) {
@@ -219,15 +214,9 @@ export function Spiral({ uid }: { uid: string }) {
         <CrayonFilter id={`${uid}-wax-gal`} seed={21} pxPerUnit={1.6} strokePx={4} />
       </defs>
       <g filter={`url(#${uid}-wax-gal)`}>
-        {SPIRAL.arms.map((d, i) => (
-          <path key={i} d={d} className="gx-arm" />
-        ))}
-        {SPIRAL.inner.map((d, i) => (
-          <path key={i} d={d} className="gx-arm gx-arm--inner" />
-        ))}
-        {SPIRAL.dots.map((d, i) => (
-          <path key={i} d={d} className="gx-arm-dot" />
-        ))}
+        <path d={SPIRAL.arms} className="gx-arm" />
+        <path d={SPIRAL.inner} className="gx-arm gx-arm--inner" />
+        <path d={SPIRAL.dots} className="gx-arm-dot" />
         <path d={SPIRAL.core} className="gx-core" />
       </g>
     </svg>
