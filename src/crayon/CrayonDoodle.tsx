@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { CrayonDrawing, type CrayonCommonProps } from './CrayonDrawing.tsx';
 import { planDoodle, type DoodleName } from './doodles.ts';
 import { randomSeed } from './random.ts';
@@ -37,7 +37,16 @@ export interface CrayonDoodleProps extends CrayonCommonProps, Partial<CrayonStyl
 }
 
 /** A kid's crayon drawing, drawn stroke by stroke. */
-export function CrayonDoodle({ name, seed: fixedSeed, messiness, speed, weight, tempo = 1, ...common }: CrayonDoodleProps) {
+// memo: a parent re-rendering (say, a box waking up) shouldn't re-render a finished drawing
+export const CrayonDoodle = memo(function CrayonDoodle({
+  name,
+  seed: fixedSeed,
+  messiness,
+  speed,
+  weight,
+  tempo = 1,
+  ...common
+}: CrayonDoodleProps) {
   const [mountSeed] = useState(randomSeed);
   const seed = fixedSeed ?? mountSeed;
 
@@ -47,4 +56,4 @@ export function CrayonDoodle({ name, seed: fixedSeed, messiness, speed, weight, 
   }, [name, seed, messiness, speed, weight, tempo]);
 
   return <CrayonDrawing plan={plan} seed={seed} label={LABELS[name]} {...common} />;
-}
+});

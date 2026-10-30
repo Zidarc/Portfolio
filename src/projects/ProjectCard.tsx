@@ -1,6 +1,7 @@
-import { Suspense, useRef, useState, type CSSProperties, type FocusEvent } from 'react';
+import { Suspense, useEffect, useRef, useState, type CSSProperties, type FocusEvent, type RefObject } from 'react';
 import { CrayonShape } from '../crayon/CrayonShape.tsx';
 import { CrayonText } from '../crayon/CrayonText.tsx';
+import { whenScrollSettles } from '../crayon/scrollIdle.ts';
 import { usePrefersReducedMotion } from '../crayon/usePrefersReducedMotion.ts';
 import type { Project } from '../data/projects.ts';
 import { useInView } from '../hooks/useInView.ts';
@@ -16,17 +17,34 @@ interface ProjectCardProps {
   forceActive?: boolean;
 }
 
+const NO_ELEMENT: RefObject<HTMLElement | null> = { current: null };
+
 /** One crayon box per project: a themed scene on top, the write-up underneath. */
 export function ProjectCard({ project, forceActive = false }: ProjectCardProps) {
   const ref = useRef<HTMLElement>(null);
   const nearby = useInView(ref, { rootMargin: '400px 0px', background: true });
   const warm = useWarm(project.id);
-  const centred = useInView(ref, { once: false, rootMargin: '-35% 0px -35% 0px' });
   const touch = useMediaQuery('(hover: none)');
+  // only phones wake the centred box; with a mouse, watching it just re-rendered every card scrolling past
+  const centred = useInView(touch ? ref : NO_ELEMENT, { once: false, rootMargin: '-35% 0px -35% 0px' });
   const narrow = useMediaQuery('(max-width: 600px)');
   const reducedMotion = usePrefersReducedMotion();
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
+
+  // Wheel-scrolling with the mouse over the page "hovers" every box that slides under it, which woke each
+  // scene for a moment as it went past. So a box only wakes once the page is still and the mouse is on it.
+  const stopWaiting = useRef<() => void>(undefined);
+  useEffect(() => () => stopWaiting.current?.(), []);
+  const onPointerEnter = (e: { pointerType: string }) => {
+    if (e.pointerType !== 'mouse') return;
+    stopWaiting.current?.();
+    stopWaiting.current = whenScrollSettles(() => ref.current?.matches(':hover') && setHovered(true));
+  };
+  const onPointerLeave = () => {
+    stopWaiting.current?.();
+    setHovered(false);
+  };
 
   // Only the box you're looking at moves: the one under the mouse, or the centred one on a phone.
   // Everything else sits in a still frame, so scrolling never paints a scene.
@@ -46,8 +64,8 @@ export function ProjectCard({ project, forceActive = false }: ProjectCardProps) 
       className={`project-card ${active ? 'is-active' : ''}`}
       style={{ '--accent': accent } as CSSProperties}
       aria-labelledby={titleId}
-      onPointerEnter={(e) => e.pointerType === 'mouse' && setHovered(true)}
-      onPointerLeave={() => setHovered(false)}
+      onPointerEnter={onPointerEnter}
+      onPointerLeave={onPointerLeave}
       onFocus={() => setFocused(true)}
       onBlur={onBlur}
     >

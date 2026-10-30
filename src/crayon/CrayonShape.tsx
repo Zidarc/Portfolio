@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { useInView } from '../hooks/useInView.ts';
 import { CrayonDrawing, type CrayonCommonProps } from './CrayonDrawing.tsx';
 import { randomSeed } from './random.ts';
@@ -16,7 +16,8 @@ export interface CrayonShapeProps extends CrayonCommonProps, Partial<Omit<Crayon
  * Draws a crayon shape (box, line…) sized to its parent element.
  * The parent must be `position: relative`; the drawing overlays it and ignores the pointer.
  */
-export function CrayonShape({
+// memo: a parent re-rendering (say, a box waking up) shouldn't re-render a finished drawing
+export const CrayonShape = memo(function CrayonShape({
   shape,
   lineWidth = 3.5,
   seed: fixedSeed,
@@ -79,4 +80,4 @@ export function CrayonShape({
       )}
     </div>
   );
-}
+});

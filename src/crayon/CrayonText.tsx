@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { CrayonDrawing, type CrayonCommonProps } from './CrayonDrawing.tsx';
 import { planHandwriting, type HandwritingOptions } from './handwriting.ts';
 import { randomSeed } from './random.ts';
@@ -21,7 +21,8 @@ export interface CrayonTextProps extends CrayonCommonProps, Partial<Omit<Handwri
  * Writes `text` letter by letter, stroke by stroke, like a kid with a crayon. Use `\n` for line breaks.
  * Messiness, speed and weight are picked from STYLE_RANGES unless given.
  */
-export function CrayonText({
+// memo: a parent re-rendering (say, a box waking up) shouldn't re-render a finished drawing
+export const CrayonText = memo(function CrayonText({
   text,
   seed: fixedSeed,
   messiness,
@@ -59,4 +60,4 @@ export function CrayonText({
   const sized = capHeight ? { width: `${(plan.width * capHeight) / 100}px`, height: 'auto', ...style } : style;
 
   return <CrayonDrawing plan={plan} seed={seed} label={text.replace(/\n/g, ' ')} style={sized} {...common} />;
-}
+});
