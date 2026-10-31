@@ -48,7 +48,7 @@
   width: 100%;
   padding: 0.3rem 0.1rem;
   border: 0;
-  border-bottom: 2px solid rgba(58, 56, 54, 0.35);
+  border-bottom: 2px solid color-mix(in srgb, var(--ink) 35%, transparent);
   border-radius: 0;
   background: transparent;
   color: var(--ink);
@@ -65,8 +65,8 @@
     to bottom,
     transparent 0,
     transparent calc(2rem - 2px),
-    rgba(58, 110, 196, 0.28) calc(2rem - 2px),
-    rgba(58, 110, 196, 0.28) 2rem
+    color-mix(in srgb, var(--crayon-blue) 28%, transparent) calc(2rem - 2px),
+    color-mix(in srgb, var(--crayon-blue) 28%, transparent) 2rem
   );
   background-attachment: local;
 }

@@ -1,5 +1,5 @@
 import { memo, useEffect, useId, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
-import { crayonPasses, grainTile, type Stroke } from './brush.ts';
+import { crayonPasses, grainTile, shownColour, type Stroke } from './brush.ts';
 import { toolCursor } from './cursors.ts';
 import type { Scribbles } from './useScribbles.ts';
 
@@ -13,7 +13,7 @@ interface SurfaceProps {
 
 const StrokeView = memo(function StrokeView({ stroke }: { stroke: Stroke }) {
   return (
-    <g stroke={stroke.c}>
+    <g stroke={shownColour(stroke.c)}>
       {crayonPasses(stroke).map((pass, i) => (
         <path key={i} d={pass.d} strokeWidth={pass.width} strokeOpacity={pass.opacity} />
       ))}

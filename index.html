@@ -9,6 +9,16 @@
       content="Ali Hussain is a Computer Science student at FAST NUCES Karachi who builds backends and systems that don't fall over: live trading platforms, a real-time game, an MUN portal and more, all drawn in crayon."
     />
     <meta name="theme-color" content="#fbf7ee" />
+    <!-- paper or blackboard, decided before the first paint (no flash): the visitor's choice, else the system's -->
+    <script>
+      (function () {
+        var theme;
+        try { theme = localStorage.getItem('theme'); } catch (e) {}
+        if (theme !== 'dark' && theme !== 'light') theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.dataset.theme = theme;
+        if (theme === 'dark') document.querySelector('meta[name="theme-color"]').setAttribute('content', '#1f2b26');
+      })();
+    </script>
     <!-- the live address: also in public/robots.txt and public/sitemap.xml -->
     <link rel="canonical" href="https://ali-hussain-portfolio.netlify.app/" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -68,6 +78,9 @@
         background: #fbf7ee radial-gradient(ellipse at center, transparent 55%, rgba(180, 160, 120, 0.12) 100%);
         transition: opacity 0.4s ease;
       }
+      [data-theme='dark'] #loader {
+        background: #1f2b26 radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.3) 100%);
+      }
       #loader.is-done {
         opacity: 0;
         pointer-events: none;
@@ -94,6 +107,9 @@
         margin: 0;
         font: 1.35rem 'Patrick Hand', 'Comic Sans MS', cursive;
         color: #6b6660;
+      }
+      [data-theme='dark'] .loader__note {
+        color: #b4bbb2;
       }
       @keyframes loader-draw {
         to {
@@ -131,7 +147,10 @@
         var pad = loader.querySelector('svg');
         var note = loader.querySelector('p');
         var NS = 'http://www.w3.org/2000/svg';
-        var COLOURS = ['#d6453d', '#3a6fc4', '#3f9a4f', '#e8b931', '#de6a1e', '#7b52ab', '#3a3836'];
+        // crayons on paper, chalk on the blackboard (the same colours as styles/tokens.css)
+        var COLOURS = document.documentElement.dataset.theme === 'dark'
+          ? ['#f09a8f', '#94b9ef', '#9cd7a2', '#f1d47c', '#f2ad7b', '#c7aeee', '#e8e5da']
+          : ['#d6453d', '#3a6fc4', '#3f9a4f', '#e8b931', '#de6a1e', '#7b52ab', '#3a3836'];
         var NOTES = ['grabbing my crayons…', 'sharpening my crayons…', 'doodling while it loads…'];
         var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         var PI = Math.PI;

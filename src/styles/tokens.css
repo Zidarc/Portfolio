@@ -12,6 +12,9 @@
   /* deep enough for big crayon lettering to read on the paper (3:1) */
   --crayon-orange: #de6a1e;
   --crayon-purple: #7b52ab;
+  /* scribble-only crayons */
+  --crayon-pink: #e07aa6;
+  --crayon-brown: #8a5a32;
 
   --ink: var(--crayon-graphite);
   --ink-soft: #6b6660;
@@ -24,9 +27,50 @@
   --ink-yellow: #876b1c;
   --ink-orange: #a85820;
   --ink-purple: var(--crayon-purple);
+  /* what an accent is mixed with to darken it for small text */
+  --ink-shift: #000;
+
+  /* paper grain (fractal noise tinted warm) and the vignette toward the screen edges */
+  --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.38  0 0 0 0 0.26  0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --paper-vignette: rgba(180, 160, 120, 0.12);
 
   --font-hand: 'Patrick Hand', 'Comic Sans MS', 'Segoe Print', cursive;
 
   --gutter: clamp(16px, 4vw, 48px);
   --max-width: 1120px;
+}
+
+/*
+ * Night mode: the paper becomes a green-black blackboard and every crayon turns to chalk. The same
+ * drawings and animations, only the colours change. Set on <html> before the first paint by the script
+ * in index.html (the visitor's choice, else the system's dark setting) and by the navbar's moon button.
+ * Chalk is light, so the small-text shades are the chalk colours themselves (all at least 6.8:1 on the board).
+ */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --paper: #1f2b26;
+  --paper-shade: #18221e;
+
+  --crayon-graphite: #e8e5da;
+  --crayon-red: #f09a8f;
+  --crayon-blue: #94b9ef;
+  --crayon-green: #9cd7a2;
+  --crayon-yellow: #f1d47c;
+  --crayon-orange: #f2ad7b;
+  --crayon-purple: #c7aeee;
+  --crayon-pink: #f2acc8;
+  --crayon-brown: #d4ab86;
+
+  --ink-soft: #b4bbb2;
+  --ink-red: var(--crayon-red);
+  --ink-blue: var(--crayon-blue);
+  --ink-green: var(--crayon-green);
+  --ink-yellow: var(--crayon-yellow);
+  --ink-orange: var(--crayon-orange);
+  --ink-shift: #fff;
+
+  /* chalk dust instead of paper grain */
+  --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.92  0 0 0 0 0.94  0 0 0 0 0.9  0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --paper-vignette: rgba(0, 0, 0, 0.3);
 }

@@ -22,6 +22,13 @@ export const CRAYONS = [
   { name: 'graphite', value: '#3a3836' },
 ] as const;
 
+/**
+ * How to paint a stored colour: through its crayon's CSS variable, so scribbles turn to chalk on the
+ * blackboard (night mode) like everything else. Strokes keep the plain value, which the saved image uses.
+ */
+const BY_VALUE = new Map<string, string>(CRAYONS.map((c) => [c.value, `var(--crayon-${c.name}, ${c.value})`]));
+export const shownColour = (value: string) => BY_VALUE.get(value) ?? value;
+
 export const SIZES = [3, 6, 11, 18] as const;
 
 /** Caps keep a long session from filling up storage or slowing the page. */

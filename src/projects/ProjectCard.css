@@ -5,10 +5,16 @@
   gap: 1.1rem;
   height: 100%;
   padding: 1rem 1rem 1.4rem;
+  /* the project's colour, chalked up on the blackboard (both set by ProjectCard.tsx) */
+  --accent: var(--accent-day);
   --chip-colour: var(--accent);
   transition: transform 0.25s ease;
   /* its own layer: the hover lift slides a finished picture instead of repainting the box */
   will-change: transform;
+}
+
+:root[data-theme='dark'] .project-card {
+  --accent: var(--accent-night);
 }
 
 /* the textured outline gets a layer too, so a scene repainting inside it never re-renders the crayon */
@@ -70,7 +76,7 @@ li > .project-card.is-active {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   transform: rotate(8deg);
-  background: rgba(251, 247, 238, 0.85);
+  background: color-mix(in srgb, var(--paper) 85%, transparent);
 }
 
 /* ---------- write-up ---------- */
@@ -94,8 +100,8 @@ li > .project-card.is-active {
 }
 
 .project-card__tagline {
-  /* the accent, darkened enough to read as small text */
-  color: color-mix(in srgb, var(--accent) 78%, #000);
+  /* the accent, darkened (lightened on the blackboard) enough to read as small text */
+  color: color-mix(in srgb, var(--accent) 78%, var(--ink-shift));
   font-size: 1.15rem;
   line-height: 1.3;
 }

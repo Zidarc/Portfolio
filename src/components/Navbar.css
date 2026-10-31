@@ -6,7 +6,7 @@
 }
 
 .nav--scrolled {
-  background-color: rgba(251, 247, 238, 0.97);
+  background-color: color-mix(in srgb, var(--paper) 97%, transparent);
   backdrop-filter: blur(4px);
 }
 
@@ -58,6 +58,23 @@
 
 .nav__arrow.is-shown {
   opacity: 1;
+}
+
+.nav__tools {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.nav__theme {
+  padding: 0.4rem;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.nav__theme svg {
+  width: 30px;
 }
 
 .nav__toggle {

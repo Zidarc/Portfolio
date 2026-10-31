@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { CrayonDoodle } from '../crayon/CrayonDoodle.tsx';
 import { CrayonText } from '../crayon/CrayonText.tsx';
 import { useActiveSection } from '../hooks/useActiveSection.ts';
+import { chooseTheme, useTheme } from '../theme.ts';
 import './Navbar.css';
 
 const LINKS = [
@@ -25,6 +26,8 @@ export function Navbar({ sectionsReady = true }: { sectionsReady?: boolean }) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuOpenCount, setMenuOpenCount] = useState(0);
+  const theme = useTheme();
+  const night = theme === 'dark';
   const toggleRef = useRef<HTMLButtonElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
 
@@ -118,17 +121,35 @@ export function Navbar({ sectionsReady = true }: { sectionsReady?: boolean }) {
             </ul>
           </nav>
 
-          <button
-            ref={toggleRef}
-            type="button"
-            className="nav__toggle"
-            aria-expanded={menuOpen}
-            aria-controls="nav-sheet"
-            onClick={openMenu}
-          >
-            <span className="sr-only">Open menu</span>
-            <CrayonDoodle name="menu" instant decorative weight={0.15} color="var(--crayon-graphite)" />
-          </button>
+          <div className="nav__tools">
+            {/* paper by day, blackboard by night: a crayon moon switches to chalk, a chalk sun switches back */}
+            <button
+              type="button"
+              className="nav__theme"
+              title={night ? 'Back to paper' : 'Blackboard (dark mode)'}
+              onClick={() => chooseTheme(night ? 'light' : 'dark')}
+            >
+              <span className="sr-only">{night ? 'Switch to paper (light mode)' : 'Switch to blackboard (dark mode)'}</span>
+              <CrayonDoodle
+                key={theme}
+                name={night ? 'sun' : 'moon'}
+                instant
+                decorative
+                color={night ? 'var(--crayon-yellow)' : 'var(--crayon-purple)'}
+              />
+            </button>
+            <button
+              ref={toggleRef}
+              type="button"
+              className="nav__toggle"
+              aria-expanded={menuOpen}
+              aria-controls="nav-sheet"
+              onClick={openMenu}
+            >
+              <span className="sr-only">Open menu</span>
+              <CrayonDoodle name="menu" instant decorative weight={0.15} color="var(--crayon-graphite)" />
+            </button>
+          </div>
         </div>
 
         <div className="nav__underline" aria-hidden="true">

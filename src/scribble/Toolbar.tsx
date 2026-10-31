@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
-import { CRAYONS, SIZES } from './brush.ts';
+import { CRAYONS, shownColour, SIZES } from './brush.ts';
 import type { Scribbles } from './useScribbles.ts';
 
 /** The crayon box: colours, sizes, eraser (two kinds), undo, clear, plus whatever actions the page adds. */
@@ -18,7 +18,7 @@ export function Toolbar({ sb, children }: { sb: Scribbles; children?: ReactNode 
             aria-label={`${c.name} crayon`}
             title={`${c.name} crayon`}
             className="scribble-toolbar__crayon"
-            style={{ '--c': c.value } as CSSProperties}
+            style={{ '--c': shownColour(c.value) } as CSSProperties}
             onClick={() => sb.setColour(c.value)}
           />
         ))}
@@ -35,7 +35,7 @@ export function Toolbar({ sb, children }: { sb: Scribbles; children?: ReactNode 
             className="scribble-toolbar__size"
             onClick={() => sb.setSize(s)}
           >
-            <span style={{ width: s + 2, height: s + 2, background: erasing ? '#f4a6c0' : sb.colour }} />
+            <span style={{ width: s + 2, height: s + 2, background: erasing ? '#f4a6c0' : shownColour(sb.colour) }} />
           </button>
         ))}
       </div>

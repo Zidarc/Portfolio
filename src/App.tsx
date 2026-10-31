@@ -1,6 +1,5 @@
 import { lazy, startTransition, Suspense, useEffect, useState } from 'react';
 import { CrayonCursor } from './components/CrayonCursor.tsx';
-import { Fish } from './components/Fish.tsx';
 import { Footer } from './components/Footer.tsx';
 import { Navbar } from './components/Navbar.tsx';
 import { SoundToggle } from './components/SoundToggle.tsx';
@@ -80,7 +79,6 @@ function Site() {
       {all && <Footer />}
       <SoundToggle />
       {all && <PageScribble />}
-      {all && <Fish />}
       <CrayonCursor />
     </>
   );

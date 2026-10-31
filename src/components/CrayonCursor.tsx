@@ -25,16 +25,28 @@ const crayonSvg = (colour: string) =>
 export const crayonCursor = (colour: string, fallback = 'auto') =>
   `url("data:image/svg+xml,${encodeURIComponent(crayonSvg(colour))}") 4 28, ${fallback}`;
 
+/** Crayons by day, chalk on the blackboard at night: the same colours as styles/tokens.css. */
+const PALETTES = {
+  light: { graphite: '#3a3836', red: '#d6453d', blue: '#3a6fc4', green: '#3f9a4f', orange: '#de6a1e', purple: '#7b52ab' },
+  dark: { graphite: '#e8e5da', red: '#f09a8f', blue: '#94b9ef', green: '#9cd7a2', orange: '#f2ad7b', purple: '#c7aeee' },
+};
+
 /**
- * Cursor rules, built from the live colour tokens so the crayon matches the page. The cursor is
- * inherited, so each section only needs it once; links and buttons (which default to a hand) are
- * the only elements that need their own rule, and text fields keep the text cursor.
+ * Cursor rules. Both themes' crayons are made once, as variables the theme picks between, so switching
+ * themes swaps nothing and reads nothing back (reading the live colours forced the whole page's styles
+ * to be worked out twice). The cursor is inherited, so each section only needs it once; links and buttons
+ * (which default to a hand) are the only elements that need their own rule, and text fields keep the text cursor.
  */
-function cursorCss(colours: Record<string, string>) {
+function cursorCss() {
   const own = ':is(a, button, label, summary, [role="button"])';
-  const rules = [`html.crayon-cursor body, html.crayon-cursor ${own} { cursor: ${crayonCursor(colours.graphite!)}; }`];
+  const vars = (selector: string, palette: Record<string, string>) =>
+    `${selector} { ${Object.entries(palette)
+      .map(([name, colour]) => `--crayon-cursor-${name}: ${crayonCursor(colour)};`)
+      .join(' ')} }`;
+  const rules = [vars('html.crayon-cursor', PALETTES.light), vars("html.crayon-cursor[data-theme='dark']", PALETTES.dark)];
+  rules.push(`html.crayon-cursor body, html.crayon-cursor ${own} { cursor: var(--crayon-cursor-graphite); }`);
   for (const [id, name] of Object.entries(SECTION_COLOURS)) {
-    rules.push(`html.crayon-cursor #${id}, html.crayon-cursor #${id} ${own} { cursor: ${crayonCursor(colours[name]!)}; }`);
+    rules.push(`html.crayon-cursor #${id}, html.crayon-cursor #${id} ${own} { cursor: var(--crayon-cursor-${name}); }`);
   }
   rules.push('html.crayon-cursor :is(input, textarea, select) { cursor: text; }');
   return rules.join('\n');
@@ -49,14 +61,8 @@ export function CrayonCursor() {
     if (!matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
     const root = document.documentElement;
-    const tokens = getComputedStyle(root);
-    const colours: Record<string, string> = {};
-    for (const name of ['graphite', 'red', 'blue', 'green', 'orange', 'purple']) {
-      colours[name] = tokens.getPropertyValue(`--crayon-${name}`).trim() || '#3a3836';
-    }
-
     const style = document.createElement('style');
-    style.textContent = cursorCss(colours);
+    style.textContent = cursorCss();
     document.head.append(style);
     root.classList.add('crayon-cursor');
     return () => {

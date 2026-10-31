@@ -52,6 +52,8 @@ export function ProjectCard({ project, forceActive = false }: ProjectCardProps) 
   const meta = themeMeta(project.theme);
   const Scene = themeScene(project.theme) ?? PlaceholderScene;
   const accent = meta?.accent ?? 'var(--crayon-graphite)';
+  // on the blackboard a fixed accent is chalked up (mixed toward chalk white); crayon variables turn to chalk on their own
+  const chalk = accent.startsWith('#') ? `color-mix(in srgb, ${accent} 50%, #f4f1e8)` : accent;
   const titleId = `project-${project.id}`;
 
   const onBlur = (e: FocusEvent) => {
@@ -62,14 +64,14 @@ export function ProjectCard({ project, forceActive = false }: ProjectCardProps) 
     <article
       ref={ref}
       className={`project-card ${active ? 'is-active' : ''}`}
-      style={{ '--accent': accent } as CSSProperties}
+      style={{ '--accent-day': accent, '--accent-night': chalk } as CSSProperties}
       aria-labelledby={titleId}
       onPointerEnter={onPointerEnter}
       onPointerLeave={onPointerLeave}
       onFocus={() => setFocused(true)}
       onBlur={onBlur}
     >
-      <CrayonShape shape="box" instant color={accent} />
+      <CrayonShape shape="box" instant color="var(--accent)" />
 
       <div
         className={`project-card__scene ${active ? '' : 'is-asleep'}`}
@@ -88,7 +90,7 @@ export function ProjectCard({ project, forceActive = false }: ProjectCardProps) 
         <h3 id={titleId} className="project-card__title">
           <span className="sr-only">{project.name}</span>
           {/* box and name are already drawn: twelve cards drawing in was a lot of work for little */}
-          <CrayonText text={project.name} decorative instant capHeight={narrow ? 22 : 28} color={accent} />
+          <CrayonText text={project.name} decorative instant capHeight={narrow ? 22 : 28} color="var(--accent)" />
         </h3>
         <p className="project-card__tagline">{project.tagline}</p>
         <p className="project-card__description">{project.description}</p>
