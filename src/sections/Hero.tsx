@@ -5,6 +5,7 @@ import { usePrefersReducedMotion } from '../crayon/usePrefersReducedMotion.ts';
 import { GITHUB_URL, RESUME_URL } from '../data/links.ts';
 import { hunaLine, useHunaMood } from '../hooks/useHunaMood.ts';
 import { useMediaQuery } from '../hooks/useMediaQuery.ts';
+import { useLoaderGone } from '../loader.ts';
 import { startWarmup } from '../projects/warmup.ts';
 import './Hero.css';
 
@@ -49,6 +50,8 @@ export function Hero() {
   const [photoOk, setPhotoOk] = useState(true);
   const huna = useHunaMood();
   const narrow = useMediaQuery('(max-width: 600px)');
+  // the intro starts as the loading screen fades, not behind it
+  const loaderGone = useLoaderGone();
 
   const instant = skipped || reducedMotion;
   const shown = instant ? DONE : phase;
@@ -83,6 +86,7 @@ export function Hero() {
               color="var(--crayon-red)"
               tempo={1.2}
               delay={400}
+              play={loaderGone}
               onDone={advanceTo(SPARKLE)}
             />
           </h1>

@@ -48,6 +48,14 @@ body::before {
   background: radial-gradient(ellipse at center, transparent 55%, rgba(180, 160, 120, 0.12) 100%);
 }
 
+/*
+ * Crayon colours on the browser's own scrollbar. A fully drawn one (::-webkit-scrollbar) looked more
+ * hand-made, but Chrome paints those on the main thread on every frame of scrolling, and the stutter came back.
+ */
+html {
+  scrollbar-color: var(--crayon-red) var(--paper-shade);
+}
+
 img,
 svg {
   display: block;

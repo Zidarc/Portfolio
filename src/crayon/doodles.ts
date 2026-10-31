@@ -246,6 +246,20 @@ const fish: DoodleFn = (rng, m) => [
   { pts: loop(-94, -60, 4.5, 4.5, rng, m) },
 ];
 
+/**
+ * The fish that swims down the page beside you (components/Fish.tsx), facing left. Its body and its tail
+ * are separate drawings in one shared frame, so the tail can flap on its own layer.
+ */
+const swimmer: DoodleFn = (rng, m) => [
+  { pts: loop(0, 0, 50, 28, rng, m) },
+  { pts: quad(p(-8, -25), p(6, -44), p(24, -24)) },
+  { pts: loop(-26, -7, 4, 4, rng, m) },
+  { pts: quad(p(-45, 9), p(-38, 15), p(-30, 10)) },
+  { pts: quad(p(4, -12), p(12, 0), p(4, 12)) },
+];
+const swimmerTail: DoodleFn = () => [{ pts: [p(46, 0), p(82, -26), p(76, 0), p(82, 26), p(46, 0)] }];
+export const SWIMMER_FRAME = { x: -66, y: -56, w: 162, h: 96 };
+
 /** A paper plane with a dashed swoosh behind it. */
 const plane: DoodleFn = () => [
   { pts: [p(-70, 10), p(82, -42), p(-18, 42), p(-70, 10)] },
@@ -355,6 +369,8 @@ export const DOODLES = {
   sun,
   cloud,
   fish,
+  swimmer,
+  swimmerTail,
   plane,
   bolt,
   spiral,
@@ -367,10 +383,10 @@ export const DOODLES = {
 } satisfies Record<string, DoodleFn>;
 export type DoodleName = keyof typeof DOODLES;
 
-const FRAMES: Partial<Record<DoodleName, Frame>> = { rings: RINGS_FRAME };
+const FRAMES: Partial<Record<DoodleName, Frame>> = { rings: RINGS_FRAME, swimmer: SWIMMER_FRAME, swimmerTail: SWIMMER_FRAME };
 
 /** Long lines where even a few degrees of tilt turns into a slope across the screen. */
-const NO_TILT: ReadonlySet<DoodleName> = new Set(['underline']);
+const NO_TILT: ReadonlySet<DoodleName> = new Set(['underline', 'swimmer', 'swimmerTail']);
 
 export interface DoodleOptions extends CrayonStyle {
   seed: number;

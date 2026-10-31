@@ -54,8 +54,239 @@
 
     <!-- the handwriting font is served from this site (public/fonts), so preload it with the page -->
     <link rel="preload" href="/fonts/patrick-hand-latin.woff2" as="font" type="font/woff2" crossorigin />
+
+    <!-- the loading screen's own styles: they have to work before the site's stylesheet and code arrive -->
+    <style>
+      #loader {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: grid;
+        place-content: center;
+        justify-items: center;
+        gap: 0.4rem;
+        background: #fbf7ee radial-gradient(ellipse at center, transparent 55%, rgba(180, 160, 120, 0.12) 100%);
+        transition: opacity 0.4s ease;
+      }
+      #loader.is-done {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .loader__pad {
+        width: min(80vw, 420px);
+        height: auto;
+        overflow: visible;
+        /* a transform, so the compositor keeps it rocking even while the page's code is starting up */
+        animation: loader-rock 1.4s ease-in-out infinite alternate;
+      }
+      .loader__pad path {
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 1 2;
+        stroke-dashoffset: 1;
+        animation: loader-draw var(--t) cubic-bezier(0.4, 0.05, 0.55, 0.95) var(--d) forwards;
+      }
+      .loader__pad > g {
+        transition: opacity 0.3s ease;
+      }
+      .loader__note {
+        margin: 0;
+        font: 1.35rem 'Patrick Hand', 'Comic Sans MS', cursive;
+        color: #6b6660;
+      }
+      @keyframes loader-draw {
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+      @keyframes loader-rock {
+        from {
+          transform: rotate(-1.2deg);
+        }
+        to {
+          transform: translateY(-3px) rotate(1.2deg);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .loader__pad,
+        .loader__pad path {
+          animation: none;
+          stroke-dashoffset: 0;
+        }
+      }
+    </style>
+    <noscript><style>#loader { display: none; }</style></noscript>
   </head>
   <body>
+    <div id="loader" role="status">
+      <svg class="loader__pad" viewBox="0 0 300 110" aria-hidden="true"></svg>
+      <p class="loader__note">grabbing my crayons…</p>
+    </div>
+    <script>
+      // The loading screen: random crayon doodles, drawn one after another until the site is ready
+      // (src/loader.ts then fades it out and removes it). Plain script, so it runs before anything else loads.
+      (function () {
+        var loader = document.getElementById('loader');
+        var pad = loader.querySelector('svg');
+        var note = loader.querySelector('p');
+        var NS = 'http://www.w3.org/2000/svg';
+        var COLOURS = ['#d6453d', '#3a6fc4', '#3f9a4f', '#e8b931', '#de6a1e', '#7b52ab', '#3a3836'];
+        var NOTES = ['grabbing my crayons…', 'sharpening my crayons…', 'doodling while it loads…'];
+        var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var PI = Math.PI;
+        var TAU = 2 * PI;
+        var rnd = function (a, b) { return a + Math.random() * (b - a); };
+        var pick = function (list) { return list[Math.floor(Math.random() * list.length)]; };
+        note.textContent = pick(NOTES);
+
+        // every doodle is drawn in a 100 x 100 box: a list of strokes, each a list of [x, y]
+        var curve = function (n, at) {
+          var pts = [];
+          for (var i = 0; i <= n; i++) pts.push(at(i / n));
+          return pts;
+        };
+        var ring = function (cx, cy, rx, ry, turns) {
+          var a0 = rnd(0, TAU);
+          return curve(48, function (t) { var a = a0 + t * TAU * turns; return [cx + Math.cos(a) * rx, cy + Math.sin(a) * ry]; });
+        };
+        var DOODLES = [
+          function spiral() {
+            var k = rnd(2.2, 3);
+            return [curve(80, function (t) { var a = t * TAU * k; var r = 3 + t * 37; return [50 + Math.cos(a) * r, 50 + Math.sin(a) * r]; })];
+          },
+          function star() {
+            var pts = [];
+            for (var i = 0; i <= 10; i++) { var a = -PI / 2 + (i * PI) / 5; var r = i % 2 ? 17 : 42; pts.push([50 + Math.cos(a) * r, 54 + Math.sin(a) * r]); }
+            return [pts];
+          },
+          function heart() {
+            return [curve(64, function (t) {
+              var a = t * TAU * 1.04;
+              var s = Math.sin(a);
+              return [50 + 2.4 * 16 * s * s * s, 46 - 2.4 * (13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a))];
+            })];
+          },
+          function squiggle() {
+            var f = rnd(2.5, 4);
+            return [curve(60, function (t) { return [6 + t * 88, 50 + Math.sin(t * TAU * f) * 18 * (1.2 - t)]; })];
+          },
+          function zigzag() {
+            var pts = [];
+            for (var i = 0; i <= 8; i++) pts.push([8 + i * 10.5, i % 2 ? 30 : 70]);
+            return [pts];
+          },
+          function loops() {
+            return [curve(110, function (t) { var a = t * TAU * 4; return [14 + t * 72 - 11 * Math.sin(a), 52 - 14 * Math.cos(a)]; })];
+          },
+          function sun() {
+            var strokes = [ring(50, 50, 17, 17, 1.08)];
+            for (var i = 0; i < 8; i++) {
+              var a = (i * PI) / 4 + 0.2;
+              strokes.push([[50 + Math.cos(a) * 26, 50 + Math.sin(a) * 26], [50 + Math.cos(a) * 40, 50 + Math.sin(a) * 40]]);
+            }
+            return strokes;
+          },
+          function flower() {
+            return [
+              curve(90, function (t) { var a = t * PI; var r = 24 * Math.cos(5 * a); return [50 + Math.cos(a) * r, 36 + Math.sin(a) * r]; }),
+              [[50, 60], [49, 78], [47, 97]],
+              curve(20, function (t) { var a = t * PI; return [48 + t * 18, 82 - Math.sin(a) * 8]; }),
+            ];
+          },
+          function smiley() {
+            return [
+              ring(50, 50, 36, 36, 1.06),
+              curve(16, function (t) { var a = 0.2 * PI + t * 0.6 * PI; return [50 + Math.cos(a) * 21, 50 + Math.sin(a) * 21]; }),
+              [[38, 38], [38.5, 42]],
+              [[62, 38], [62.5, 42]],
+            ];
+          },
+          function cloud() {
+            return [curve(90, function (t) { var a = t * TAU * 1.04; var r = 21 + 8 * Math.abs(Math.sin(3 * a)); return [50 + Math.cos(a) * r * 1.35, 52 + Math.sin(a) * r * 0.75]; })];
+          },
+          function bolt() {
+            return [[[58, 4], [30, 52], [50, 52], [38, 96], [74, 40], [53, 40], [66, 4]]];
+          },
+          function house() {
+            return [[[22, 94], [22, 48], [50, 18], [78, 48], [78, 94], [22, 94]], [[44, 94], [44, 68], [57, 68], [57, 94]]];
+          },
+        ];
+
+        // a hand isn't a ruler: points every 3 units, nudged by a slow random wobble
+        var handDrawn = function (pts) {
+          var out = [pts[0]];
+          for (var i = 1; i < pts.length; i++) {
+            var a = pts[i - 1];
+            var b = pts[i];
+            var n = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 3));
+            for (var k = 1; k <= n; k++) out.push([a[0] + ((b[0] - a[0]) * k) / n, a[1] + ((b[1] - a[1]) * k) / n]);
+          }
+          var px = rnd(0, TAU), py = rnd(0, TAU), f = rnd(0.12, 0.2), amp = rnd(0.8, 1.5);
+          var length = 0;
+          var d = '';
+          out.forEach(function (p, i) {
+            if (i) length += Math.hypot(p[0] - out[i - 1][0], p[1] - out[i - 1][1]);
+            var x = p[0] + Math.sin(i * f + px) * amp;
+            var y = p[1] + Math.sin(i * f * 1.3 + py) * amp;
+            d += (i ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
+          });
+          return { d: d, length: length };
+        };
+
+        var path = function (parent, d, attrs) {
+          var el = document.createElementNS(NS, 'path');
+          el.setAttribute('d', d);
+          el.setAttribute('pathLength', '1');
+          for (var k in attrs) el.setAttribute(k, attrs[k]);
+          parent.appendChild(el);
+        };
+
+        // three doodles side by side, drawn one after the other; returns when the last one finishes (ms)
+        var drawBatch = function (group) {
+          var t = 0;
+          var last = -1;
+          [0, 1, 2].forEach(function (slot) {
+            var i;
+            do i = Math.floor(Math.random() * DOODLES.length); while (i === last);
+            last = i;
+            var colour = pick(COLOURS);
+            var g = document.createElementNS(NS, 'g');
+            g.setAttribute('stroke', colour);
+            g.setAttribute('transform', 'translate(' + (slot * 100 + 50) + ' 55) rotate(' + rnd(-12, 12).toFixed(1) + ') scale(' + rnd(0.78, 0.95).toFixed(2) + ') translate(-50 -50)');
+            DOODLES[i]().forEach(function (stroke) {
+              var line = handDrawn(stroke);
+              var dur = Math.max(140, (line.length / 420) * 1000);
+              var timing = '--d:' + t + 'ms;--t:' + dur + 'ms';
+              // crayon: a main line plus a thinner, lighter pass just off it
+              path(g, line.d, { 'stroke-width': '4.2', 'stroke-opacity': '0.9', style: timing });
+              path(g, line.d, { 'stroke-width': '2', 'stroke-opacity': '0.5', transform: 'translate(0.9 0.7)', style: timing });
+              t += dur + 60;
+            });
+            t += 160;
+            group.appendChild(g);
+          });
+          return t;
+        };
+
+        var cycle = function () {
+          if (!loader.isConnected) return;
+          var old = pad.firstChild;
+          var group = document.createElementNS(NS, 'g');
+          pad.appendChild(group);
+          var took = drawBatch(group);
+          if (old) {
+            old.style.opacity = '0';
+            setTimeout(function () { old.remove(); }, 300);
+          }
+          if (!still) setTimeout(cycle, took + 700);
+        };
+        cycle();
+
+        // if the site's code never arrives, don't leave the page covered
+        setTimeout(function () { if (loader.isConnected) loader.remove(); }, 15000);
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

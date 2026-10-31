@@ -1,0 +1,59 @@
+/* The fish that swims down the page (Fish.tsx): one fixed layer, and only transforms ever change. */
+.fish {
+  position: fixed;
+  top: 44%;
+  right: clamp(10px, 3vw, 56px);
+  z-index: 35;
+  width: clamp(64px, 6.5vw, 96px);
+  pointer-events: none;
+  will-change: transform;
+  /* glides between the poses Fish.tsx sets a few times a second while you scroll */
+  transition: transform 0.25s linear;
+}
+
+.fish--resting {
+  transition-duration: 1.1s;
+  transition-timing-function: ease-out;
+}
+
+.fish__swim {
+  position: relative;
+  animation: fish-bob 2.6s ease-in-out infinite alternate;
+}
+
+/* pivots where the tail meets the body (x 46, y 0 in the drawing's frame, SWIMMER_FRAME) */
+.fish__tail {
+  position: absolute;
+  inset: 0;
+  transform-origin: 69.1% 58.3%;
+  animation: fish-flap 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes fish-bob {
+  from {
+    transform: translateY(-4px) rotate(-2deg);
+  }
+  to {
+    transform: translateY(4px) rotate(2deg);
+  }
+}
+
+@keyframes fish-flap {
+  from {
+    transform: scaleX(0.7) rotate(-9deg);
+  }
+  to {
+    transform: scaleX(1) rotate(9deg);
+  }
+}
+
+/* on a phone: small, in the bottom-left corner, out of the text's way */
+@media (max-width: 600px) {
+  .fish {
+    top: auto;
+    right: auto;
+    bottom: 22px;
+    left: 10px;
+    width: 54px;
+  }
+}

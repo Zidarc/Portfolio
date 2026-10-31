@@ -1,10 +1,12 @@
 import { lazy, startTransition, Suspense, useEffect, useState } from 'react';
 import { CrayonCursor } from './components/CrayonCursor.tsx';
+import { Fish } from './components/Fish.tsx';
 import { Footer } from './components/Footer.tsx';
 import { Navbar } from './components/Navbar.tsx';
 import { SoundToggle } from './components/SoundToggle.tsx';
 import { PageScribble } from './scribble/PageScribble.tsx';
 import { CrayonLab } from './lab/CrayonLab.tsx';
+import { loaderDone } from './loader.ts';
 import { ProjectLab } from './lab/ProjectLab.tsx';
 import { About } from './sections/About.tsx';
 import { Contact } from './sections/Contact.tsx';
@@ -21,6 +23,11 @@ const params = new URLSearchParams(window.location.search);
 const OgCard = import.meta.env.DEV ? lazy(() => import('./lab/OgCard.tsx')) : null;
 
 export default function App() {
+  const bench = params.has('lab') || params.has('projects') || (OgCard !== null && params.has('og'));
+  useEffect(() => {
+    if (bench) loaderDone(true);
+  }, [bench]);
+
   if (params.has('lab')) return <CrayonLab />;
   if (params.has('projects')) return <ProjectLab />;
   if (OgCard && params.has('og')) {
@@ -48,6 +55,13 @@ function Site() {
   const [shown, setShown] = useState(() => (window.location.hash.length > 1 ? BELOW.length : 0));
   const all = shown >= BELOW.length;
 
+  // the first screen is up: let the loading screen go once the handwriting font is in (or soon without it)
+  useEffect(() => {
+    const font = 'fonts' in document ? document.fonts.load('1em "Patrick Hand"') : Promise.resolve();
+    const soon = new Promise((resolve) => window.setTimeout(resolve, 1500));
+    void Promise.race([font, soon]).finally(() => loaderDone());
+  }, []);
+
   useEffect(() => {
     if (all) return;
     const id = idle(() => startTransition(() => setShown((n) => n + 1)));
@@ -66,6 +80,7 @@ function Site() {
       {all && <Footer />}
       <SoundToggle />
       {all && <PageScribble />}
+      {all && <Fish />}
       <CrayonCursor />
     </>
   );

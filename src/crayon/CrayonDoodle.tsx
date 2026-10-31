@@ -20,6 +20,8 @@ const LABELS: Record<DoodleName, string> = {
   sun: 'Crayon sun',
   cloud: 'Crayon cloud',
   fish: 'Crayon fish',
+  swimmer: 'Crayon fish',
+  swimmerTail: 'Crayon fish tail',
   plane: 'Crayon paper plane',
   bolt: 'Crayon lightning bolt',
   spiral: 'Crayon spiral',
