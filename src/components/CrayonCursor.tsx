@@ -25,6 +25,23 @@ const crayonSvg = (colour: string) =>
 export const crayonCursor = (colour: string, fallback = 'auto') =>
   `url("data:image/svg+xml,${encodeURIComponent(crayonSvg(colour))}") 4 28, ${fallback}`;
 
+/**
+ * A stick of chalk for the blackboard: no wrapper, a worn blunt tip, a soft highlight and a few dust specks.
+ * Tip at the bottom-left, like the crayon (hotspot 5, 27). The faint dark edge keeps it visible over light scenes.
+ */
+const chalkSvg = (colour: string) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">` +
+  `<g transform="rotate(-45 16 16)">` +
+  `<path d="M2.6 12.6H28a3.4 3.4 0 0 1 0 6.8H1.2Q-0.6 16.4 2.6 12.6Z" fill="${colour}" stroke="#0e1512" stroke-opacity="0.55" stroke-width="1"/>` +
+  `<path d="M6 14h21" stroke="#fff" stroke-opacity="0.5" stroke-width="1.1" stroke-linecap="round"/>` +
+  `<path d="M3.5 18.3h24" stroke="#000" stroke-opacity="0.13" stroke-width="1.4" stroke-linecap="round"/>` +
+  `<g fill="#000" fill-opacity="0.16"><circle cx="9" cy="16.3" r="0.6"/><circle cx="15.5" cy="15.4" r="0.5"/>` +
+  `<circle cx="21" cy="17" r="0.6"/><circle cx="25.5" cy="15.8" r="0.45"/></g>` +
+  `</g></svg>`;
+
+const chalkCursor = (colour: string) =>
+  `url("data:image/svg+xml,${encodeURIComponent(chalkSvg(colour))}") 5 27, auto`;
+
 /** Crayons by day, chalk on the blackboard at night: the same colours as styles/tokens.css. */
 const PALETTES = {
   light: { graphite: '#3a3836', red: '#d6453d', blue: '#3a6fc4', green: '#3f9a4f', orange: '#de6a1e', purple: '#7b52ab' },
@@ -39,11 +56,14 @@ const PALETTES = {
  */
 function cursorCss() {
   const own = ':is(a, button, label, summary, [role="button"])';
-  const vars = (selector: string, palette: Record<string, string>) =>
+  const vars = (selector: string, palette: Record<string, string>, cursor: (colour: string) => string) =>
     `${selector} { ${Object.entries(palette)
-      .map(([name, colour]) => `--crayon-cursor-${name}: ${crayonCursor(colour)};`)
+      .map(([name, colour]) => `--crayon-cursor-${name}: ${cursor(colour)};`)
       .join(' ')} }`;
-  const rules = [vars('html.crayon-cursor', PALETTES.light), vars("html.crayon-cursor[data-theme='dark']", PALETTES.dark)];
+  const rules = [
+    vars('html.crayon-cursor', PALETTES.light, crayonCursor),
+    vars("html.crayon-cursor[data-theme='dark']", PALETTES.dark, chalkCursor),
+  ];
   rules.push(`html.crayon-cursor body, html.crayon-cursor ${own} { cursor: var(--crayon-cursor-graphite); }`);
   for (const [id, name] of Object.entries(SECTION_COLOURS)) {
     rules.push(`html.crayon-cursor #${id}, html.crayon-cursor #${id} ${own} { cursor: var(--crayon-cursor-${name}); }`);
