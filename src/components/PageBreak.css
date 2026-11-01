@@ -1,0 +1,50 @@
+/* a torn edge across the whole page, between two sections */
+.page-break {
+  position: relative;
+  height: 30px;
+  pointer-events: none;
+  /* torn fibres, their shadow and the tape, on paper; chalk-dusty versions on the blackboard */
+  --tear-fibres: #fffdf8;
+  --tear-shadow: rgba(110, 85, 45, 0.22);
+  --tape: rgba(236, 222, 170, 0.62);
+  --tape-edge: rgba(150, 125, 70, 0.25);
+}
+
+:root[data-theme='dark'] .page-break {
+  --tear-fibres: rgba(232, 229, 218, 0.28);
+  --tear-shadow: rgba(0, 0, 0, 0.45);
+  --tape: rgba(236, 226, 196, 0.32);
+  --tape-edge: rgba(0, 0, 0, 0.25);
+}
+
+.page-break__tear {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.page-break__fibres {
+  fill: var(--tear-fibres);
+}
+
+.page-break__shadow {
+  fill: var(--tear-shadow);
+}
+
+/* a strip of masking tape holding the two pieces together, with torn zigzag ends */
+.page-break__tape {
+  position: absolute;
+  top: 1px;
+  width: clamp(70px, 9vw, 110px);
+  height: 28px;
+  translate: -50% 0;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 9px, var(--tape-edge) 9px 10px) 0 0 / 100% 100%,
+    var(--tape);
+  background-blend-mode: soft-light;
+  box-shadow: 0 1px 1px var(--tape-edge);
+  clip-path: polygon(
+    3% 0, 97% 0, 100% 12%, 96% 25%, 100% 38%, 96% 50%, 100% 63%, 96% 75%, 100% 88%, 97% 100%,
+    3% 100%, 0 88%, 4% 75%, 0 63%, 4% 50%, 0 38%, 4% 25%, 0 12%
+  );
+}

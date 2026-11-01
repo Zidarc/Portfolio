@@ -1,7 +1,8 @@
-import { lazy, startTransition, Suspense, useEffect, useState } from 'react';
+import { Fragment, lazy, startTransition, Suspense, useEffect, useState } from 'react';
 import { CrayonCursor } from './components/CrayonCursor.tsx';
 import { Footer } from './components/Footer.tsx';
 import { Navbar } from './components/Navbar.tsx';
+import { PageBreak } from './components/PageBreak.tsx';
 import { SoundToggle } from './components/SoundToggle.tsx';
 import { PageScribble } from './scribble/PageScribble.tsx';
 import { CrayonLab } from './lab/CrayonLab.tsx';
@@ -73,7 +74,10 @@ function Site() {
       <main>
         <Hero />
         {BELOW.slice(0, shown).map((Section, i) => (
-          <Section key={i} />
+          <Fragment key={i}>
+            <PageBreak index={i} />
+            <Section />
+          </Fragment>
         ))}
       </main>
       {all && <Footer />}
