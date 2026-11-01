@@ -10,17 +10,22 @@ export interface Stroke {
   p: number[];
 }
 
+/** Each crayon, and the chalk it turns into on the blackboard (the same colours as styles/tokens.css). */
 export const CRAYONS = [
-  { name: 'red', value: '#d6453d' },
-  { name: 'orange', value: '#de6a1e' },
-  { name: 'yellow', value: '#e8b931' },
-  { name: 'green', value: '#3f9a4f' },
-  { name: 'blue', value: '#3a6fc4' },
-  { name: 'purple', value: '#7b52ab' },
-  { name: 'pink', value: '#e07aa6' },
-  { name: 'brown', value: '#8a5a32' },
-  { name: 'graphite', value: '#3a3836' },
+  { name: 'red', value: '#d6453d', chalk: '#f09a8f' },
+  { name: 'orange', value: '#de6a1e', chalk: '#f2ad7b' },
+  { name: 'yellow', value: '#e8b931', chalk: '#f1d47c' },
+  { name: 'green', value: '#3f9a4f', chalk: '#9cd7a2' },
+  { name: 'blue', value: '#3a6fc4', chalk: '#94b9ef' },
+  { name: 'purple', value: '#7b52ab', chalk: '#c7aeee' },
+  { name: 'pink', value: '#e07aa6', chalk: '#f2acc8' },
+  { name: 'brown', value: '#8a5a32', chalk: '#d4ab86' },
+  { name: 'graphite', value: '#3a3836', chalk: '#e8e5da' },
 ] as const;
+
+const CHALK = new Map<string, string>(CRAYONS.map((c) => [c.value, c.chalk]));
+/** A stored colour as chalk (for the cursor and the saved image, which can't use CSS variables). */
+export const chalkOf = (value: string) => CHALK.get(value) ?? value;
 
 /**
  * How to paint a stored colour: through its crayon's CSS variable, so scribbles turn to chalk on the

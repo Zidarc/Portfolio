@@ -1,22 +1,27 @@
 import type { CSSProperties, ReactNode } from 'react';
+import { useTheme } from '../theme.ts';
 import { CRAYONS, shownColour, SIZES } from './brush.ts';
 import type { Scribbles } from './useScribbles.ts';
 
-/** The crayon box: colours, sizes, eraser (two kinds), undo, clear, plus whatever actions the page adds. */
+/**
+ * The crayon box: colours, sizes, eraser (two kinds), undo, clear, plus whatever actions the page adds.
+ * On the blackboard the crayons are sticks of chalk (scribble.css) and the eraser is a felt duster.
+ */
 export function Toolbar({ sb, children }: { sb: Scribbles; children?: ReactNode }) {
   const erasing = sb.tool === 'eraser';
+  const stick = useTheme() === 'dark' ? 'chalk' : 'crayon';
 
   return (
     <div className="scribble-toolbar" role="toolbar" aria-label="Scribble tools">
-      <div className="scribble-toolbar__group" role="radiogroup" aria-label="Crayon colour">
+      <div className="scribble-toolbar__group" role="radiogroup" aria-label={`${stick === 'chalk' ? 'Chalk' : 'Crayon'} colour`}>
         {CRAYONS.map((c) => (
           <button
             key={c.name}
             type="button"
             role="radio"
             aria-checked={!erasing && sb.colour === c.value}
-            aria-label={`${c.name} crayon`}
-            title={`${c.name} crayon`}
+            aria-label={`${c.name} ${stick}`}
+            title={`${c.name} ${stick}`}
             className="scribble-toolbar__crayon"
             style={{ '--c': shownColour(c.value) } as CSSProperties}
             onClick={() => sb.setColour(c.value)}
@@ -35,7 +40,7 @@ export function Toolbar({ sb, children }: { sb: Scribbles; children?: ReactNode 
             className="scribble-toolbar__size"
             onClick={() => sb.setSize(s)}
           >
-            <span style={{ width: s + 2, height: s + 2, background: erasing ? '#f4a6c0' : shownColour(sb.colour) }} />
+            <span style={{ width: s + 2, height: s + 2, background: erasing ? 'var(--eraser-colour)' : shownColour(sb.colour) }} />
           </button>
         ))}
       </div>

@@ -39,8 +39,9 @@ const chalkSvg = (colour: string) =>
   `<circle cx="21" cy="17" r="0.6"/><circle cx="25.5" cy="15.8" r="0.45"/></g>` +
   `</g></svg>`;
 
-const chalkCursor = (colour: string) =>
-  `url("data:image/svg+xml,${encodeURIComponent(chalkSvg(colour))}") 5 27, auto`;
+/** The blackboard's `cursor` value: a stick of chalk in `colour`. */
+export const chalkCursor = (colour: string, fallback = 'auto') =>
+  `url("data:image/svg+xml,${encodeURIComponent(chalkSvg(colour))}") 5 27, ${fallback}`;
 
 /** Crayons by day, chalk on the blackboard at night: the same colours as styles/tokens.css. */
 const PALETTES = {

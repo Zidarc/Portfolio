@@ -1,5 +1,6 @@
 import { memo, useEffect, useId, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
 import { crayonPasses, grainTile, shownColour, type Stroke } from './brush.ts';
+import { useTheme } from '../theme.ts';
 import { toolCursor } from './cursors.ts';
 import type { Scribbles } from './useScribbles.ts';
 
@@ -35,6 +36,7 @@ export function ScribbleSurface({ sb, active, className, style }: SurfaceProps) 
   const uid = useId().replace(/:/g, '');
   const [tile] = useState(grainTile);
   const erasing = sb.tool === 'eraser';
+  const theme = useTheme();
 
   useEffect(() => {
     const el = ref.current;
@@ -94,7 +96,7 @@ export function ScribbleSurface({ sb, active, className, style }: SurfaceProps) 
     <div
       ref={ref}
       className={['scribble-surface', active ? 'is-active' : '', className].filter(Boolean).join(' ')}
-      style={active ? { ...style, cursor: toolCursor(sb) } : style}
+      style={active ? { ...style, cursor: toolCursor(sb, theme) } : style}
       onPointerDown={down}
       onPointerMove={move}
       onPointerUp={up}

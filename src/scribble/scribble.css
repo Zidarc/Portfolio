@@ -1,5 +1,14 @@
 /* ---------- the drawing surface ---------- */
 
+/* the eraser's colour: a pink rubber on paper, a grey felt duster on the blackboard */
+:root {
+  --eraser-colour: #f4a6c0;
+}
+
+:root[data-theme='dark'] {
+  --eraser-colour: #a9ada6;
+}
+
 .scribble-surface {
   pointer-events: none;
 }
@@ -19,7 +28,7 @@
 
 /* how far the eraser reaches */
 .scribble-surface__ring {
-  fill: rgba(244, 166, 192, 0.12);
+  fill: color-mix(in srgb, var(--eraser-colour) 12%, transparent);
   stroke: var(--ink-soft);
   stroke-width: 1;
   stroke-dasharray: 3 3;
@@ -92,6 +101,10 @@
   box-shadow: 0 6px 18px rgba(70, 50, 20, 0.18);
 }
 
+:root[data-theme='dark'] .scribble-toolbar {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
 .scribble-toolbar__group {
   display: flex;
   flex: none;
@@ -126,6 +139,18 @@
 
 .scribble-toolbar__crayon[aria-checked='true'] {
   transform: translateY(-3px);
+}
+
+/* on the blackboard they're sticks of chalk: no wrapper, a worn slanted top, a soft highlight down one side */
+:root[data-theme='dark'] .scribble-toolbar__crayon {
+  width: 12px;
+  height: 28px;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  border-radius: 3px 7px 5px 5px / 2px 7px 4px 4px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.45) 0 22%, transparent 45%, rgba(0, 0, 0, 0.14) 88%),
+    var(--c);
+  clip-path: none;
 }
 
 .scribble-toolbar__size {
@@ -183,7 +208,7 @@
 }
 
 .scribble-toolbar__mode[aria-checked='true'] {
-  background: color-mix(in srgb, #f4a6c0 45%, transparent);
+  background: color-mix(in srgb, var(--eraser-colour) 45%, transparent);
   color: var(--ink);
 }
 
@@ -221,6 +246,22 @@
 .sketchpad__title {
   margin: 0;
   font-size: inherit;
+}
+
+.sketchpad__links {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sketchpad__theme {
+  padding: 0.3rem;
+  border: 0;
+  background: none;
+}
+
+.sketchpad__theme svg {
+  width: 28px;
 }
 
 .sketchpad__back {
