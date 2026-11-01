@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import type { Stroke } from './brush.ts';
+import { noteBox, type Note } from './notes.ts';
 
 /**
  * The sketchpad's endless canvas. Strokes are stored in canvas ("world") units; the view says which
@@ -55,10 +56,10 @@ export function strokeBox(s: Stroke): Box {
   return box;
 }
 
-/** The box around everything drawn, or null for an empty sheet. */
-export function drawingBox(strokes: Stroke[]): Box | null {
-  if (!strokes.length) return null;
-  return strokes.map(strokeBox).reduce((a, b) => ({
+/** The box around everything drawn and typed, or null for an empty sheet. */
+export function drawingBox(strokes: Stroke[], notes: Note[] = []): Box | null {
+  if (!strokes.length && !notes.length) return null;
+  return [...strokes.map(strokeBox), ...notes.map(noteBox)].reduce((a, b) => ({
     x0: Math.min(a.x0, b.x0),
     y0: Math.min(a.y0, b.y0),
     x1: Math.max(a.x1, b.x1),
@@ -126,9 +127,9 @@ export function useCamera(key: string) {
     zoomBy: (factor: number) => commit(zoomAt(current(), factor, ...middle())),
     /** Back to 100%, keeping the middle of the screen where it is. */
     actualSize: () => commit(zoomAt(current(), 1 / current().z, ...middle())),
-    /** Show everything drawn so far (or the start of the sheet if it's empty). */
-    fit: (strokes: Stroke[]) => {
-      const box = drawingBox(strokes);
+    /** Show everything drawn and typed so far (or the start of the sheet if it's empty). */
+    fit: (strokes: Stroke[], notes: Note[] = []) => {
+      const box = drawingBox(strokes, notes);
       commit(box ? fitView(box, size.current.width, size.current.height) : homeView(size.current.width));
     },
   };

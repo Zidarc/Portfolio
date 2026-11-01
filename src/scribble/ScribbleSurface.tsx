@@ -4,6 +4,7 @@ import { useTheme } from '../theme.ts';
 import { crayonPasses, grainTile, shownColour, type Pass, type Stroke } from './brush.ts';
 import { homeView, overlaps, strokeBox, visibleBox, zoomAt, type Camera, type View } from './camera.ts';
 import { toolCursor } from './cursors.ts';
+import { firstBaseline, LINE, newNoteId, NOTE_FONT, noteAt, noteLines, noteMeasure, noteSize, type Note } from './notes.ts';
 import type { Scribbles } from './useScribbles.ts';
 
 interface SurfaceProps {
@@ -31,6 +32,31 @@ const StrokeView = memo(function StrokeView({ stroke }: { stroke: Stroke }) {
     </g>
   );
 });
+
+/** A typed note, set in the handwriting font. Not under the crayon-grain mask, so it stays crisp. */
+const NoteView = memo(function NoteView({ note }: { note: Note }) {
+  const base = note.y + firstBaseline(note.s);
+  return (
+    <text fill={shownColour(note.c)} fontFamily={NOTE_FONT} fontSize={note.s} style={{ whiteSpace: 'pre' }}>
+      {noteLines(note.t).map((line, i) => (
+        <tspan key={i} x={note.x} y={base + i * note.s * LINE}>
+          {line || ' '}
+        </tspan>
+      ))}
+    </text>
+  );
+});
+
+/** A press with the text tool: on a note (to edit it, or drag it somewhere else) or on empty paper. */
+interface Press {
+  id: number;
+  note?: Note;
+  sx: number;
+  sy: number;
+  wx: number;
+  wy: number;
+  moved: boolean;
+}
 
 /** After the last scroll-wheel tick, how long before the moved view is drawn for real. */
 const WHEEL_SETTLE_MS = 160;
@@ -68,6 +94,11 @@ export function ScribbleSurface({ sb, active, camera, panning = false, className
   const touches = useRef(new Map<number, { x: number; y: number }>());
   const gesture = useRef<Gesture | null>(null);
   const [spaceHeld, setSpaceHeld] = useState(false);
+  const typing = sb.tool === 'text';
+  /** The note being typed: a working copy, saved (as one undo step) when you click away. */
+  const [draft, setDraft] = useState<{ note: Note; isNew: boolean } | null>(null);
+  const press = useRef<Press | null>(null);
+  const editorRef = useRef<HTMLTextAreaElement>(null);
   const moving = panning || spaceHeld;
 
   useEffect(() => {
@@ -199,6 +230,12 @@ export function ScribbleSurface({ sb, active, camera, panning = false, className
     }
     if (e.button > 0 || gesture.current) return;
     const [x, y] = point(e);
+    if (typing) {
+      // while a note is open, clicking elsewhere just finishes it
+      if (draft) return editorRef.current?.blur();
+      press.current = { id: e.pointerId, note: noteAt(sb.notes, x, y), sx: pos.x, sy: pos.y, wx: x, wy: y, moved: false };
+      return;
+    }
     if (erasing) {
       sb.eraseStart();
       sb.eraseAt(x, y);
@@ -228,6 +265,17 @@ export function ScribbleSurface({ sb, active, camera, panning = false, className
       return;
     }
     if (camera && e.pointerType === 'touch') touches.current.set(e.pointerId, local(e));
+    const pr = press.current;
+    if (pr?.note && e.pointerId === pr.id) {
+      // dragging a note moves it (shown live by moving the drawn text; saved when let go)
+      const pos = local(e);
+      if (!pr.moved && Math.hypot(pos.x - pr.sx, pos.y - pr.sy) < 5) return;
+      pr.moved = true;
+      const [x, y] = point(e);
+      const text = ref.current?.querySelector(`[data-note="${pr.note.id}"]`);
+      text?.setAttribute('transform', `translate(${x - pr.wx} ${y - pr.wy})`);
+      return;
+    }
     const [x, y] = point(e);
     if (erasing) moveRing(x, y);
     if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
@@ -253,11 +301,51 @@ export function ScribbleSurface({ sb, active, camera, panning = false, className
       settle();
       return;
     }
+    const pr = press.current;
+    if (pr && e.pointerId === pr.id) {
+      press.current = null;
+      if (e.type === 'pointercancel') return;
+      const [x, y] = point(e);
+      if (pr.note && pr.moved) {
+        ref.current?.querySelector(`[data-note="${pr.note.id}"]`)?.removeAttribute('transform');
+        sb.putNote({ ...pr.note, x: pr.note.x + x - pr.wx, y: pr.note.y + y - pr.wy });
+      } else if (pr.note) {
+        flushSync(() => setDraft({ note: pr.note!, isNew: false }));
+      } else {
+        // a new note, with the click about halfway down its first line
+        const s = noteSize(sb.size);
+        const note = { id: newNoteId(), x, y: Math.round(y - s * LINE * 0.5), t: '', c: sb.colour, s };
+        // (flushSync so the editor is focused inside the tap itself: phones only open the keyboard then)
+        flushSync(() => setDraft({ note, isNew: true }));
+      }
+      return;
+    }
     const stroke = drawing.current;
     drawing.current = null;
     setCurrent(null);
     if (stroke) sb.add(stroke);
   };
+
+  /** Done typing: keep the note (one undo step), or drop it if it was emptied. */
+  const finishTyping = () => {
+    if (!draft) return;
+    const { note, isNew } = draft;
+    setDraft(null);
+    const saved = sb.notes.find((n) => n.id === note.id);
+    if (!note.t.trim()) {
+      if (!isNew) sb.removeNote(note.id);
+    } else if (!saved || saved.t !== note.t || saved.c !== note.c || saved.s !== note.s) {
+      sb.putNote({ ...note, t: note.t.replace(/\s+$/, '') });
+    }
+  };
+
+  // picking a colour or size while typing changes the note being typed
+  useEffect(() => setDraft((d) => (d ? { ...d, note: { ...d.note, c: sb.colour } } : d)), [sb.colour]);
+  useEffect(() => setDraft((d) => (d ? { ...d, note: { ...d.note, s: noteSize(sb.size) } } : d)), [sb.size]);
+  // putting the text tool down finishes the note
+  useEffect(() => {
+    if (!typing) editorRef.current?.blur();
+  }, [typing]);
 
   // On the endless canvas, strokes more than a screen away aren't drawn. Which ones that is gets worked
   // out after a move has settled, as a background update React does in small slices, so bringing a
@@ -267,6 +355,7 @@ export function ScribbleSurface({ sb, active, camera, panning = false, className
   useEffect(() => startTransition(() => setCullView(view)), [viewKey]); // (view itself is a new object every render)
   const near = camera && size.width ? visibleBox(cullView, size.width, size.height) : null;
   const cursor = moving ? (gesture.current ? 'grabbing' : 'grab') : toolCursor(sb, theme);
+  const drafted = draft && noteMeasure(draft.note);
 
   return (
     <div
@@ -278,10 +367,9 @@ export function ScribbleSurface({ sb, active, camera, panning = false, className
       onPointerUp={up}
       onPointerCancel={up}
       onPointerLeave={() => moveRing(-1e7, -1e7)}
-      aria-hidden="true"
     >
       <div ref={layerRef} className="scribble-surface__layer">
-        <svg className="scribble-surface__svg">
+        <svg className="scribble-surface__svg" aria-hidden="true">
           <defs>
             <pattern id={`${uid}-grain`} width="96" height="96" patternUnits="userSpaceOnUse">
               <image href={tile} width="96" height="96" />
@@ -295,11 +383,45 @@ export function ScribbleSurface({ sb, active, camera, panning = false, className
               {sb.strokes.map((s, i) => (!near || overlaps(strokeBox(s), near) ? <StrokeView key={i} stroke={s} /> : null))}
               {current && <StrokeView stroke={current} />}
             </g>
+            <g>
+              {sb.notes.map((n) =>
+                n.id === draft?.note.id ? null : (
+                  <g key={n.id} data-note={n.id}>
+                    <NoteView note={n} />
+                  </g>
+                ),
+              )}
+            </g>
             {active && erasing && (
               <circle ref={ringRef} cx="-1e7" cy="-1e7" r={sb.eraserRadius} className="scribble-surface__ring" />
             )}
           </g>
         </svg>
+        {draft && drafted && (
+          // the note being typed: a real text field laid exactly over where the text will sit
+          <textarea
+            ref={editorRef}
+            className="scribble-surface__editor"
+            aria-label="Type on the sketchpad"
+            autoFocus
+            spellCheck={false}
+            value={draft.note.t}
+            rows={1}
+            style={{
+              left: (draft.note.x - view.x) * view.z,
+              top: (draft.note.y - view.y) * view.z,
+              width: (drafted.w + draft.note.s) * view.z,
+              height: drafted.h * view.z,
+              fontSize: draft.note.s * view.z,
+              lineHeight: LINE,
+              color: shownColour(draft.note.c),
+            }}
+            onChange={(e) => setDraft({ ...draft, note: { ...draft.note, t: e.target.value } })}
+            onBlur={finishTyping}
+            onKeyDown={(e) => e.key === 'Escape' && e.currentTarget.blur()}
+            onPointerDown={(e) => e.stopPropagation()}
+          />
+        )}
       </div>
     </div>
   );

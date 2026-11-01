@@ -6,13 +6,21 @@ import type { Scribbles } from './useScribbles.ts';
 /**
  * The crayon box: colours, sizes, eraser (two kinds), undo, clear, plus whatever actions the page adds.
  * On the blackboard the crayons are sticks of chalk (scribble.css) and the eraser is a felt duster.
+ * `typing` adds the text tool (the sketchpad); the colour and size then apply to the text.
  */
-export function Toolbar({ sb, children }: { sb: Scribbles; children?: ReactNode }) {
+export function Toolbar({ sb, typing = false, children }: { sb: Scribbles; typing?: boolean; children?: ReactNode }) {
   const erasing = sb.tool === 'eraser';
+  const texting = sb.tool === 'text';
   const stick = useTheme() === 'dark' ? 'chalk' : 'crayon';
 
   return (
-    <div className="scribble-toolbar" role="toolbar" aria-label="Scribble tools">
+    // pressing a button doesn't take the focus, so you can pick a colour or size mid-sentence and keep typing
+    <div
+      className="scribble-toolbar"
+      role="toolbar"
+      aria-label="Scribble tools"
+      onMouseDown={(e) => (e.target as HTMLElement).closest('button') && e.preventDefault()}
+    >
       <div className="scribble-toolbar__group" role="radiogroup" aria-label={`${stick === 'chalk' ? 'Chalk' : 'Crayon'} colour`}>
         {CRAYONS.map((c) => (
           <button
@@ -45,6 +53,17 @@ export function Toolbar({ sb, children }: { sb: Scribbles; children?: ReactNode 
         ))}
       </div>
       <div className="scribble-toolbar__group">
+        {typing && (
+          <button
+            type="button"
+            aria-pressed={texting}
+            className="scribble-toolbar__text"
+            title="Type on the sketchpad: click anywhere to start, click a note to edit it, drag it to move it"
+            onClick={() => sb.setTool(texting ? 'crayon' : 'text')}
+          >
+            <span aria-hidden="true">Aa</span> type
+          </button>
+        )}
         <button
           type="button"
           aria-pressed={erasing}
@@ -80,7 +99,7 @@ export function Toolbar({ sb, children }: { sb: Scribbles; children?: ReactNode 
         <button type="button" className="scribble-toolbar__text" onClick={sb.undo} disabled={!sb.canUndo}>
           ↶ undo
         </button>
-        <button type="button" className="scribble-toolbar__text" onClick={sb.clear} disabled={!sb.strokes.length}>
+        <button type="button" className="scribble-toolbar__text" onClick={sb.clear} disabled={!sb.strokes.length && !sb.notes.length}>
           🗑 clear
         </button>
       </div>

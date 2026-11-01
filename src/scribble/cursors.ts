@@ -26,9 +26,10 @@ const DUSTER_SVG =
 const ERASER = `url("data:image/svg+xml,${encodeURIComponent(ERASER_SVG)}") 5 27, cell`;
 const DUSTER = `url("data:image/svg+xml,${encodeURIComponent(DUSTER_SVG)}") 5 27, cell`;
 
-/** The cursor for whichever tool is picked: a crayon (chalk at night) in the picked colour, or the eraser (duster). */
+/** The cursor for whichever tool is picked: a crayon (chalk at night) in the picked colour, the eraser (duster), or a text cursor for typing. */
 export const toolCursor = (sb: Pick<Scribbles, 'tool' | 'colour'>, theme: Theme) => {
   const night = theme === 'dark';
+  if (sb.tool === 'text') return 'text';
   if (sb.tool === 'eraser') return night ? DUSTER : ERASER;
   return night ? chalkCursor(chalkOf(sb.colour), 'crosshair') : crayonCursor(sb.colour, 'crosshair');
 };

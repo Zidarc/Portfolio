@@ -1,53 +1,59 @@
-/* Huna crossing the bottom of the screen, left to right (HunaRun.tsx) */
-.huna-run {
+/* Huna's paw-print walk across the bottom of the screen (HunaRun.tsx). The whole trail fades at the end. */
+.huna-walk {
   position: fixed;
-  bottom: 10px;
-  left: 0;
+  inset: 0;
   z-index: 65;
-  width: 64px;
+  overflow: hidden;
   pointer-events: none;
-  animation: huna-across 4.2s linear both;
+  animation: huna-fade 0.7s ease-in var(--total) both;
 }
 
-.huna-run__hop {
-  animation: huna-hop 0.32s ease-in-out infinite alternate;
+/* each print presses in at its own moment, like a step */
+.huna-paw {
+  position: absolute;
+  width: 22px;
+  translate: -50% -50%;
+  opacity: 0;
+  animation: huna-step 0.18s ease-out var(--d) forwards;
 }
 
-@keyframes huna-across {
+.huna-paw__svg {
+  width: 100%;
+  fill: var(--crayon-graphite);
+  opacity: 0.8;
+}
+
+.huna-walk__sign {
+  position: absolute;
+  width: 170px;
+  translate: -50% 0;
+  rotate: -4deg;
+}
+
+@keyframes huna-step {
   from {
-    transform: translateX(-90px);
+    opacity: 0;
+    scale: 1.25;
   }
   to {
-    transform: translateX(calc(100vw + 30px));
+    opacity: 1;
+    scale: 1;
   }
 }
 
-@keyframes huna-hop {
+@keyframes huna-fade {
   from {
-    transform: translateY(0) rotate(-4deg);
+    opacity: 1;
   }
   to {
-    transform: translateY(-14px) rotate(5deg);
+    opacity: 0;
   }
 }
 
-/* less motion: she just pops up in the corner for a moment */
+/* less motion: the whole trail is just there, then fades */
 @media (prefers-reduced-motion: reduce) {
-  .huna-run {
-    left: 16px;
-    animation: huna-visit 2.5s steps(1) both;
-  }
-
-  .huna-run__hop {
+  .huna-paw {
     animation: none;
-  }
-
-  @keyframes huna-visit {
-    from {
-      opacity: 1;
-    }
-    to {
-      opacity: 0;
-    }
+    opacity: 1;
   }
 }

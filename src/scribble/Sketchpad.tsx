@@ -7,6 +7,7 @@ import { drawingBox, MAX_ZOOM, MIN_ZOOM, useCamera } from './camera.ts';
 import { useToolCursor } from './cursors.ts';
 import { ScribbleSurface } from './ScribbleSurface.tsx';
 import { Toolbar } from './Toolbar.tsx';
+import { firstBaseline, LINE, NOTE_FONT, noteLines, type Note } from './notes.ts';
 import { useScribbles } from './useScribbles.ts';
 import './scribble.css';
 
@@ -19,11 +20,11 @@ const MAX_IMAGE_PX = 4096;
  * skips the ones far off screen; only the paper-grain mask is borrowed from it. The image can't see the
  * page's CSS variables, so the colours are written in.
  */
-async function saveImage(sheet: HTMLElement, strokes: Stroke[], theme: Theme) {
+async function saveImage(sheet: HTMLElement, strokes: Stroke[], notes: Note[], theme: Theme) {
   const night = theme === 'dark';
   const defs = sheet.querySelector('svg defs');
   const mask = sheet.querySelector('svg g[mask]')?.getAttribute('mask');
-  const box = drawingBox(strokes);
+  const box = drawingBox(strokes, notes);
   if (!defs || !mask || !box) return;
   const pad = 24;
   const width = box.x1 - box.x0 + pad * 2;
@@ -34,11 +35,22 @@ async function saveImage(sheet: HTMLElement, strokes: Stroke[], theme: Theme) {
       return `<g stroke="${night ? chalkOf(s.c) : s.c}">${passes.join('')}</g>`;
     })
     .join('');
+  const escape = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const texts = notes
+    .map((n) => {
+      const base = n.y + firstBaseline(n.s);
+      const rows = noteLines(n.t).map((l, i) => `<tspan x="${n.x}" y="${base + i * n.s * LINE}">${escape(l) || ' '}</tspan>`);
+      return `<text fill="${night ? chalkOf(n.c) : n.c}" font-size="${n.s}" style="white-space:pre">${rows.join('')}</text>`;
+    })
+    .join('');
+  // an image can't load the page's fonts, so typed text brings the handwriting font along inside it
+  const font = notes.length ? await fontFace() : '';
   const markup =
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">` +
+    `<style>${font} text { font-family: ${NOTE_FONT}; }</style>` +
     new XMLSerializer().serializeToString(defs) +
     `<g transform="translate(${pad - box.x0} ${pad - box.y0})">` +
-    `<g fill="none" stroke-linecap="round" stroke-linejoin="round" mask="${mask}">${lines}</g></g></svg>`;
+    `<g fill="none" stroke-linecap="round" stroke-linejoin="round" mask="${mask}">${lines}</g>${texts}</g></svg>`;
   const img = new Image();
   img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(markup)}`;
   await img.decode();
@@ -56,6 +68,21 @@ async function saveImage(sheet: HTMLElement, strokes: Stroke[], theme: Theme) {
   link.click();
 }
 
+/** The handwriting font as an @font-face rule with the font file inlined. */
+async function fontFace() {
+  try {
+    const blob = await (await fetch('/fonts/patrick-hand-latin.woff2')).blob();
+    const url = await new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.readAsDataURL(blob);
+    });
+    return `@font-face { font-family: 'Patrick Hand'; src: url(${url}) format('woff2'); }`;
+  } catch {
+    return ''; // offline: the image falls back to a similar font
+  }
+}
+
 /**
  * /draw: an endless sheet of paper to play with the crayons (a blackboard and chalk at night): move
  * around and zoom in and out. Kept until the tab is closed.
@@ -66,7 +93,8 @@ export function Sketchpad() {
   const sheetRef = useRef<HTMLDivElement>(null);
   const [hand, setHand] = useState(false);
   const theme = useTheme();
-  useToolCursor(sb, !hand);
+  // (the text tool's cursor is only over the sheet, not the whole page)
+  useToolCursor(sb, !hand && sb.tool !== 'text');
 
   // picking a crayon or the eraser puts the hand down
   useEffect(() => setHand(false), [sb.tool, sb.colour]);
@@ -77,7 +105,7 @@ export function Sketchpad() {
       if (e.ctrlKey || e.metaKey || e.altKey || (e.target as HTMLElement | null)?.closest('input, textarea')) return;
       if (e.key === '+' || e.key === '=') camera.zoomBy(1.25);
       else if (e.key === '-') camera.zoomBy(0.8);
-      else if (e.key === '0') camera.fit(sb.strokes);
+      else if (e.key === '0') camera.fit(sb.strokes, sb.notes);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -120,25 +148,25 @@ export function Sketchpad() {
           <button type="button" title="Zoom in (+)" disabled={zoom >= MAX_ZOOM} onClick={() => camera.zoomBy(1.25)}>
             +<span className="sr-only">Zoom in</span>
           </button>
-          <button type="button" title="Show everything (0)" onClick={() => camera.fit(sb.strokes)}>
+          <button type="button" title="Show everything (0)" onClick={() => camera.fit(sb.strokes, sb.notes)}>
             <span aria-hidden="true">⤢</span>
             <span className="sr-only">Show everything</span>
           </button>
         </div>
       </div>
       <div className="scribble-dock">
-        <Toolbar sb={sb}>
+        <Toolbar sb={sb} typing>
           <button
             type="button"
             className="scribble-toolbar__text"
-            disabled={!sb.strokes.length}
-            onClick={() => sheetRef.current && void saveImage(sheetRef.current, sb.strokes, theme)}
+            disabled={!sb.strokes.length && !sb.notes.length}
+            onClick={() => sheetRef.current && void saveImage(sheetRef.current, sb.strokes, sb.notes, theme)}
           >
             ⬇ save image
           </button>
         </Toolbar>
         <p className="scribble-dock__hint">
-          Endless paper: scroll or drag with two fingers to move, pinch or Ctrl+scroll to zoom. Kept until you close this tab.
+          Endless paper: draw, or pick "Aa type" to write. Scroll or two fingers to move, pinch or Ctrl+scroll to zoom. Kept until you close this tab.
         </p>
       </div>
     </main>
