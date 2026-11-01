@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="A sheet of paper and a box of crayons (or a blackboard and chalk): scribble whatever you like." />
+    <!-- opt in to the page turn between the site and the sketchpad early, before any stylesheet loads (styles/global.css animates it) -->
+    <style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>
     <meta name="theme-color" content="#fbf7ee" />
     <script>
       (function () {

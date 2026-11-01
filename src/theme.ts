@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { flushSync } from 'react-dom';
 
 /*
  * Paper (light) or blackboard (dark). The script at the top of index.html picks the theme before the first
@@ -31,14 +32,37 @@ const chosen = (): Theme | null => {
   }
 };
 
-/** The visitor picked a theme: use it, and keep it for next time. */
-export function chooseTheme(theme: Theme) {
+/** How long the new theme takes to spread across the screen. */
+const WIPE_MS = 650;
+
+/**
+ * The visitor picked a theme: use it, and keep it for next time. Given the point they clicked, the new
+ * theme spreads out from it in a circle. That's a view transition: the browser swaps the page once and
+ * animates two still snapshots on the GPU, so the wipe itself costs nothing. Browsers without view
+ * transitions, and visitors who prefer less motion, get the plain instant switch.
+ */
+export function chooseTheme(theme: Theme, from?: { x: number; y: number }) {
   try {
     localStorage.setItem(KEY, theme);
   } catch {
     // storage blocked: it lasts until they leave
   }
-  apply(theme);
+  const root = document.documentElement;
+  if (!from || !document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    apply(theme);
+    return;
+  }
+  root.classList.add('theme-wipe'); // so the page-turn between pages (global.css) leaves this one alone
+  const wipe = document.startViewTransition(() => flushSync(() => apply(theme)));
+  const { x, y } = from;
+  const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+  void wipe.ready.then(() =>
+    root.animate(
+      { clipPath: [`circle(0 at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+      { duration: WIPE_MS, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', pseudoElement: '::view-transition-new(root)' },
+    ),
+  );
+  void wipe.finished.finally(() => root.classList.remove('theme-wipe'));
 }
 
 // until they pick one, follow the system as it changes (e.g. the phone going dark at sunset)

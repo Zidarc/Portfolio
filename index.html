@@ -8,6 +8,8 @@
       name="description"
       content="Ali Hussain is a Computer Science student at FAST NUCES Karachi who builds backends and systems that don't fall over: live trading platforms, a real-time game, an MUN portal and more, all drawn in crayon."
     />
+    <!-- opt in to the page turn between the site and the sketchpad early, before any stylesheet loads (styles/global.css animates it) -->
+    <style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>
     <meta name="theme-color" content="#fbf7ee" />
     <!-- paper or blackboard, decided before the first paint (no flash): the visitor's choice, else the system's -->
     <script>

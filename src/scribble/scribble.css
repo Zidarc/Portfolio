@@ -285,3 +285,52 @@
   pointer-events: auto;
   touch-action: none;
 }
+
+/* ---------- the endless canvas (sketchpad) ---------- */
+
+/* what slides and scales on the GPU while the canvas is being moved (ScribbleSurface) */
+.scribble-surface__layer {
+  width: 100%;
+  height: 100%;
+  transform-origin: 0 0;
+}
+
+.scribble-surface__layer.is-moving {
+  will-change: transform;
+}
+
+/* zoom and move controls, top right of the sheet */
+.sketchpad__view {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0.1rem 0.3rem;
+  border: 2px solid color-mix(in srgb, var(--ink-soft) 45%, transparent);
+  border-radius: 12px 5px 10px 6px / 6px 10px 5px 12px;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+}
+
+.sketchpad__view button {
+  min-width: 32px;
+  padding: 0.1rem 0.4rem;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 1rem;
+}
+
+.sketchpad__view button:hover,
+.sketchpad__view button[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--crayon-yellow) 30%, transparent);
+}
+
+.sketchpad__zoom {
+  min-width: 3.4em;
+  text-align: center;
+}

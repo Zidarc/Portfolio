@@ -1,33 +1,48 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ThemeButton } from '../components/ThemeButton.tsx';
 import { CrayonText } from '../crayon/CrayonText.tsx';
 import { useTheme, type Theme } from '../theme.ts';
-import { chalkOf } from './brush.ts';
+import { chalkOf, crayonPasses, type Stroke } from './brush.ts';
+import { drawingBox, MAX_ZOOM, MIN_ZOOM, useCamera } from './camera.ts';
 import { useToolCursor } from './cursors.ts';
 import { ScribbleSurface } from './ScribbleSurface.tsx';
 import { Toolbar } from './Toolbar.tsx';
 import { useScribbles } from './useScribbles.ts';
 import './scribble.css';
 
+/** Saved images are at most this many pixels on their long side (a huge canvas is scaled down to fit). */
+const MAX_IMAGE_PX = 4096;
+
 /**
- * Turn the drawing into a PNG and download it: crayon on paper, or chalk on the blackboard at night.
- * The image can't see the page's CSS variables, so the chalk colours are written in.
+ * Turn the whole drawing (not just what's on screen) into a PNG and download it: crayon on paper, or
+ * chalk on the blackboard at night. It's built from the strokes themselves, since the sheet on screen
+ * skips the ones far off screen; only the paper-grain mask is borrowed from it. The image can't see the
+ * page's CSS variables, so the colours are written in.
  */
-async function saveImage(sheet: HTMLElement, theme: Theme) {
+async function saveImage(sheet: HTMLElement, strokes: Stroke[], theme: Theme) {
   const night = theme === 'dark';
-  const svg = sheet.querySelector('svg');
-  if (!svg) return;
-  const { width, height } = sheet.getBoundingClientRect();
-  const copy = svg.cloneNode(true) as SVGSVGElement;
-  copy.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-  copy.setAttribute('width', String(width));
-  copy.setAttribute('height', String(height));
+  const defs = sheet.querySelector('svg defs');
+  const mask = sheet.querySelector('svg g[mask]')?.getAttribute('mask');
+  const box = drawingBox(strokes);
+  if (!defs || !mask || !box) return;
+  const pad = 24;
+  const width = box.x1 - box.x0 + pad * 2;
+  const height = box.y1 - box.y0 + pad * 2;
+  const lines = strokes
+    .map((s) => {
+      const passes = crayonPasses(s).map((p) => `<path d="${p.d}" stroke-width="${p.width}" stroke-opacity="${p.opacity}"/>`);
+      return `<g stroke="${night ? chalkOf(s.c) : s.c}">${passes.join('')}</g>`;
+    })
+    .join('');
+  const markup =
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">` +
+    new XMLSerializer().serializeToString(defs) +
+    `<g transform="translate(${pad - box.x0} ${pad - box.y0})">` +
+    `<g fill="none" stroke-linecap="round" stroke-linejoin="round" mask="${mask}">${lines}</g></g></svg>`;
   const img = new Image();
-  let markup = new XMLSerializer().serializeToString(copy);
-  if (night) markup = markup.replace(/var\(--crayon-\w+, (#[0-9a-f]{6})\)/g, (_, hex: string) => chalkOf(hex));
   img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(markup)}`;
   await img.decode();
-  const scale = 2;
+  const scale = Math.min(2, MAX_IMAGE_PX / Math.max(width, height));
   const canvas = document.createElement('canvas');
   canvas.width = Math.round(width * scale);
   canvas.height = Math.round(height * scale);
@@ -41,12 +56,34 @@ async function saveImage(sheet: HTMLElement, theme: Theme) {
   link.click();
 }
 
-/** /draw: a whole sheet of paper to play with the crayons (a blackboard and chalk at night). Kept until the tab is closed. */
+/**
+ * /draw: an endless sheet of paper to play with the crayons (a blackboard and chalk at night): move
+ * around and zoom in and out. Kept until the tab is closed.
+ */
 export function Sketchpad() {
   const sb = useScribbles('scribbles-sketchpad');
-  const theme = useTheme();
+  const camera = useCamera('scribbles-sketchpad-view');
   const sheetRef = useRef<HTMLDivElement>(null);
-  useToolCursor(sb, true);
+  const [hand, setHand] = useState(false);
+  const theme = useTheme();
+  useToolCursor(sb, !hand);
+
+  // picking a crayon or the eraser puts the hand down
+  useEffect(() => setHand(false), [sb.tool, sb.colour]);
+
+  // + and - zoom, 0 shows everything
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey || (e.target as HTMLElement | null)?.closest('input, textarea')) return;
+      if (e.key === '+' || e.key === '=') camera.zoomBy(1.25);
+      else if (e.key === '-') camera.zoomBy(0.8);
+      else if (e.key === '0') camera.fit(sb.strokes);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
+  const zoom = camera.current().z;
 
   return (
     <main className="sketchpad">
@@ -63,7 +100,31 @@ export function Sketchpad() {
         </div>
       </div>
       <div ref={sheetRef} className="sketchpad__sheet">
-        <ScribbleSurface sb={sb} active />
+        <ScribbleSurface sb={sb} active camera={camera} panning={hand} />
+        <div className="sketchpad__view" role="toolbar" aria-label="Move and zoom">
+          <button
+            type="button"
+            aria-pressed={hand}
+            title="Move around (or hold space, drag with two fingers, or scroll)"
+            onClick={() => setHand(!hand)}
+          >
+            <span aria-hidden="true">✋</span>
+            <span className="sr-only">Move around</span>
+          </button>
+          <button type="button" title="Zoom out (-)" disabled={zoom <= MIN_ZOOM} onClick={() => camera.zoomBy(0.8)}>
+            −<span className="sr-only">Zoom out</span>
+          </button>
+          <button type="button" className="sketchpad__zoom" title="Back to 100%" onClick={camera.actualSize}>
+            {Math.round(zoom * 100)}%
+          </button>
+          <button type="button" title="Zoom in (+)" disabled={zoom >= MAX_ZOOM} onClick={() => camera.zoomBy(1.25)}>
+            +<span className="sr-only">Zoom in</span>
+          </button>
+          <button type="button" title="Show everything (0)" onClick={() => camera.fit(sb.strokes)}>
+            <span aria-hidden="true">⤢</span>
+            <span className="sr-only">Show everything</span>
+          </button>
+        </div>
       </div>
       <div className="scribble-dock">
         <Toolbar sb={sb}>
@@ -71,12 +132,14 @@ export function Sketchpad() {
             type="button"
             className="scribble-toolbar__text"
             disabled={!sb.strokes.length}
-            onClick={() => sheetRef.current && void saveImage(sheetRef.current, theme)}
+            onClick={() => sheetRef.current && void saveImage(sheetRef.current, sb.strokes, theme)}
           >
             ⬇ save image
           </button>
         </Toolbar>
-        <p className="scribble-dock__hint">Your drawing stays until you close this tab.</p>
+        <p className="scribble-dock__hint">
+          Endless paper: scroll or drag with two fingers to move, pinch or Ctrl+scroll to zoom. Kept until you close this tab.
+        </p>
       </div>
     </main>
   );

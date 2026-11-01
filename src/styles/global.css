@@ -105,6 +105,40 @@ section[id] {
   outline-offset: 4px;
 }
 
+/*
+ * Going between the site and the sketchpad tears the top sheet off the pad: the old page lifts, tilts
+ * and flies up out of view, showing the new one underneath. It's a cross-document view transition, so
+ * the browser animates a still snapshot on the GPU. Browsers without it just navigate as usual. The
+ * opt-in itself (@view-transition) is inline in index.html and draw.html, so it's in place before anything loads.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  html:not(.theme-wipe)::view-transition-old(root) {
+    z-index: 1;
+    transform-origin: 85% 0;
+    animation: sheet-off 0.55s cubic-bezier(0.5, 0, 0.75, 0) both;
+  }
+
+  html:not(.theme-wipe)::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+@keyframes sheet-off {
+  20% {
+    transform: rotate(-2deg) translateY(-2%);
+  }
+  to {
+    transform: rotate(-14deg) translate(-12%, -115%);
+  }
+}
+
+/* the theme wipe (theme.ts) is a circle growing over a still snapshot: no cross-fade underneath */
+html.theme-wipe::view-transition-old(root),
+html.theme-wipe::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

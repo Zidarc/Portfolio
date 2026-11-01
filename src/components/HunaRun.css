@@ -1,0 +1,53 @@
+/* Huna crossing the bottom of the screen, left to right (HunaRun.tsx) */
+.huna-run {
+  position: fixed;
+  bottom: 10px;
+  left: 0;
+  z-index: 65;
+  width: 64px;
+  pointer-events: none;
+  animation: huna-across 4.2s linear both;
+}
+
+.huna-run__hop {
+  animation: huna-hop 0.32s ease-in-out infinite alternate;
+}
+
+@keyframes huna-across {
+  from {
+    transform: translateX(-90px);
+  }
+  to {
+    transform: translateX(calc(100vw + 30px));
+  }
+}
+
+@keyframes huna-hop {
+  from {
+    transform: translateY(0) rotate(-4deg);
+  }
+  to {
+    transform: translateY(-14px) rotate(5deg);
+  }
+}
+
+/* less motion: she just pops up in the corner for a moment */
+@media (prefers-reduced-motion: reduce) {
+  .huna-run {
+    left: 16px;
+    animation: huna-visit 2.5s steps(1) both;
+  }
+
+  .huna-run__hop {
+    animation: none;
+  }
+
+  @keyframes huna-visit {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+}
