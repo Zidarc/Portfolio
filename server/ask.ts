@@ -3,20 +3,24 @@
  * from a picture with numbered boxes) and answers from Ali's own material. Shared by the Netlify
  * function, the Docker Node server and the Vite dev server.
  *
- * Free only: Google's Gemini API free tier first, Cloudflare Workers AI's free daily allowance as the
- * backup. Neither account has billing, so running out stops the answers ("out of crayons") instead of
- * costing anything. See docs/ai-setup.md.
+ * Providers, tried in order until one answers: xAI's Grok (paid: only answers once the xAI team has
+ * credits), then Google's Gemini API free tier, then Cloudflare Workers AI's free daily allowance. The
+ * free ones have no billing, so running out stops the answers ("out of crayons") instead of costing
+ * anything. See docs/ai-setup.md.
  */
 import { validateAsk, markRef, typedRef, ASK_LIMITS, type AskInput, type AskItem, type AskKind, type AskResponse } from '../src/shared/ask.ts';
-import { loadMaterial, type Material } from './ask-material.ts';
+import { knowledgeFor, loadMaterial, type Material } from './ask-material.ts';
 
 export interface AskConfig {
+  /** `model` empty: pick the cheapest model the key can use that reads images. */
+  xai?: { key: string; model: string };
   gemini?: { key: string; model: string };
   cloudflare?: { account: string; token: string; model: string };
 }
 
 export function askConfigFromEnv(env: Record<string, string | undefined>): AskConfig {
   const config: AskConfig = {};
+  if (env.XAI_API_KEY) config.xai = { key: env.XAI_API_KEY.trim(), model: (env.XAI_MODEL ?? '').trim() };
   if (env.GEMINI_API_KEY) config.gemini = { key: env.GEMINI_API_KEY.trim(), model: (env.GEMINI_MODEL || 'gemini-3.5-flash').trim() };
   if (env.CF_ACCOUNT_ID && env.CF_AI_TOKEN) {
     config.cloudflare = {
@@ -82,8 +86,12 @@ Reply with JSON only, no other text:
 - "answer": only for questions and statements; leave it out otherwise. Plain text: no Markdown, no
   emoji, no links in brackets. It will be handwritten on the sheet, so keep it short.`;
 
-export function buildSystem(m: Material): string {
-  return [m.rules || '# Rules\n\nAnswer only from what you know about Ali below. If it is not there, say you do not know.', `# What you know about Ali\n\n${m.knowledge}`, PROTOCOL].join('\n\n');
+/** The rules, the material that fits this question (see ask-material.ts) and the reply format. */
+export function buildSystem(m: Material, input: AskInput): string {
+  // handwriting isn't read yet at this point, so only typed words can steer the lookup
+  const knowledge = knowledgeFor(m, input.typed.map((t) => t.text).join('\n'));
+  const rules = m.rules || '# Rules\n\nAnswer only from what you know about Ali below. If it is not there, say you do not know.';
+  return [rules, `# What you know about Ali\n\n${knowledge}`, PROTOCOL].join('\n\n');
 }
 
 export function buildUserText(input: AskInput): string {
@@ -149,7 +157,7 @@ const splitDataUrl = (url: string) => {
 };
 
 function classify(status: number, body: string): ProviderError {
-  if (status === 429 || /quota|exceeded|allocation|rate.?limit/i.test(body)) return new ProviderError('quota', `${status} ${body.slice(0, 300)}`);
+  if (status === 429 || /quota|exceeded|allocation|rate.?limit|credits/i.test(body)) return new ProviderError('quota', `${status} ${body.slice(0, 300)}`);
   if (status === 400 || status === 401 || status === 403 || status === 404) return new ProviderError('config', `${status} ${body.slice(0, 300)}`);
   return new ProviderError('down', `${status} ${body.slice(0, 300)}`);
 }
@@ -164,6 +172,53 @@ async function post(url: string, headers: Record<string, string>, body: unknown,
   const text = await res.text();
   if (!res.ok) throw classify(res.status, text);
   return text;
+}
+
+// xAI model list, worked out once per server instance
+let xaiModel: Promise<string> | null = null;
+
+/** The cheapest model this key can use that takes images (xAI's lineup changes often). */
+async function pickXaiModel(key: string, ms: number): Promise<string> {
+  let res: Response;
+  try {
+    res = await fetch('https://api.x.ai/v1/language-models', { headers: { authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(ms) });
+  } catch (err) {
+    throw new ProviderError('down', err instanceof Error ? err.message : String(err));
+  }
+  const text = await res.text();
+  if (!res.ok) throw classify(res.status, text);
+  const { models = [] } = JSON.parse(text) as { models?: { id: string; input_modalities?: string[]; prompt_text_token_price?: number }[] };
+  const seeing = models.filter((m) => m.input_modalities?.includes('image')).sort((a, b) => (a.prompt_text_token_price ?? 1e9) - (b.prompt_text_token_price ?? 1e9));
+  if (!seeing[0]) throw new ProviderError('config', 'no xAI model that reads images');
+  return seeing[0].id;
+}
+
+async function askXai(c: NonNullable<AskConfig['xai']>, system: string, input: AskInput, ms: number): Promise<string> {
+  const started = Date.now();
+  const model =
+    c.model ||
+    (await (xaiModel ??= pickXaiModel(c.key, Math.min(3_000, ms)).catch((err: unknown) => {
+      xaiModel = null; // ask again next time
+      throw err;
+    })));
+  const text = buildUserText(input);
+  const content = input.image ? [{ type: 'text', text }, { type: 'image_url', image_url: { url: input.image, detail: 'high' } }] : text;
+  const raw = await post(
+    'https://api.x.ai/v1/chat/completions',
+    { authorization: `Bearer ${c.key}` },
+    {
+      model,
+      messages: [{ role: 'system', content: system }, { role: 'user', content }],
+      response_format: { type: 'json_object' },
+      temperature: 0.3,
+      max_tokens: 1500,
+    },
+    ms - (Date.now() - started),
+  );
+  const data = JSON.parse(raw) as { choices?: { message?: { content?: string } }[] };
+  const reply = data.choices?.[0]?.message?.content;
+  if (!reply) throw new ProviderError('bad-reply', `empty reply: ${raw.slice(0, 300)}`);
+  return reply;
 }
 
 async function askGemini(c: NonNullable<AskConfig['gemini']>, system: string, input: AskInput, ms: number): Promise<string> {
@@ -233,16 +288,16 @@ export async function handleAsk(raw: unknown, opts: AskOptions): Promise<AskResu
     return { status: 429, body: { ok: false, code: 'too-many', error: "That's a lot of questions! Give me a minute." } };
   }
 
-  const { gemini, cloudflare } = opts.config;
-  if (!gemini && !cloudflare) {
+  const { xai, gemini, cloudflare } = opts.config;
+  if (!xai && !gemini && !cloudflare) {
     if (opts.dryRun) return { status: 200, body: { ok: true, items: practice(input), provider: 'practice' } };
-    console.error('[ask] no AI provider configured (GEMINI_API_KEY or CF_ACCOUNT_ID + CF_AI_TOKEN)');
+    console.error('[ask] no AI provider configured (XAI_API_KEY, GEMINI_API_KEY or CF_ACCOUNT_ID + CF_AI_TOKEN)');
     return { status: 503, body: { ok: false, code: 'not-set-up', error: "The AI isn't set up yet. Check back soon!" } };
   }
 
   let system: string;
   try {
-    system = buildSystem(await loadMaterial());
+    system = buildSystem(await loadMaterial(), input);
   } catch (err) {
     console.error('[ask] could not read content/ai:', err);
     return SNAPPED;
@@ -250,14 +305,15 @@ export async function handleAsk(raw: unknown, opts: AskOptions): Promise<AskResu
 
   const left = () => DEADLINE_MS - (Date.now() - started);
   const attempts = [
+    xai && { name: 'grok', run: (ms: number) => askXai(xai, system, input, ms) },
     gemini && { name: 'gemini', run: (ms: number) => askGemini(gemini, system, input, ms) },
     cloudflare && { name: 'cloudflare', run: (ms: number) => askCloudflare(cloudflare, system, input, ms) },
   ].filter((a): a is { name: string; run: (ms: number) => Promise<string> } => !!a);
 
   const failures: ProviderError[] = [];
   for (const [i, attempt] of attempts.entries()) {
-    // the first provider gets most of the time, but leaves the backup enough for one try
-    const budget = i < attempts.length - 1 ? Math.min(6_000, left() - 2_500) : left() - 300;
+    // each provider but the last gets a slice, leaving the next one enough for a try
+    const budget = i < attempts.length - 1 ? Math.min(i === 0 ? 6_000 : 4_000, left() - 2_500) : left() - 300;
     if (budget < 1_000) break;
     try {
       const items = readItems(await attempt.run(budget), input);

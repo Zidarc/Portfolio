@@ -9,5 +9,5 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
-  # what the sketchpad's AI answers from (read at run time by server/ask-material.ts)
-  included_files = ["content/ai/**"]
+  # what the sketchpad's AI answers from: its notes and the blog (read at run time by server/ask-material.ts)
+  included_files = ["content/ai/**", "content/blog/**"]

@@ -1,13 +1,27 @@
 # Setting up the sketchpad's AI mode
 
-The AI behind `POST /api/ask` runs only on **free tiers**, with **no billing set up anywhere**. When a free
-allowance runs out, the sketchpad says "I'm out of crayons for today" until it resets; nothing is ever
-charged. There are two providers: Gemini is tried first, and Cloudflare takes over when Gemini is used up
-or down. One of them is enough to start.
+`POST /api/ask` tries up to three providers in order, moving to the next when one is out of credit,
+rate-limited or down:
+
+1. **xAI Grok** (`XAI_API_KEY`): **paid**. It answers only once the xAI team has credits.
+2. **Google Gemini** (`GEMINI_API_KEY`): **free tier**.
+3. **Cloudflare Workers AI** (`CF_ACCOUNT_ID` + `CF_AI_TOKEN`): **free daily allowance**.
+
+The free ones have no billing set up, so when they run out the sketchpad says "I'm out of crayons for
+today" until they reset; nothing is charged. Any one provider is enough to start.
 
 What it answers from lives in [`content/ai/`](../content/ai/README.md).
 
-## 1. Gemini (first choice)
+## 0. Grok (xAI)
+
+1. In the xAI console (console.x.ai), create an API key and put it in `.env.local` as `XAI_API_KEY=...`.
+2. **It needs credits:** a new team gets "doesn't have any credits or licenses yet" until credits are
+   bought (or granted) on console.x.ai. Until then, requests simply move on to Gemini and Cloudflare.
+   Set a spending limit in the console if you add credits.
+3. Optional: `XAI_MODEL` picks the model. Left empty, it uses the cheapest model your key can use that
+   reads images (it asks xAI's model list once per server start).
+
+## 1. Gemini (free)
 
 1. Go to **Google AI Studio** (aistudio.google.com), sign in, and choose **Get API key → Create API key**.
    Don't add a billing account to that Google Cloud project: without one, it stays on the free tier.
@@ -20,7 +34,7 @@ Two things to know about the free tier:
 - **Regions:** the free tier may not serve visitors in the EEA, Switzerland or the UK. Check the current
   Gemini API terms. Cloudflare still answers for them if it's set up.
 
-## 2. Cloudflare Workers AI (backup)
+## 2. Cloudflare Workers AI (free backup)
 
 1. Make a free Cloudflare account. Its **Account ID** is on the dashboard's overview page (right-hand side).
 2. **My Profile → API Tokens → Create Token → Custom token**. Give it the permission

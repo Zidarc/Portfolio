@@ -13,7 +13,7 @@ ENV NODE_ENV=production PORT=8080
 COPY --from=build /app/dist ./dist
 COPY server ./server
 COPY src/shared ./src/shared
-# the AI mode answers from the site's data and the Markdown in content/ai
+# the AI mode answers from the site's data and the Markdown in content/ (ai/ and blog/)
 COPY src/data ./src/data
 COPY content ./content
 USER node
