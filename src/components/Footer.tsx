@@ -12,6 +12,10 @@ export function Footer() {
         drawn with crayons &amp; TypeScript ·{' '}
         <a className="footer__link" href="/draw">
           grab a crayon on the sketchpad
+        </a>{' '}
+        ·{' '}
+        <a className="footer__link" href="/blog">
+          read the blog
         </a>
       </p>
     </footer>

@@ -1,0 +1,314 @@
+/* ---------- the blog's frame (Blog.tsx) ---------- */
+
+.blog {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+
+.blog__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: min(760px, 100%);
+  margin: 0 auto;
+  padding: 0.9rem var(--gutter) 0;
+}
+
+.blog__back {
+  color: var(--ink);
+  text-decoration: underline wavy var(--crayon-purple);
+  text-underline-offset: 5px;
+}
+
+.blog__theme {
+  padding: 0.3rem;
+  border: 0;
+  background: none;
+}
+
+.blog__theme svg {
+  width: 28px;
+}
+
+.blog__page {
+  flex: 1;
+  width: min(760px, 100%);
+  margin: 0 auto;
+  padding: 2rem var(--gutter) 4rem;
+}
+
+.blog__heading {
+  margin: 0 0 0.6rem;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.blog__intro {
+  margin: 0 0 2.5rem;
+  color: var(--ink-soft);
+}
+
+.blog__footer {
+  padding: 2rem var(--gutter) 2.5rem;
+  color: var(--ink-soft);
+  font-size: 1rem;
+  text-align: center;
+}
+
+.blog__footer a {
+  color: inherit;
+}
+
+.blog__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  --chip-colour: var(--crayon-purple);
+}
+
+.blog__tags .chip {
+  font-size: 0.95rem;
+}
+
+/* a rubber stamp on posts that aren't published yet (only ever seen in local dev) */
+.blog__draft {
+  margin-left: 0.6rem;
+  padding: 0 0.5rem;
+  border: 2px solid var(--crayon-red);
+  border-radius: 4px 2px 5px 3px;
+  color: var(--ink-red);
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  display: inline-block;
+  rotate: -4deg;
+}
+
+.blog__empty {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  padding: 3rem 0;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+.blog__empty-doodle {
+  width: 80px;
+}
+
+/* ---------- the list of posts: each one a page torn from a notebook ---------- */
+
+.blog-list {
+  display: grid;
+  gap: 1.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.blog-card {
+  position: relative;
+  padding: 1.1rem 1.3rem 1.2rem 2.6rem;
+  border: 2px solid color-mix(in srgb, var(--ink-soft) 35%, transparent);
+  border-radius: 14px 5px 12px 6px / 6px 12px 5px 14px;
+  /* notebook lines, and the red margin line down the left */
+  background:
+    linear-gradient(90deg, transparent 1.6rem, color-mix(in srgb, var(--crayon-red) 35%, transparent) 1.6rem 1.7rem, transparent 1.7rem),
+    repeating-linear-gradient(transparent 0 1.9rem, color-mix(in srgb, var(--crayon-blue) 14%, transparent) 1.9rem 2rem),
+    color-mix(in srgb, var(--paper) 94%, var(--paper-shade));
+  transition: transform 0.2s ease;
+}
+
+.blog-list li:nth-child(odd) .blog-card {
+  rotate: -0.4deg;
+}
+
+.blog-list li:nth-child(even) .blog-card {
+  rotate: 0.5deg;
+}
+
+.blog-card:hover {
+  transform: translateY(-2px);
+}
+
+.blog-card__date {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 1rem;
+}
+
+.blog-card__title {
+  margin: 0.1rem 0 0.3rem;
+  font-size: 1.6rem;
+  font-weight: inherit;
+  line-height: 1.25;
+}
+
+.blog-card__title a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+/* the whole card is the link */
+.blog-card__title a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.blog-card__title a:hover,
+.blog-card__title a:focus-visible {
+  color: var(--ink-purple);
+}
+
+.blog-card__summary {
+  margin: 0;
+}
+
+/* ---------- one post ---------- */
+
+.blog-post__head {
+  margin-bottom: 2rem;
+}
+
+.blog-post__title {
+  margin: 0;
+  font-size: clamp(2rem, 6vw, 2.8rem);
+  font-weight: inherit;
+  line-height: 1.15;
+}
+
+.blog-post__underline {
+  display: block;
+  width: min(320px, 70%);
+  margin: 0.2rem 0 0.6rem;
+}
+
+/* ---------- the text of a post (Markdown) ---------- */
+
+.prose {
+  font-size: 1.22rem;
+  line-height: 1.6;
+}
+
+.prose > * {
+  margin: 0 0 1.1rem;
+}
+
+.prose h2,
+.prose h3,
+.prose h4 {
+  margin: 2.2rem 0 0.6rem;
+  font-weight: inherit;
+  line-height: 1.25;
+}
+
+.prose h2 {
+  color: var(--ink-blue);
+  font-size: 1.75rem;
+}
+
+.prose h3 {
+  color: var(--ink-green);
+  font-size: 1.4rem;
+}
+
+.prose a {
+  color: inherit;
+  text-decoration: underline wavy var(--crayon-blue);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 4px;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.4rem;
+}
+
+.prose li + li {
+  margin-top: 0.3rem;
+}
+
+.prose ul li::marker {
+  color: var(--crayon-orange);
+}
+
+.prose blockquote {
+  margin-left: 0;
+  padding: 0.2rem 0 0.2rem 1rem;
+  border-left: 4px solid color-mix(in srgb, var(--crayon-yellow) 70%, transparent);
+  border-radius: 2px;
+  color: var(--ink-soft);
+}
+
+.prose code {
+  padding: 0.05rem 0.3rem;
+  border-radius: 4px;
+  background: var(--paper-shade);
+  font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  font-size: 0.85em;
+}
+
+.prose pre {
+  overflow-x: auto;
+  padding: 0.9rem 1rem;
+  border: 2px dashed color-mix(in srgb, var(--ink-soft) 35%, transparent);
+  border-radius: 10px;
+  background: var(--paper-shade);
+  line-height: 1.45;
+}
+
+.prose pre code {
+  padding: 0;
+  background: none;
+  font-size: 0.82em;
+}
+
+/* pictures sit on the page like taped-in photos */
+.prose img {
+  max-width: 100%;
+  height: auto;
+  margin: 0.5rem auto;
+  padding: 0.5rem;
+  border-radius: 3px;
+  background: #fffdf8;
+  box-shadow: 0 3px 10px rgba(70, 50, 20, 0.18);
+  rotate: -0.6deg;
+}
+
+:root[data-theme='dark'] .prose img {
+  background: #e9e5da;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.45);
+}
+
+.prose hr {
+  height: 2px;
+  border: 0;
+  background: repeating-linear-gradient(90deg, var(--ink-soft) 0 10px, transparent 10px 16px);
+  opacity: 0.5;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1.05rem;
+}
+
+.prose th,
+.prose td {
+  padding: 0.35rem 0.6rem;
+  border-bottom: 1.5px solid color-mix(in srgb, var(--ink-soft) 35%, transparent);
+  text-align: left;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blog-card {
+    transition: none;
+  }
+}

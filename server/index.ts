@@ -123,7 +123,9 @@ async function staticFile(req: IncomingMessage, res: ServerResponse, pathname: s
 }
 
 createServer((req, res) => {
-  const { pathname } = new URL(req.url ?? '/', 'http://localhost');
+  let { pathname } = new URL(req.url ?? '/', 'http://localhost');
+  // every blog post is served by the one blog page (blog.html reads the address)
+  if (pathname.startsWith('/blog/')) pathname = '/blog.html';
   const handler =
     pathname === '/api/contact' ? contact(req, res) : pathname === '/api/ask' ? ask(req, res) : staticFile(req, res, pathname);
   handler.catch((err: unknown) => {

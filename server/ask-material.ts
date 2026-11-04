@@ -18,6 +18,7 @@ import { GITHUB_URL, LINKEDIN_URL, RESUME_URL } from '../src/data/links.ts';
 import { projects } from '../src/data/projects.ts';
 import { roles } from '../src/data/roles.ts';
 import { skillGroups } from '../src/data/skills.ts';
+import { readPosts } from './blog.ts';
 
 /** Characters of material sent with one question (about 15k tokens). */
 export const CONTEXT_BUDGET = 60_000;
@@ -170,15 +171,21 @@ async function read(): Promise<Material> {
   for (const root of ROOTS) {
     const ai = join(root, 'ai');
     const files = await markdownFiles(ai, ai);
-    const blog = (await markdownFiles(join(root, 'blog'), root)).map((f) => ({ path: join(root, f), name: f }));
-    if (!files.length && !blog.length) continue; // not here: try the next place
+    // published posts only (no drafts), the same ones the blog shows
+    const posts = await readPosts(join(root, 'blog'));
+    if (!files.length && !posts.length) continue; // not here: try the next place
 
     const rules = files.includes('rules.md') ? await readText(join(ai, 'rules.md')) : '';
     const topLevel = files.filter((f) => !f.includes('/') && f !== 'rules.md');
-    const lookedUp = [...files.filter((f) => f.includes('/')).map((f) => ({ path: join(ai, f), name: f })), ...blog];
+    const notes = files.filter((f) => f.includes('/'));
 
     const core = [siteFacts(), ...(await Promise.all(topLevel.map(async (f) => `## From ${f}\n\n${await readText(join(ai, f))}`)))].join('\n\n');
-    const chunks = (await Promise.all(lookedUp.map(async ({ path, name }) => chunksOf(name, await readText(path))))).flat();
+    const noteChunks = await Promise.all(notes.map(async (f) => chunksOf(f, await readText(join(ai, f)))));
+    const postChunks = posts.map((p) => {
+      const intro = `# Blog post: ${p.title}\n\nPublished ${p.date} at /blog/${p.slug}.${p.tags.length ? ` Tags: ${p.tags.join(', ')}.` : ''}${p.summary ? ` ${p.summary}` : ''}`;
+      return chunksOf(`blog/${p.slug}.md`, `${intro}\n\n${p.body.replace(/<!--[\s\S]*?-->/g, '')}`);
+    });
+    const chunks = [...noteChunks, ...postChunks].flat();
     const df = new Map<string, number>();
     for (const c of chunks) for (const term of c.terms.keys()) df.set(term, (df.get(term) ?? 0) + 1);
     return { rules, core, chunks, df };

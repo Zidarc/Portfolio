@@ -4,6 +4,7 @@ import { defineConfig, loadEnv, type Connect, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { askConfigFromEnv, handleAsk } from './server/ask.ts';
 import { handleContact, mailConfigFromEnv } from './server/contact.ts';
+import { blogPages } from './server/vite-blog.ts';
 
 type Handler = (body: unknown, clientIp: string) => Promise<{ status: number; body: unknown }>;
 
@@ -44,7 +45,9 @@ function postJson(handle: Handler, maxBytes: number): Connect.NextHandleFunction
  */
 function api(env: Record<string, string>): Plugin {
   const contact = postJson((body, clientIp) => handleContact(body, { config: mailConfigFromEnv(env), clientIp, dryRun: true }), 20_000);
-  const ask = postJson((body, clientIp) => handleAsk(body, { config: askConfigFromEnv(env), clientIp, dryRun: true }), 2_000_000);
+  // AI_PRACTICE=1 (in .env.local or the shell) ignores the AI keys and gives practice answers, for trying the sketchpad
+  const askConfig = env.AI_PRACTICE === '1' ? {} : askConfigFromEnv(env);
+  const ask = postJson((body, clientIp) => handleAsk(body, { config: askConfig, clientIp, dryRun: true }), 2_000_000);
   const use = (server: { middlewares: Connect.Server }) => {
     server.middlewares.use('/api/contact', contact);
     server.middlewares.use('/api/ask', ask);
@@ -52,21 +55,26 @@ function api(env: Record<string, string>): Plugin {
   return { name: 'api', configureServer: use, configurePreviewServer: use };
 }
 
-/** `/draw` opens the sketchpad (draw.html) in dev and preview, the way Netlify serves it live. */
-function prettyDrawUrl(): Plugin {
+/**
+ * `/draw` opens the sketchpad (draw.html), and `/blog` and `/blog/<post>` the blog (blog.html), in dev
+ * and preview, the way Netlify serves them live.
+ */
+function prettyUrls(): Plugin {
   const rewrite: Connect.NextHandleFunction = (req, _res, next) => {
-    if (req.url === '/draw' || req.url?.startsWith('/draw?')) req.url = req.url.replace('/draw', '/draw.html');
+    const [path = '', query] = (req.url ?? '').split('?');
+    const page = path === '/draw' ? '/draw.html' : path === '/blog' || path.startsWith('/blog/') ? '/blog.html' : null;
+    if (page) req.url = query === undefined ? page : `${page}?${query}`;
     next();
   };
   return {
-    name: 'pretty-draw-url',
+    name: 'pretty-urls',
     configureServer: (server) => void server.middlewares.use(rewrite),
     configurePreviewServer: (server) => void server.middlewares.use(rewrite),
   };
 }
 
 export default defineConfig(({ mode }) => ({
-  plugins: [react(), api(loadEnv(mode, process.cwd(), '')), prettyDrawUrl()],
+  plugins: [react(), api(loadEnv(mode, process.cwd(), '')), prettyUrls(), blogPages(process.cwd())],
   build: {
     rolldownOptions: {
       // the site, plus the crayon page shown for addresses that don't exist (Netlify serves dist/404.html)
@@ -74,6 +82,7 @@ export default defineConfig(({ mode }) => ({
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         notFound: fileURLToPath(new URL('./404.html', import.meta.url)),
         sketchpad: fileURLToPath(new URL('./draw.html', import.meta.url)),
+        blog: fileURLToPath(new URL('./blog.html', import.meta.url)),
       },
     },
   },

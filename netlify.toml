@@ -6,6 +6,12 @@
   NODE_VERSION = "24"
 
 # POST /api/contact and /api/ask (each function sets its own path)
+# every blog post is served by the one blog page (blog.html reads the address)
+[[redirects]]
+  from = "/blog/*"
+  to = "/blog.html"
+  status = 200
+
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
