@@ -5,7 +5,7 @@
  * 1. Read: typed notes go as text. Handwriting is grouped (strokes close together are one group) and
  *    every new group goes into one picture, each in its own numbered box.
  * 2. Ask /api/ask, which says what each thing is and answers the questions and remarks.
- * 3. Write each answer as a note in free space next to what it answers. If there's no room right next to
+ * 3. Write each answer in crayon handwriting (answers.ts), in free space next to what it answers. If there's no room right next to
  *    it, the answer goes in the nearest free spot further out, with a crayon arrow pointing to it.
  *
  * Each answer notes the fingerprint of what it answers (the note's text, or the group's strokes), so
@@ -16,6 +16,7 @@
 import { ASK_LIMITS, markRef, typedRef, type AskInput, type AskItem, type AskResponse } from '../shared/ask.ts';
 import { pathD, type Stroke } from './brush.ts';
 import { strokeBox, type Box } from './camera.ts';
+import { answerText, freshAnswers, wrapAnswer } from './answers.ts';
 import { newNoteId, noteBox, noteMeasure, type Note } from './notes.ts';
 
 // ---------- groups of handwriting ----------
@@ -137,27 +138,8 @@ async function picture(groups: Group[]): Promise<string> {
 
 // ---------- finding space ----------
 
-/** How wide an answer is wrapped, its size, and the gap kept around writing. */
-export const ANSWER_WIDTH = 340;
-export const ANSWER_SIZE = 22;
+/** The gap kept between an answer and any other writing. */
 const GAP = 18;
-
-/** Greedy word wrap to `width` world units at the answer's size. */
-export function wrap(text: string, width = ANSWER_WIDTH, size = ANSWER_SIZE): string {
-  const lines: string[] = [];
-  for (const para of text.split('\n')) {
-    let line = '';
-    for (const word of para.split(/\s+/).filter(Boolean)) {
-      const next = line ? `${line} ${word}` : word;
-      if (line && noteMeasure({ t: next, s: size }).w > width) {
-        lines.push(line);
-        line = word;
-      } else line = next;
-    }
-    lines.push(line);
-  }
-  return lines.join('\n');
-}
 
 /** Where a box of size w × h can go near `target` without touching anything in `taken`. */
 export function findSpot(target: Box, w: number, h: number, taken: Box[]): { x: number; y: number; near: boolean } {
@@ -321,10 +303,17 @@ export async function askSheet(strokes: Stroke[], notes: Note[], colour: string)
       skipped++;
       continue;
     }
-    const t = wrap(item.answer);
-    const { w, h } = noteMeasure({ t, s: ANSWER_SIZE });
+    const t = wrapAnswer(answerText(item.answer));
+    if (!t) {
+      unanswered.push(target.key);
+      skipped++;
+      continue;
+    }
+    const draft: Note = { id: newNoteId(), x: 0, y: 0, t, c: colour, s: 0, ai: { for: target.key } };
+    const { w, h } = noteMeasure(draft);
     const spot = findSpot(target.box, w, h, taken);
-    const note: Note = { id: newNoteId(), x: Math.round(spot.x), y: Math.round(spot.y), t, c: colour, s: ANSWER_SIZE, ai: { for: target.key } };
+    const note: Note = { ...draft, x: Math.round(spot.x), y: Math.round(spot.y) };
+    freshAnswers.add(note.id); // so it writes itself in
     const box = noteBox(note);
     taken.push(grow(box, 4));
     newNotes.push(note);

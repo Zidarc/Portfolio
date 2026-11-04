@@ -1,6 +1,8 @@
 import { memo, startTransition, useEffect, useId, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
 import { flushSync } from 'react-dom';
+import { CrayonDrawing } from '../crayon/CrayonDrawing.tsx';
 import { useTheme } from '../theme.ts';
+import { answerHand, freshAnswers } from './answers.ts';
 import { crayonPasses, grainTile, shownColour, type Pass, type Stroke } from './brush.ts';
 import { homeView, overlaps, strokeBox, visibleBox, zoomAt, type Camera, type View } from './camera.ts';
 import { toolCursor } from './cursors.ts';
@@ -44,6 +46,32 @@ const NoteView = memo(function NoteView({ note }: { note: Note }) {
         </tspan>
       ))}
     </text>
+  );
+});
+
+/**
+ * An AI answer, written in crayon handwriting. One that's just been placed writes itself in, stroke by
+ * stroke; one already on the sheet is simply there. It sits under the sheet's crayon-grain mask like the
+ * visitor's own crayon, so it needs no texture filter of its own (filters that redraw while the canvas
+ * moves would cost smoothness). The line settings are attributes, not CSS, so a saved image keeps them.
+ */
+const AnswerView = memo(function AnswerView({ note }: { note: Note }) {
+  const { plan, scale, seed } = answerHand(note);
+  const [fresh] = useState(() => freshAnswers.has(note.id));
+  return (
+    <g transform={`translate(${note.x} ${note.y}) scale(${scale})`} fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <CrayonDrawing
+        plan={plan}
+        seed={seed}
+        label={note.t}
+        decorative
+        texture={false}
+        instant={!fresh}
+        color={shownColour(note.c)}
+        style={{ width: `${plan.width}px`, height: `${plan.height}px` }}
+        onDone={() => freshAnswers.delete(note.id)}
+      />
+    </g>
   );
 });
 
@@ -309,6 +337,8 @@ export function ScribbleSurface({ sb, active, camera, panning = false, className
       if (pr.note && pr.moved) {
         ref.current?.querySelector(`[data-note="${pr.note.id}"]`)?.removeAttribute('transform');
         sb.putNote({ ...pr.note, x: pr.note.x + x - pr.wx, y: pr.note.y + y - pr.wy });
+      } else if (pr.note?.ai) {
+        // the AI's answers can be moved or rubbed out, but they're its words: not edited as typed text
       } else if (pr.note) {
         flushSync(() => setDraft({ note: pr.note!, isNew: false }));
       } else {
@@ -382,10 +412,17 @@ export function ScribbleSurface({ sb, active, camera, panning = false, className
             <g fill="none" strokeLinecap="round" strokeLinejoin="round" mask={`url(#${uid}-mask)`}>
               {sb.strokes.map((s, i) => (!near || overlaps(strokeBox(s), near) ? <StrokeView key={i} stroke={s} /> : null))}
               {current && <StrokeView stroke={current} />}
+              {sb.notes.map((n) =>
+                n.ai ? (
+                  <g key={n.id} data-note={n.id}>
+                    <AnswerView note={n} />
+                  </g>
+                ) : null,
+              )}
             </g>
             <g>
               {sb.notes.map((n) =>
-                n.id === draft?.note.id ? null : (
+                n.ai || n.id === draft?.note.id ? null : (
                   <g key={n.id} data-note={n.id}>
                     <NoteView note={n} />
                   </g>

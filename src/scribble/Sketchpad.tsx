@@ -39,21 +39,32 @@ async function saveImage(sheet: HTMLElement, strokes: Stroke[], notes: Note[], t
     })
     .join('');
   const escape = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const texts = notes
+  const typed = notes.filter((n) => !n.ai);
+  const texts = typed
     .map((n) => {
       const base = n.y + firstBaseline(n.s);
       const rows = noteLines(n.t).map((l, i) => `<tspan x="${n.x}" y="${base + i * n.s * LINE}">${escape(l) || ' '}</tspan>`);
       return `<text fill="${night ? chalkOf(n.c) : n.c}" font-size="${n.s}" style="white-space:pre">${rows.join('')}</text>`;
     })
     .join('');
+  // the AI's crayon answers, copied as drawn on the sheet (every note is drawn, even off screen)
+  const answers = notes
+    .filter((n) => n.ai)
+    .map((n) => {
+      const drawn = sheet.querySelector(`[data-note="${n.id}"] > g`);
+      return drawn ? new XMLSerializer().serializeToString(drawn) : '';
+    })
+    .join('')
+    // colours as written values (the image can't see the page's CSS variables), chalk at night
+    .replace(/var\(--crayon-\w+, (#[0-9a-f]{6})\)/g, (_, hex: string) => (night ? chalkOf(hex) : hex));
   // an image can't load the page's fonts, so typed text brings the handwriting font along inside it
-  const font = notes.length ? await fontFace() : '';
+  const font = typed.length ? await fontFace() : '';
   const markup =
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">` +
     `<style>${font} text { font-family: ${NOTE_FONT}; }</style>` +
     new XMLSerializer().serializeToString(defs) +
     `<g transform="translate(${pad - box.x0} ${pad - box.y0})">` +
-    `<g fill="none" stroke-linecap="round" stroke-linejoin="round" mask="${mask}">${lines}</g>${texts}</g></svg>`;
+    `<g fill="none" stroke-linecap="round" stroke-linejoin="round" mask="${mask}">${lines}${answers}</g>${texts}</g></svg>`;
   const img = new Image();
   img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(markup)}`;
   await img.decode();

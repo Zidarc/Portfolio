@@ -1,3 +1,4 @@
+import { answerSize } from './answers.ts';
 import type { Box } from './camera.ts';
 
 /**
@@ -67,8 +68,9 @@ export function firstBaseline(size: number) {
   return size * ((LINE - ascent - descent) / 2 + ascent);
 }
 
-/** The note's size in world units. */
-export function noteMeasure(n: Pick<Note, 't' | 's'>) {
+/** The note's size in world units (an AI answer's comes from its crayon handwriting, see answers.ts). */
+export function noteMeasure(n: Pick<Note, 't' | 's'> & Partial<Pick<Note, 'id' | 'ai'>>) {
+  if (n.ai && n.id) return answerSize({ id: n.id, t: n.t });
   const lines = noteLines(n.t);
   return { w: Math.max(n.s * 0.5, ...lines.map((l) => lineWidth(l, n.s))), h: lines.length * n.s * LINE };
 }
