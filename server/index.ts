@@ -5,12 +5,16 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, join, resolve, sep } from 'node:path';
+import { askConfigFromEnv, handleAsk } from './ask.ts';
 import { handleContact, mailConfigFromEnv } from './contact.ts';
 
 const DIST = resolve(process.env.DIST_DIR ?? 'dist');
 const PORT = Number(process.env.PORT ?? 8080);
 const MAX_BODY = 20_000;
+/** The sketchpad's AI mode sends a picture of the handwriting. */
+const MAX_ASK_BODY = 2_000_000;
 const mailConfig = mailConfigFromEnv(process.env);
+const askConfig = askConfigFromEnv(process.env);
 
 const TYPES: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -32,12 +36,12 @@ function send(res: ServerResponse, status: number, body: string | Buffer, header
   res.end(body);
 }
 
-async function readBody(req: IncomingMessage): Promise<string> {
+async function readBody(req: IncomingMessage, max = MAX_BODY): Promise<string> {
   let size = 0;
   const chunks: Buffer[] = [];
   for await (const chunk of req) {
     size += (chunk as Buffer).length;
-    if (size > MAX_BODY) throw new Error('too large');
+    if (size > max) throw new Error('too large');
     chunks.push(chunk as Buffer);
   }
   return Buffer.concat(chunks).toString('utf8');
@@ -59,6 +63,23 @@ async function contact(req: IncomingMessage, res: ServerResponse) {
     config: mailConfig,
     clientIp: forwarded || req.socket.remoteAddress || 'unknown',
   });
+  return json(result.status, result.body);
+}
+
+/** POST /api/ask: the sketchpad's AI mode. */
+async function ask(req: IncomingMessage, res: ServerResponse) {
+  const json = (status: number, body: unknown) =>
+    send(res, status, JSON.stringify(body), { 'content-type': 'application/json' });
+  if (req.method !== 'POST') return json(405, { ok: false, code: 'bad-request', error: 'Method not allowed' });
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(await readBody(req, MAX_ASK_BODY));
+  } catch {
+    return json(400, { ok: false, code: 'bad-request', error: 'Bad request' });
+  }
+  const forwarded = String(req.headers['x-forwarded-for'] ?? '').split(',')[0]?.trim();
+  const result = await handleAsk(parsed, { config: askConfig, clientIp: forwarded || req.socket.remoteAddress || 'unknown' });
   return json(result.status, result.body);
 }
 
@@ -103,11 +124,13 @@ async function staticFile(req: IncomingMessage, res: ServerResponse, pathname: s
 
 createServer((req, res) => {
   const { pathname } = new URL(req.url ?? '/', 'http://localhost');
-  const handler = pathname === '/api/contact' ? contact(req, res) : staticFile(req, res, pathname);
+  const handler =
+    pathname === '/api/contact' ? contact(req, res) : pathname === '/api/ask' ? ask(req, res) : staticFile(req, res, pathname);
   handler.catch((err: unknown) => {
     console.error(err);
     if (!res.headersSent) send(res, 500, 'Server error');
   });
 }).listen(PORT, () => {
-  console.info(`portfolio on http://localhost:${PORT} (email ${mailConfig ? 'configured' : 'NOT configured'})`);
+  const ai = [askConfig.gemini && 'Gemini', askConfig.cloudflare && 'Cloudflare'].filter(Boolean).join(' + ') || 'NOT configured';
+  console.info(`portfolio on http://localhost:${PORT} (email ${mailConfig ? 'configured' : 'NOT configured'}, AI ${ai})`);
 });

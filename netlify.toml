@@ -5,7 +5,9 @@
 [build.environment]
   NODE_VERSION = "24"
 
-# POST /api/contact (the function sets its own path)
+# POST /api/contact and /api/ask (each function sets its own path)
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
+  # what the sketchpad's AI answers from (read at run time by server/ask-material.ts)
+  included_files = ["content/ai/**"]
