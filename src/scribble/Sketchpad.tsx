@@ -11,6 +11,9 @@ import { firstBaseline, LINE, NOTE_FONT, noteLines, type Note } from './notes.ts
 import { useScribbles } from './useScribbles.ts';
 import './scribble.css';
 
+/** The AI writes its answers in purple, so they stand out from the visitor's own writing. */
+const ANSWER_COLOUR = '#7b52ab';
+
 /** Saved images are at most this many pixels on their long side (a huge canvas is scaled down to fit). */
 const MAX_IMAGE_PX = 4096;
 
@@ -83,6 +86,50 @@ async function fontFace() {
   }
 }
 
+/** What the "ask" button says afterwards, for a few seconds. */
+const MESSAGE_MS = 6000;
+
+/**
+ * The "ask" button: hands the sheet to the AI (scribble/ai.ts, loaded the first time it's pressed) and
+ * adds its answers and arrows as one undo step, then brings them into view.
+ */
+function useAsk(sb: ReturnType<typeof useScribbles>, camera: ReturnType<typeof useCamera>) {
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!message) return;
+    const t = setTimeout(() => setMessage(null), MESSAGE_MS);
+    return () => clearTimeout(t);
+  }, [message]);
+
+  const ask = async () => {
+    setBusy(true);
+    setMessage(null);
+    try {
+      const { askSheet } = await import('./ai.ts');
+      const out = await askSheet(sb.strokes, sb.notes, ANSWER_COLOUR);
+      if (!out.ok) return setMessage(out.message);
+      if (out.notes.length) {
+        sb.addMany({ strokes: out.strokes, notes: out.notes });
+        if (out.focus) camera.show(out.focus);
+      }
+      const answeredCount = out.notes.length;
+      setMessage(
+        answeredCount
+          ? `Answered ${answeredCount === 1 ? 'one thing' : `${answeredCount} things`}. AI answers can be wrong; it only knows Ali's CV, projects and blog.`
+          : "I read it, but didn't find a question or remark to answer (drawings get no answer yet).",
+      );
+    } catch {
+      setMessage('Something went wrong reading the sheet. Try again?');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return { busy, message, ask };
+}
+
 /**
  * /draw: an endless sheet of paper to play with the crayons (a blackboard and chalk at night): move
  * around and zoom in and out. Kept until the tab is closed.
@@ -93,6 +140,7 @@ export function Sketchpad() {
   const sheetRef = useRef<HTMLDivElement>(null);
   const [hand, setHand] = useState(false);
   const theme = useTheme();
+  const ai = useAsk(sb, camera);
   // (the text tool's cursor is only over the sheet, not the whole page)
   useToolCursor(sb, !hand && sb.tool !== 'text');
 
@@ -158,6 +206,16 @@ export function Sketchpad() {
         <Toolbar sb={sb} typing>
           <button
             type="button"
+            className="scribble-toolbar__text scribble-toolbar__ask"
+            disabled={ai.busy || (!sb.strokes.length && !sb.notes.length)}
+            aria-busy={ai.busy}
+            title="The AI reads what you've written or typed here and answers next to it, from Ali's CV, projects and blog"
+            onClick={ai.ask}
+          >
+            <span aria-hidden="true">✨</span> {ai.busy ? 'reading…' : 'ask'}
+          </button>
+          <button
+            type="button"
             className="scribble-toolbar__text"
             disabled={!sb.strokes.length && !sb.notes.length}
             onClick={() => sheetRef.current && void saveImage(sheetRef.current, sb.strokes, sb.notes, theme)}
@@ -165,8 +223,9 @@ export function Sketchpad() {
             ⬇ save image
           </button>
         </Toolbar>
-        <p className="scribble-dock__hint">
-          Endless paper: draw, or pick "Aa type" to write. Scroll or two fingers to move, pinch or Ctrl+scroll to zoom. Kept until you close this tab.
+        <p className="scribble-dock__hint" role="status">
+          {ai.message ??
+            'Endless paper: draw, or pick "Aa type" to write. Press ✨ ask and the AI answers questions about Ali right on the sheet.'}
         </p>
       </div>
     </main>

@@ -77,6 +77,12 @@ export function useScribbles(key: string) {
       remember();
       setNotes((prev) => (prev.some((p) => p.id === n.id) ? prev.map((p) => (p.id === n.id ? n : p)) : [...prev, n]));
     },
+    /** Add strokes and notes together, as one undo step (an AI answer and its arrow). */
+    addMany: (more: { strokes?: Stroke[]; notes?: Note[] }) => {
+      remember();
+      if (more.strokes?.length) setStrokes((prev) => trimStrokes([...prev, ...more.strokes!]));
+      if (more.notes?.length) setNotes((prev) => [...prev, ...more.notes!]);
+    },
     removeNote: (id: string) => {
       remember();
       setNotes((prev) => prev.filter((n) => n.id !== id));

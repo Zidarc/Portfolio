@@ -14,6 +14,8 @@ export interface Note {
   c: string;
   /** Font size in world units. */
   s: number;
+  /** An answer written by the AI, and the fingerprint of what it answers (see scribble/ai.ts). */
+  ai?: { for: string };
 }
 
 /** Font size for each size in the crayon box's size picker. */

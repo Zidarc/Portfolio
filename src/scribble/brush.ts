@@ -8,6 +8,8 @@ export interface Stroke {
   c: string;
   s: number;
   p: number[];
+  /** Drawn by the AI (an arrow to an answer), so it's never read back as a question. */
+  a?: 1;
 }
 
 /** Each crayon, and the chalk it turns into on the blackboard (the same colours as styles/tokens.css). */

@@ -132,6 +132,13 @@ export function useCamera(key: string) {
       const box = drawingBox(strokes, notes);
       commit(box ? fitView(box, size.current.width, size.current.height) : homeView(size.current.width));
     },
+    /** Bring a box into view, but only if any of it is off screen (then it's fitted, as for "show everything"). */
+    show: (box: Box) => {
+      const { width, height } = size.current;
+      const on = visibleBox(current(), width, height, 0);
+      if (box.x0 >= on.x0 && box.y0 >= on.y0 && box.x1 <= on.x1 && box.y1 <= on.y1) return;
+      commit(fitView(box, width, height));
+    },
   };
 }
 

@@ -60,7 +60,8 @@ node scripts/ask-test.mjs http://localhost:5173 note.png 1   # plus a picture of
 ```
 
 Without any keys, local dev replies with **practice answers** (marked as such), so the sketchpad can be
-built and tested offline. The live site replies "The AI isn't set up yet" instead.
+built and tested offline. To get practice answers even with keys set (say, while no provider has
+credit), start dev with `AI_PRACTICE=1` (in `.env.local`, or `$env:AI_PRACTICE=1; npm run dev`). The live site replies "The AI isn't set up yet" instead.
 
 ## 4. Going live
 

@@ -266,7 +266,13 @@ function practice(input: AskInput): AskItem[] {
       text: t.text,
       answer: `(practice answer, no AI key yet) You wrote "${t.text.slice(0, 40)}". The real AI will answer this from Ali's CV.`,
     })),
-    ...input.marks.map((n) => ({ ref: markRef(n), kind: 'unclear' as AskKind, text: '' })),
+    // handwriting can't be read without a model, but it still gets an answer, so placing them can be tried
+    ...input.marks.map((n) => ({
+      ref: markRef(n),
+      kind: 'question' as AskKind,
+      text: `(handwriting ${n})`,
+      answer: `(practice answer) Once an AI key is set up, I'll read your handwriting in box ${n} and answer here.`,
+    })),
   ];
 }
 
