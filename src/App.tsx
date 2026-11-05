@@ -1,7 +1,7 @@
 import { Fragment, lazy, startTransition, Suspense, useEffect, useState } from 'react';
 import { CrayonCursor } from './components/CrayonCursor.tsx';
 import { Footer } from './components/Footer.tsx';
-import { HunaRun } from './components/HunaRun.tsx';
+import { BilloRun } from './components/BilloRun.tsx';
 import { Navbar } from './components/Navbar.tsx';
 import { PageBreak } from './components/PageBreak.tsx';
 import { SoundToggle } from './components/SoundToggle.tsx';
@@ -84,7 +84,7 @@ function Site() {
       {all && <Footer />}
       <SoundToggle />
       {all && <PageScribble />}
-      {all && <HunaRun />}
+      {all && <BilloRun />}
       <CrayonCursor />
     </>
   );

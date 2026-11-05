@@ -143,10 +143,10 @@
 /* she perks up when you come near */
 .hero__cat:hover,
 .hero__cat:focus-visible {
-  animation: huna-wiggle 0.6s ease-in-out;
+  animation: billo-wiggle 0.6s ease-in-out;
 }
 
-@keyframes huna-wiggle {
+@keyframes billo-wiggle {
   25% {
     transform: rotate(-7deg);
   }
@@ -169,8 +169,8 @@
   width: 22%;
 }
 
-/* Huna is the real black cat on github.com/Zidarc, fed by visitors through GitHub issues */
-.hero__huna {
+/* Billo is the real black cat on github.com/Zidarc, fed by visitors through GitHub issues */
+.hero__billo {
   position: absolute;
   top: calc(100% + 1.4rem);
   left: -8%;
@@ -190,13 +190,13 @@
   pointer-events: none;
 }
 
-.hero__huna.is-visible {
+.hero__billo.is-visible {
   opacity: 1;
   transform: rotate(-3deg);
   pointer-events: auto;
 }
 
-.hero__huna:hover {
+.hero__billo:hover {
   color: var(--ink);
 }
 
@@ -256,7 +256,7 @@
   }
 
   /* the portrait is narrower here, so centre the note under it on the screen instead */
-  .hero__huna {
+  .hero__billo {
     left: 50%;
     translate: -50% 0;
     width: min(88vw, 24rem);

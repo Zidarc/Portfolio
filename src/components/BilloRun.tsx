@@ -1,9 +1,9 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { CrayonText } from '../crayon/CrayonText.tsx';
 import { createRng, range, randomSeed } from '../crayon/random.ts';
-import './HunaRun.css';
+import './BilloRun.css';
 
-const WORD = 'huna';
+const WORD = 'billo';
 /** Time between paw prints, and how long the finished trail stays before fading. */
 const STEP_MS = 170;
 const LINGER_MS = 2200;
@@ -38,7 +38,7 @@ function trail(width: number, height: number): Paw[] {
 
 /** One crayon paw print (a pad and four toes), pointing up. */
 const PawPrint = () => (
-  <svg viewBox="-12 -14 24 26" className="huna-paw__svg">
+  <svg viewBox="-12 -14 24 26" className="billo-paw__svg">
     <ellipse cx="0" cy="4" rx="6.6" ry="5.6" />
     <ellipse cx="-7" cy="-4" rx="2.6" ry="3.3" transform="rotate(-20 -7 -4)" />
     <ellipse cx="-2.6" cy="-9" rx="2.6" ry="3.4" />
@@ -48,11 +48,11 @@ const PawPrint = () => (
 );
 
 /**
- * Easter egg: type "huna" anywhere on the page (not in a text box) and Huna walks across the bottom
+ * Easter egg: type "billo" anywhere on the page (not in a text box) and Billo walks across the bottom
  * of the screen, leaving crayon paw prints one step at a time, and signs it. Until then this is one key
  * listener; while it plays, the prints only fade in and out (opacity), and it's all removed afterwards.
  */
-export function HunaRun() {
+export function BilloRun() {
   const [walk, setWalk] = useState<{ id: number; paws: Paw[] } | null>(null);
 
   useEffect(() => {
@@ -80,7 +80,7 @@ export function HunaRun() {
   return (
     <div
       key={walk.id}
-      className="huna-walk"
+      className="billo-walk"
       aria-hidden="true"
       style={{ '--total': `${total}ms` } as CSSProperties}
       onAnimationEnd={(e) => e.target === e.currentTarget && setWalk(null)}
@@ -88,14 +88,14 @@ export function HunaRun() {
       {paws.map((p, i) => (
         <span
           key={i}
-          className="huna-paw"
+          className="billo-paw"
           style={{ left: p.x, top: p.y, rotate: `${p.turn}deg`, '--d': `${i * STEP_MS}ms` } as CSSProperties}
         >
           <PawPrint />
         </span>
       ))}
-      <span className="huna-walk__sign" style={{ left: mid.x, top: mid.y - 70 }}>
-        <CrayonText text="Huna was here" decorative capHeight={20} tempo={1.3} color="var(--crayon-graphite)" />
+      <span className="billo-walk__sign" style={{ left: mid.x, top: mid.y - 70 }}>
+        <CrayonText text="Billo was here" decorative capHeight={20} tempo={1.3} color="var(--crayon-graphite)" />
       </span>
     </div>
   );

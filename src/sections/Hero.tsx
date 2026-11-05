@@ -3,7 +3,7 @@ import { CrayonDoodle } from '../crayon/CrayonDoodle.tsx';
 import { CrayonText } from '../crayon/CrayonText.tsx';
 import { usePrefersReducedMotion } from '../crayon/usePrefersReducedMotion.ts';
 import { GITHUB_URL, RESUME_URL } from '../data/links.ts';
-import { hunaLine, useHunaMood } from '../hooks/useHunaMood.ts';
+import { billoLine, useBilloMood } from '../hooks/useBilloMood.ts';
 import { useMediaQuery } from '../hooks/useMediaQuery.ts';
 import { useLoaderGone } from '../loader.ts';
 import { startWarmup } from '../projects/warmup.ts';
@@ -48,7 +48,7 @@ export function Hero() {
   const [phase, setPhase] = useState(TEXT);
   const [skipped, setSkipped] = useState(introSeen);
   const [photoOk, setPhotoOk] = useState(true);
-  const huna = useHunaMood();
+  const billo = useBilloMood();
   const narrow = useMediaQuery('(max-width: 600px)');
   // the intro starts as the loading screen fades, not behind it
   const loaderGone = useLoaderGone();
@@ -131,8 +131,8 @@ export function Hero() {
               className="hero__rings"
             />
           </div>
-          <a href={GITHUB_URL} target="_blank" rel="noreferrer" className="hero__cat" title="Feed Huna on GitHub">
-            <span className="sr-only">Huna the cat: feed her on my GitHub</span>
+          <a href={GITHUB_URL} target="_blank" rel="noreferrer" className="hero__cat" title="Feed Billo on GitHub">
+            <span className="sr-only">Billo the cat: feed her on my GitHub</span>
             <CrayonDoodle
               {...common}
               name="cat"
@@ -147,10 +147,10 @@ export function Hero() {
             href={GITHUB_URL}
             target="_blank"
             rel="noreferrer"
-            className={`hero__huna ${shown >= DONE ? 'is-visible' : ''}`}
+            className={`hero__billo ${shown >= DONE ? 'is-visible' : ''}`}
             tabIndex={shown >= DONE ? undefined : -1}
           >
-            <span aria-hidden="true">↖ </span>psst, that's Huna. {hunaLine(huna)}
+            <span aria-hidden="true">↖ </span>psst, that's Billo. {billoLine(billo)}
           </a>
           <CrayonDoodle
             {...common}

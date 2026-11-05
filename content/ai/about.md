@@ -16,7 +16,7 @@ visually impaired students get around campus.
 - Cedar College, 2022 – 2024
 - FAST NUCES, Karachi, 2025 – now: BS Computer Science
 
-## Huna
+## Billo
 
-Huna is Ali's black pixel cat. She lives in Ali's GitHub profile README (github.com/Zidarc), and visitors
+Billo is Ali's black pixel cat. She lives in Ali's GitHub profile README (github.com/Zidarc), and visitors
 feed her by opening a GitHub issue.

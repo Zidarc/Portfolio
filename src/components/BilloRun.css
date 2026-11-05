@@ -1,36 +1,36 @@
-/* Huna's paw-print walk across the bottom of the screen (HunaRun.tsx). The whole trail fades at the end. */
-.huna-walk {
+/* Billo's paw-print walk across the bottom of the screen (BilloRun.tsx). The whole trail fades at the end. */
+.billo-walk {
   position: fixed;
   inset: 0;
   z-index: 65;
   overflow: hidden;
   pointer-events: none;
-  animation: huna-fade 0.7s ease-in var(--total) both;
+  animation: billo-fade 0.7s ease-in var(--total) both;
 }
 
 /* each print presses in at its own moment, like a step */
-.huna-paw {
+.billo-paw {
   position: absolute;
   width: 22px;
   translate: -50% -50%;
   opacity: 0;
-  animation: huna-step 0.18s ease-out var(--d) forwards;
+  animation: billo-step 0.18s ease-out var(--d) forwards;
 }
 
-.huna-paw__svg {
+.billo-paw__svg {
   width: 100%;
   fill: var(--crayon-graphite);
   opacity: 0.8;
 }
 
-.huna-walk__sign {
+.billo-walk__sign {
   position: absolute;
   width: 170px;
   translate: -50% 0;
   rotate: -4deg;
 }
 
-@keyframes huna-step {
+@keyframes billo-step {
   from {
     opacity: 0;
     scale: 1.25;
@@ -41,7 +41,7 @@
   }
 }
 
-@keyframes huna-fade {
+@keyframes billo-fade {
   from {
     opacity: 1;
   }
@@ -52,7 +52,7 @@
 
 /* less motion: the whole trail is just there, then fades */
 @media (prefers-reduced-motion: reduce) {
-  .huna-paw {
+  .billo-paw {
     animation: none;
     opacity: 1;
   }
