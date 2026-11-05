@@ -62,10 +62,14 @@ export function useScribbles(key: string) {
       setEraserMode(mode);
       setTool('eraser');
     },
-    /** Pick a colour: back to the crayon, unless typing (then it colours the text). */
+    /**
+     * Pick a colour: back to the crayon. Only mid-sentence (a note open for typing) does it stay on
+     * typing and colour the text instead; the toolbar doesn't take the focus, so the open note still has it.
+     */
     setColour: (c: string) => {
       setColour(c);
-      setTool((t) => (t === 'text' ? 'text' : 'crayon'));
+      const typingNow = document.activeElement?.classList.contains('scribble-surface__editor') ?? false;
+      setTool((t) => (t === 'text' && typingNow ? 'text' : 'crayon'));
     },
     setSize,
     add: (s: Stroke) => {
