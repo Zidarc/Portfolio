@@ -13,7 +13,7 @@ export const ANSWER_CAP = 22;
 /** How wide an answer is wrapped, in world units. */
 export const ANSWER_WIDTH = 440;
 /** However long the answer, it's written within about this long. */
-const WRITE_MS = 6000;
+const WRITE_MS = 2200;
 /** A tidy hand (answers should be easy to read), heavier than the headings: under the sheet's grain, thin lines fade. */
 const HAND = { messiness: 0.6, speed: 1, weight: 0.16 };
 
@@ -89,10 +89,10 @@ export function answerHand(note: { id: string; t: string }): AnswerHand {
   const seed = seedOf(note.id);
   const plan = planHandwriting(note.t, { seed, ...HAND, pxPerUnit: k, exactSize: true });
   // squeeze the timing so a long answer doesn't take half a minute to write
-  const speedUp = Math.max(1.5, plan.totalDuration / WRITE_MS);
+  const speedUp = Math.max(3, plan.totalDuration / WRITE_MS);
   for (const s of plan.strokes) {
     s.delay /= speedUp;
-    s.duration = Math.max(35, s.duration / speedUp);
+    s.duration = Math.max(20, s.duration / speedUp);
   }
   plan.totalDuration /= speedUp;
   hand = { plan, scale: k, seed };
