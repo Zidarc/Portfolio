@@ -33,11 +33,19 @@ export function Navbar({ sectionsReady = true }: { sectionsReady?: boolean }) {
 
   useEffect(() => redraw(active), [active]);
 
+  // "scrolled" = the top 12px of the page are out of view. Watched with an observer rather than a scroll
+  // listener: reading scrollY on every scroll event made the browser finish its layout mid-scroll.
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    const marker = document.createElement('div');
+    marker.setAttribute('aria-hidden', 'true');
+    marker.style.cssText = 'position:absolute;top:0;left:0;width:1px;height:13px;pointer-events:none;visibility:hidden';
+    document.body.append(marker);
+    const observer = new IntersectionObserver(([entry]) => setScrolled(!entry?.isIntersecting));
+    observer.observe(marker);
+    return () => {
+      observer.disconnect();
+      marker.remove();
+    };
   }, []);
 
   // mobile sheet: lock page scroll, close on Escape, move focus in and back out
