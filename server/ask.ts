@@ -26,7 +26,7 @@ export function askConfigFromEnv(env: Record<string, string | undefined>): AskCo
     config.cloudflare = {
       account: env.CF_ACCOUNT_ID.trim(),
       token: env.CF_AI_TOKEN.trim(),
-      model: (env.CF_AI_MODEL || '@cf/meta/llama-3.2-11b-vision-instruct').trim(),
+      model: (env.CF_AI_MODEL || '@cf/mistralai/mistral-small-3.1-24b-instruct').trim(),
     };
   }
   return config;
@@ -48,6 +48,12 @@ export interface AskResult {
 
 /** Netlify stops a function after 10 s; leave room to reply. */
 const DEADLINE_MS = 9_000;
+/** How much of the material (characters) Cloudflare's model is given, against the others' CONTEXT_BUDGET. */
+const CLOUDFLARE_CONTEXT = 24_000;
+/** How long a provider that refused the key or ran out of allowance is skipped. */
+const REST_MS = 10 * 60_000;
+/** Provider name → when it may be tried again (per server instance). */
+const resting = new Map<string, number>();
 
 // Best-effort, per server instance (serverless instances each keep their own), like the contact form.
 const LIMITS = [
@@ -87,9 +93,9 @@ Reply with JSON only, no other text:
   emoji, no links in brackets. It will be handwritten on the sheet, so keep it short.`;
 
 /** The rules, the material that fits this question (see ask-material.ts) and the reply format. */
-export function buildSystem(m: Material, input: AskInput): string {
+export function buildSystem(m: Material, input: AskInput, budget?: number): string {
   // handwriting isn't read yet at this point, so only typed words can steer the lookup
-  const knowledge = knowledgeFor(m, input.typed.map((t) => t.text).join('\n'));
+  const knowledge = knowledgeFor(m, input.typed.map((t) => t.text).join('\n'), budget);
   const rules = m.rules || '# Rules\n\nAnswer only from what you know about Ali below. If it is not there, say you do not know.';
   return [rules, `# What you know about Ali\n\n${knowledge}`, PROTOCOL].join('\n\n');
 }
@@ -115,15 +121,17 @@ const KINDS = new Set<AskKind>(['question', 'statement', 'drawing', 'unclear']);
 
 /** The model's JSON, checked: only the refs that were asked about, in order, each exactly once. */
 export function readItems(reply: string, input: AskInput): AskItem[] {
-  const start = reply.indexOf('{');
-  const end = reply.lastIndexOf('}');
+  // some models skip the {"items": ...} wrapper and send the list itself
+  const bare = reply.indexOf('[') > -1 && (reply.indexOf('{') < 0 || reply.indexOf('[') < reply.indexOf('{'));
+  const start = reply.indexOf(bare ? '[' : '{');
+  const end = reply.lastIndexOf(bare ? ']' : '}');
   let parsed: unknown;
   try {
     parsed = JSON.parse(reply.slice(start, end + 1));
   } catch {
     throw new ProviderError('bad-reply', `not JSON: ${reply.slice(0, 200)}`);
   }
-  const list = (parsed as { items?: unknown }).items;
+  const list = Array.isArray(parsed) ? parsed : (parsed as { items?: unknown }).items;
   if (!Array.isArray(list)) throw new ProviderError('bad-reply', 'no items array');
 
   const byRef = new Map<string, Record<string, unknown>>();
@@ -249,8 +257,11 @@ async function askCloudflare(c: NonNullable<AskConfig['cloudflare']>, system: st
     { messages: [{ role: 'system', content: system }, { role: 'user', content }], max_tokens: 1500, temperature: 0.3 },
     ms,
   );
-  const data = JSON.parse(raw) as { success?: boolean; result?: { response?: unknown }; errors?: unknown };
-  const reply = data.result?.response;
+  const data = JSON.parse(raw) as {
+    result?: { response?: unknown; choices?: { message?: { content?: unknown } }[] };
+  };
+  // older models answer in `response`, newer ones (Llama 4) in the chat-completions shape
+  const reply = data.result?.response ?? data.result?.choices?.[0]?.message?.content;
   // the model sometimes returns the JSON already parsed
   if (reply && typeof reply === 'object') return JSON.stringify(reply);
   if (typeof reply !== 'string' || !reply) throw new ProviderError('bad-reply', `empty reply: ${raw.slice(0, 300)}`);
@@ -302,8 +313,12 @@ export async function handleAsk(raw: unknown, opts: AskOptions): Promise<AskResu
   }
 
   let system: string;
+  let shortSystem: string;
   try {
-    system = buildSystem(await loadMaterial(), input);
+    const material = await loadMaterial();
+    system = buildSystem(material, input);
+    // Cloudflare's free models read slowly: less material keeps them inside the deadline
+    shortSystem = buildSystem(material, input, CLOUDFLARE_CONTEXT);
   } catch (err) {
     console.error('[ask] could not read content/ai:', err);
     return SNAPPED;
@@ -313,13 +328,16 @@ export async function handleAsk(raw: unknown, opts: AskOptions): Promise<AskResu
   const attempts = [
     xai && { name: 'grok', run: (ms: number) => askXai(xai, system, input, ms) },
     gemini && { name: 'gemini', run: (ms: number) => askGemini(gemini, system, input, ms) },
-    cloudflare && { name: 'cloudflare', run: (ms: number) => askCloudflare(cloudflare, system, input, ms) },
+    cloudflare && { name: 'cloudflare', run: (ms: number) => askCloudflare(cloudflare, shortSystem, input, ms) },
   ].filter((a): a is { name: string; run: (ms: number) => Promise<string> } => !!a);
+  // providers that just refused the key or ran out sit out for a while, so they don't eat everyone's time
+  const awake = attempts.filter((a) => (resting.get(a.name) ?? 0) <= Date.now());
+  const tries = awake.length ? awake : attempts;
 
   const failures: ProviderError[] = [];
-  for (const [i, attempt] of attempts.entries()) {
+  for (const [i, attempt] of tries.entries()) {
     // each provider but the last gets a slice, leaving the next one enough for a try
-    const budget = i < attempts.length - 1 ? Math.min(i === 0 ? 6_000 : 4_000, left() - 2_500) : left() - 300;
+    const budget = i < tries.length - 1 ? Math.min(i === 0 ? 6_000 : 4_000, left() - 2_500) : left() - 300;
     if (budget < 1_000) break;
     try {
       const items = readItems(await attempt.run(budget), input);
@@ -327,6 +345,7 @@ export async function handleAsk(raw: unknown, opts: AskOptions): Promise<AskResu
     } catch (err) {
       const e = err instanceof ProviderError ? err : new ProviderError('down', String(err));
       console.error(`[ask] ${attempt.name} ${e.kind}: ${e.message}`);
+      if (e.kind === 'config' || e.kind === 'quota') resting.set(attempt.name, Date.now() + REST_MS);
       failures.push(e);
     }
   }

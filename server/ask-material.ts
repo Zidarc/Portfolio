@@ -134,9 +134,9 @@ function chunksOf(file: string, text: string): Chunk[] {
  * The material to send with a question: all of it if it fits, else the core plus the looked-up
  * sections that best match `query` (with a list of the rest).
  */
-export function knowledgeFor(m: Material, query: string): string {
+export function knowledgeFor(m: Material, query: string, budget = CONTEXT_BUDGET): string {
   const all = [m.core, ...m.chunks.map((c) => c.text)];
-  if (all.reduce((n, t) => n + t.length + 2, 0) <= CONTEXT_BUDGET) return all.join('\n\n');
+  if (all.reduce((n, t) => n + t.length + 2, 0) <= budget) return all.join('\n\n');
 
   const q = termsOf(query);
   const n = m.chunks.length;
@@ -150,7 +150,7 @@ export function knowledgeFor(m: Material, query: string): string {
   };
   const ranked = m.chunks.map((c, i) => ({ c, i, s: score(c) })).sort((a, b) => b.s - a.s || a.i - b.i);
 
-  let left = CONTEXT_BUDGET - m.core.length - 2_000; // room for the list of what's left out
+  let left = budget - m.core.length - 2_000; // room for the list of what's left out
   const picked: typeof ranked = [];
   const skipped: Chunk[] = [];
   for (const r of ranked) {

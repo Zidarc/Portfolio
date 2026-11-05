@@ -40,13 +40,8 @@ Two things to know about the free tier:
 2. **My Profile → API Tokens → Create Token → Custom token**. Give it the permission
    *Account → Workers AI → Read* (that is enough to run models), for your account only.
 3. Put them in `.env.local` as `CF_ACCOUNT_ID=...` and `CF_AI_TOKEN=...`.
-4. The vision model (Llama 3.2 Vision) needs Meta's licence accepted once. Run this once, using your own
-   account ID and token:
-
-   ```sh
-   curl https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID/ai/run/@cf/meta/llama-3.2-11b-vision-instruct \
-     -H "Authorization: Bearer $CF_AI_TOKEN" -d '{"prompt":"agree"}'
-   ```
+4. That's all: the default model, Llama 4 Scout, reads pictures and needs no licence step. (Set
+   `CF_AI_MODEL` to use another one; some, like Llama 3.2 Vision, first need a licence accepted.)
 
 The free plan gives 10,000 "neurons" a day (roughly a few hundred questions) and resets at midnight UTC.
 Stay on the free Workers plan: on a paid plan, usage past the allowance would be charged.

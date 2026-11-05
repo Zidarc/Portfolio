@@ -38,6 +38,19 @@ const overlaps = (a: Box, b: Box) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 &
 const union = (a: Box, b: Box): Box => ({ x0: Math.min(a.x0, b.x0), y0: Math.min(a.y0, b.y0), x1: Math.max(a.x1, b.x1), y1: Math.max(a.y1, b.y1) });
 
 /** The visitor's strokes (not the AI's arrows), grouped by how close they are. */
+/**
+ * Two words of one line: side by side, mostly level, and the gap between them no wider than about a
+ * letter is tall (people space words by their writing size, which a fixed gap misses for big writing).
+ */
+function sameLine(a: Box, b: Box): boolean {
+  const ha = a.y1 - a.y0;
+  const hb = b.y1 - b.y0;
+  const level = Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0); // how much they share vertically
+  if (level < 0.5 * Math.min(ha, hb)) return false;
+  const gap = Math.max(a.x0, b.x0) - Math.min(a.x1, b.x1);
+  return gap <= Math.min(Math.max(ha, hb), 120);
+}
+
 export function groupStrokes(strokes: Stroke[]): Group[] {
   const own = strokes.filter((s) => !s.a);
   const boxes = own.map(strokeBox);
@@ -47,7 +60,7 @@ export function groupStrokes(strokes: Stroke[]): Group[] {
   for (let i = 0; i < own.length; i++) {
     const a = grow(boxes[i]!, JOIN_GAP / 2, LINE_GAP / 2);
     for (let j = i + 1; j < own.length; j++) {
-      if (overlaps(a, grow(boxes[j]!, JOIN_GAP / 2, LINE_GAP / 2))) parent[find(i)] = find(j);
+      if (overlaps(a, grow(boxes[j]!, JOIN_GAP / 2, LINE_GAP / 2)) || sameLine(boxes[i]!, boxes[j]!)) parent[find(i)] = find(j);
     }
   }
   const groups = new Map<number, Group>();
