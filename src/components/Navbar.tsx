@@ -128,6 +128,10 @@ export function Navbar({ sectionsReady = true }: { sectionsReady?: boolean }) {
           </nav>
 
           <div className="nav__tools">
+            {/* its own page, not a section: so a button beside the tools, not one of the links */}
+            <a className="nav__sketchpad" href="/draw" title="An endless sheet to draw and type on, with an AI that answers about Ali">
+              <span aria-hidden="true">✨</span> Sketchpad
+            </a>
             <ThemeButton className="nav__theme" />
             <button
               ref={toggleRef}
@@ -181,6 +185,15 @@ export function Navbar({ sectionsReady = true }: { sectionsReady?: boolean }) {
                 </a>
               </li>
             ))}
+            <li>
+              <a href="/draw" className="nav-sheet__link nav-sheet__link--page">
+                <span className="nav-sheet__arrow">
+                  <CrayonDoodle name="arrow" tempo={2} delay={150 + LINKS.length * 260} decorative color="var(--crayon-purple)" />
+                </span>
+                <span className="sr-only">Sketchpad</span>
+                <CrayonText text="Sketchpad" instant decorative capHeight={30} weight={0.11} color="var(--crayon-purple)" />
+              </a>
+            </li>
           </ul>
         </div>
       )}

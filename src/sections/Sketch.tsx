@@ -19,10 +19,29 @@ export function Sketch() {
       <div className="sketch__words">
         <SectionHeading id="draw-heading" text="Grab a crayon" color="var(--crayon-red)" />
         <p>
-          This whole site is paper, so draw on it. Scribble right over these pages, or take a blank sheet on the
-          sketchpad: nine crayons, four sizes and an eraser that rubs out just the bits you want.
+          This whole site is paper, so draw on it. Scribble right over these pages, or open the sketchpad: an
+          endless sheet you can wander around and zoom in and out of.
         </p>
-        <p className="sketch__note">Your drawings stay until you close the tab. Nobody else sees them.</p>
+        <ul className="sketch__list">
+          <li>
+            <strong>Draw</strong> with nine crayons in four sizes (chalk on a blackboard at night), and rub out just
+            the bits you want.
+          </li>
+          <li>
+            <strong>Type</strong> with "Aa type" when handwriting with a mouse gets old.
+          </li>
+          <li>
+            <strong>Ask me things.</strong> Write or type a question, like "has Ali used Postgres?", press ✨ ask, and
+            an AI reads the sheet and writes its answer in crayon right next to your question. It only knows my CV,
+            projects and blog, so ask about those.
+          </li>
+          <li>
+            <strong>Keep it:</strong> save the whole sheet as a picture.
+          </li>
+        </ul>
+        <p className="sketch__note">
+          Your drawings stay until you close the tab. Nobody else sees them; only what you ask the AI is sent to it.
+        </p>
         <div className="sketch__actions">
           <button
             type="button"

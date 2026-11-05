@@ -66,6 +66,27 @@
   gap: 0.25rem;
 }
 
+.nav__sketchpad {
+  margin-right: 0.35rem;
+  padding: 0.2rem 0.8rem;
+  border: 2.5px solid var(--crayon-purple);
+  border-radius: 16px 6px 14px 8px / 8px 14px 6px 16px;
+  background: color-mix(in srgb, var(--crayon-purple) 10%, var(--paper));
+  color: var(--ink);
+  font-family: var(--font-hand, inherit);
+  font-size: 1.1rem;
+  line-height: 1.4;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s ease, rotate 0.15s ease;
+}
+
+.nav__sketchpad:hover,
+.nav__sketchpad:focus-visible {
+  background: color-mix(in srgb, var(--crayon-purple) 22%, var(--paper));
+  rotate: -2deg;
+}
+
 .nav__theme {
   padding: 0.4rem;
   border: 0;

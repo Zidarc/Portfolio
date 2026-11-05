@@ -10,6 +10,30 @@
   font-size: clamp(1.15rem, 1.6vw, 1.3rem);
 }
 
+.sketch__list {
+  max-width: 52ch;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  list-style: none;
+  font-size: clamp(1.05rem, 1.4vw, 1.18rem);
+}
+
+.sketch__list li {
+  position: relative;
+  margin: 0 0 0.55rem;
+  padding-left: 1.4rem;
+}
+
+/* a crayon tick in place of a bullet */
+.sketch__list li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--crayon-green);
+  font-family: var(--font-hand);
+  font-weight: 700;
+}
+
 .sketch__note {
   color: var(--ink-soft);
 }
