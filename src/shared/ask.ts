@@ -40,6 +40,8 @@ export interface AskItem {
   text: string;
   /** Only for questions and statements. */
   answer?: string;
+  /** A page the answer is about (a project, a blog post, the contact form), shown under it. */
+  link?: { href: string; label: string };
 }
 
 export type AskErrorCode = 'bad-request' | 'too-many' | 'out-of-crayons' | 'not-set-up' | 'snapped';

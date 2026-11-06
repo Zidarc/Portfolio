@@ -6,6 +6,8 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'node:ht
 import { readFile, stat } from 'node:fs/promises';
 import { extname, join, resolve, sep } from 'node:path';
 import { askConfigFromEnv, handleAsk } from './ask.ts';
+import { handleAskLog } from './ask-log.ts';
+import { localStore } from './store.ts';
 import { handleContact, mailConfigFromEnv } from './contact.ts';
 
 const DIST = resolve(process.env.DIST_DIR ?? 'dist');
@@ -83,6 +85,16 @@ async function ask(req: IncomingMessage, res: ServerResponse) {
   return json(result.status, result.body);
 }
 
+/** GET /api/ask-log: the AI's recent questions (needs ASK_LOG_KEY; kept in memory, so since the last restart). */
+async function askLog(req: IncomingMessage, res: ServerResponse) {
+  const result = await handleAskLog(localStore, {
+    key: process.env.ASK_LOG_KEY,
+    auth: req.headers.authorization,
+    days: new URL(req.url ?? '/', 'http://localhost').searchParams.get('days'),
+  });
+  send(res, result.status, JSON.stringify(result.body), { 'content-type': 'application/json', 'cache-control': 'no-store' });
+}
+
 /** The site is a single page, so any other address gets the crayon 404 page (with a real 404 status). */
 async function notFound(req: IncomingMessage, res: ServerResponse) {
   try {
@@ -127,7 +139,13 @@ createServer((req, res) => {
   // every blog post is served by the one blog page (blog.html reads the address)
   if (pathname.startsWith('/blog/')) pathname = '/blog.html';
   const handler =
-    pathname === '/api/contact' ? contact(req, res) : pathname === '/api/ask' ? ask(req, res) : staticFile(req, res, pathname);
+    pathname === '/api/contact'
+      ? contact(req, res)
+      : pathname === '/api/ask'
+        ? ask(req, res)
+        : pathname === '/api/ask-log'
+          ? askLog(req, res)
+          : staticFile(req, res, pathname);
   handler.catch((err: unknown) => {
     console.error(err);
     if (!res.headersSent) send(res, 500, 'Server error');

@@ -40,7 +40,9 @@ export function Sketch() {
           </li>
         </ul>
         <p className="sketch__note">
-          Your drawings stay until you close the tab. Nobody else sees them; only what you ask the AI is sent to it.
+          Your drawings stay until you close the tab, and nobody else sees them. Only what you ask the AI is sent to
+          it; the questions and answers are kept, with nothing about who asked, so I can see what people want to
+          know.
         </p>
         <div className="sketch__actions">
           <button

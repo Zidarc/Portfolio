@@ -3,6 +3,8 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig, loadEnv, type Connect, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { askConfigFromEnv, handleAsk } from './server/ask.ts';
+import { handleAskLog } from './server/ask-log.ts';
+import { localStore } from './server/store.ts';
 import { handleContact, mailConfigFromEnv } from './server/contact.ts';
 import { blogPages } from './server/vite-blog.ts';
 
@@ -48,8 +50,16 @@ function api(env: Record<string, string>): Plugin {
   // AI_PRACTICE=1 (in .env.local or the shell) ignores the AI keys and gives practice answers, for trying the sketchpad
   const askConfig = env.AI_PRACTICE === '1' ? {} : askConfigFromEnv(env);
   const ask = postJson((body, clientIp) => handleAsk(body, { config: askConfig, clientIp, dryRun: true }), 2_000_000);
+  const askLog: Connect.NextHandleFunction = async (req, res) => {
+    const days = new URL(req.originalUrl ?? req.url ?? '/', 'http://localhost').searchParams.get('days');
+    const result = await handleAskLog(localStore, { key: env.ASK_LOG_KEY, auth: req.headers.authorization, days });
+    res.statusCode = result.status;
+    res.setHeader('content-type', 'application/json');
+    res.end(JSON.stringify(result.body));
+  };
   const use = (server: { middlewares: Connect.Server }) => {
     server.middlewares.use('/api/contact', contact);
+    server.middlewares.use('/api/ask-log', askLog);
     server.middlewares.use('/api/ask', ask);
   };
   return { name: 'api', configureServer: use, configurePreviewServer: use };
