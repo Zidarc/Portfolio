@@ -94,14 +94,21 @@ Reply with JSON only, no other text:
 
 /** The rules, the material that fits this question (see ask-material.ts) and the reply format. */
 export function buildSystem(m: Material, input: AskInput, budget?: number): string {
-  // handwriting isn't read yet at this point, so only typed words can steer the lookup
-  const knowledge = knowledgeFor(m, input.typed.map((t) => t.text).join('\n'), budget);
+  // handwriting isn't read yet at this point, so only typed words (and earlier questions) steer the lookup
+  const query = [...(input.history ?? []).map((h) => h.q), ...input.typed.map((t) => t.text)].join('\n');
+  const knowledge = knowledgeFor(m, query, budget);
   const rules = m.rules || '# Rules\n\nAnswer only from what you know about Ali below. If it is not there, say you do not know.';
   return [rules, `# What you know about Ali\n\n${knowledge}`, PROTOCOL].join('\n\n');
 }
 
 export function buildUserText(input: AskInput): string {
   const parts: string[] = [];
+  if (input.history?.length) {
+    parts.push(
+      'Already answered on this sheet, for context only (a new question may follow on from these; do not answer them again):',
+      JSON.stringify(input.history),
+    );
+  }
   if (input.typed.length) {
     parts.push('Typed notes (ref and exact text, as JSON):');
     parts.push(JSON.stringify(input.typed.map((t) => ({ ref: typedRef(t.id), text: t.text }))));

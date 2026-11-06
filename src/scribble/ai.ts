@@ -13,7 +13,7 @@
  * again; change a note and it's a new question. Things that got no answer (drawings) are remembered for
  * the tab, so they aren't sent every time.
  */
-import { ASK_LIMITS, markRef, typedRef, type AskInput, type AskItem, type AskResponse } from '../shared/ask.ts';
+import { ASK_LIMITS, markRef, typedRef, type AskInput, type AskItem, type AskResponse, type AskTurn } from '../shared/ask.ts';
 import { pathD, type Stroke } from './brush.ts';
 import { strokeBox, type Box } from './camera.ts';
 import { answerText, freshAnswers, wrapAnswer } from './answers.ts';
@@ -274,8 +274,17 @@ async function collect(strokes: Stroke[], notes: Note[]): Promise<Pending | null
     .slice(0, Math.max(0, Math.min(12, ASK_LIMITS.items - typed.length)));
   groups.forEach((g, i) => targets.set(markRef(i + 1), { box: g.box, key: g.key }));
   if (!typed.length && !groups.length) return null;
+  // the last few questions answered on the sheet, so a follow-up ("what about the other one?") makes sense
+  const history: AskTurn[] = notes
+    .flatMap((n) => (n.ai?.q ? [{ q: n.ai.q, a: n.t.replace(/\s+/g, ' ') }] : []))
+    .slice(-ASK_LIMITS.history);
   return {
-    input: { typed, marks: groups.map((_, i) => i + 1), ...(groups.length ? { image: await picture(groups) } : {}) },
+    input: {
+      typed,
+      marks: groups.map((_, i) => i + 1),
+      ...(groups.length ? { image: await picture(groups) } : {}),
+      ...(history.length ? { history } : {}),
+    },
     targets,
   };
 }
@@ -329,7 +338,8 @@ export async function askSheet(
       skipped++;
       continue;
     }
-    const draft: Note = { id: newNoteId(), x: 0, y: 0, t, c: colour, s: 0, ai: { for: target.key } };
+    const q = item.text.slice(0, ASK_LIMITS.historyText);
+    const draft: Note = { id: newNoteId(), x: 0, y: 0, t, c: colour, s: 0, ai: { for: target.key, ...(q ? { q } : {}) } };
     const { w, h } = noteMeasure(draft);
     const spot = findSpot(target.box, w, h, taken);
     const note: Note = { ...draft, x: Math.round(spot.x), y: Math.round(spot.y) };

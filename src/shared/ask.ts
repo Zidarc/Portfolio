@@ -18,11 +18,19 @@ export interface AskTyped {
   text: string;
 }
 
+/** A question already answered on the sheet, and its answer: so "what about the other one?" makes sense. */
+export interface AskTurn {
+  q: string;
+  a: string;
+}
+
 export interface AskInput {
   typed: AskTyped[];
   /** A PNG/JPEG/WebP data URL of the handwriting, with the numbered boxes drawn on. */
   image?: string;
   marks: number[];
+  /** The last few questions answered on this sheet, oldest first (at most ASK_LIMITS.history). */
+  history?: AskTurn[];
 }
 
 export interface AskItem {
@@ -46,6 +54,9 @@ export const ASK_LIMITS = {
   /** Characters in the image data URL (about 1.1 MB of image). */
   image: 1_500_000,
   answer: 900,
+  history: 3,
+  /** Characters of an earlier question sent as history. */
+  historyText: 300,
 } as const;
 
 const NOTE_ID = /^[a-z0-9]{1,16}$/;
@@ -80,7 +91,16 @@ export function validateAsk(raw: unknown): { ok: true; value: AskInput } | { ok:
     image = obj.image;
   }
 
+  // history is context only: anything malformed in it is dropped rather than refused
+  const clean = (v: unknown, n: number) => (typeof v === 'string' ? v.replace(/[\u0000-\u001f\u007f]+/g, ' ').trim().slice(0, n) : '');
+  const history: AskTurn[] = (Array.isArray(obj.history) ? obj.history : []).slice(-ASK_LIMITS.history).flatMap((h) => {
+    const item = (typeof h === 'object' && h !== null ? h : {}) as Record<string, unknown>;
+    const q = clean(item.q, ASK_LIMITS.historyText);
+    const a = clean(item.a, ASK_LIMITS.answer);
+    return q && a ? [{ q, a }] : [];
+  });
+
   if (!typed.length && !marks.length) return { ok: false, error: 'There is nothing to read.' };
   if (typed.length + marks.length > ASK_LIMITS.items) return { ok: false, error: 'Too much at once: ask about fewer things.' };
-  return { ok: true, value: { typed, image, marks } };
+  return { ok: true, value: { typed, image, marks, ...(history.length ? { history } : {}) } };
 }
