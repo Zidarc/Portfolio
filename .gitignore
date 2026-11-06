@@ -5,3 +5,7 @@ dist
 
 # personal exports (e.g. LinkedIn data); never committed or shipped
 private/
+
+# Playwright
+test-results/
+playwright-report/

@@ -16,5 +16,5 @@
     "noUnusedLocals": true,
     "noUncheckedIndexedAccess": true
   },
-  "include": ["vite.config.ts", "server", "netlify", "src/shared"]
+  "include": ["vite.config.ts", "playwright.config.ts", "server", "netlify", "src/shared", "tests"]
 }
