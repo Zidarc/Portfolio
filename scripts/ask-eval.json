@@ -18,7 +18,7 @@
     { "q": "Where did Ali do his A-Levels?", "expect": [["Cedar"]] },
     { "q": "Who is Billo?", "expect": [["cat"]] },
     { "q": "Where can I see Ali's code?", "expect": [["github"]] },
-    { "q": "What did Ali do for The Grand Debate?", "expect": [["registration", "website", "portal"]] },
+    { "q": "What did Ali do for The Grand Debate?", "expect": [["registration", "website", "portal"]], "forbid": ["\\d+\\+"] },
     { "q": "Which programming languages does Ali know?", "expect": [["python"], ["typescript", "javascript", "c\\+\\+"]] },
     { "q": "What was Astralis-7?", "expect": [["NASA", "Space Apps", "exoplanet"]] },
     { "q": "cool site!", "kind": "statement" },
