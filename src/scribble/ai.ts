@@ -339,7 +339,7 @@ export async function askSheet(
       continue;
     }
     const q = item.text.slice(0, ASK_LIMITS.historyText);
-    const draft: Note = { id: newNoteId(), x: 0, y: 0, t, c: colour, s: 0, ai: { for: target.key, ...(q ? { q } : {}) } };
+    const draft: Note = { id: newNoteId(), x: 0, y: 0, t, c: colour, s: 0, ai: { for: target.key, ...(q ? { q } : {}), ...(item.link ? { link: item.link } : {}) } };
     const { w, h } = noteMeasure(draft);
     const spot = findSpot(target.box, w, h, taken);
     const note: Note = { ...draft, x: Math.round(spot.x), y: Math.round(spot.y) };

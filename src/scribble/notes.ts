@@ -1,4 +1,4 @@
-import { answerSize } from './answers.ts';
+import { answerSize, LINK_ROOM } from './answers.ts';
 import type { Box } from './camera.ts';
 
 /**
@@ -19,7 +19,7 @@ export interface Note {
    * An answer written by the AI: the fingerprint of what it answers (see scribble/ai.ts) and the
    * question as the AI read it (sent back with later questions, so follow-ups make sense).
    */
-  ai?: { for: string; q?: string };
+  ai?: { for: string; q?: string; link?: { href: string; label: string } };
 }
 
 /** Font size for each size in the crayon box's size picker. */
@@ -73,7 +73,10 @@ export function firstBaseline(size: number) {
 
 /** The note's size in world units (an AI answer's comes from its crayon handwriting, see answers.ts). */
 export function noteMeasure(n: Pick<Note, 't' | 's'> & Partial<Pick<Note, 'id' | 'ai'>>) {
-  if (n.ai && n.id) return answerSize({ id: n.id, t: n.t });
+  if (n.ai && n.id) {
+    const size = answerSize({ id: n.id, t: n.t });
+    return n.ai.link ? { w: size.w, h: size.h + LINK_ROOM } : size;
+  }
   const lines = noteLines(n.t);
   return { w: Math.max(n.s * 0.5, ...lines.map((l) => lineWidth(l, n.s))), h: lines.length * n.s * LINE };
 }

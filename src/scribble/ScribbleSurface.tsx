@@ -2,7 +2,7 @@ import { memo, startTransition, useEffect, useId, useRef, useState, type CSSProp
 import { flushSync } from 'react-dom';
 import { CrayonDrawing } from '../crayon/CrayonDrawing.tsx';
 import { useTheme } from '../theme.ts';
-import { answerHand, freshAnswers } from './answers.ts';
+import { answerHand, answerSize, freshAnswers, LINK_GAP, LINK_SIZE } from './answers.ts';
 import { crayonPasses, grainTile, shownColour, type Pass, type Stroke } from './brush.ts';
 import { homeView, overlaps, strokeBox, visibleBox, zoomAt, type Camera, type View } from './camera.ts';
 import { toolCursor } from './cursors.ts';
@@ -462,6 +462,32 @@ export function ScribbleSurface({ sb, active, camera, panning = false, className
             onPointerDown={(e) => e.stopPropagation()}
           />
         )}
+        {sb.notes.map((n) => {
+          // an answer's link (a project, a post, the contact form): under it, once it's written
+          const link = n.ai?.link;
+          if (!link) return null;
+          const { plan } = answerHand(n);
+          const { h } = answerSize(n);
+          return (
+            <a
+              key={n.id}
+              className="scribble-surface__link"
+              href={link.href}
+              target="_blank"
+              rel="noopener"
+              style={{
+                left: (n.x - view.x) * view.z,
+                top: (n.y + h + LINK_GAP - view.y) * view.z,
+                fontSize: LINK_SIZE * view.z,
+                color: shownColour(n.c),
+                animationDelay: freshAnswers.has(n.id) ? `${Math.round(plan.totalDuration)}ms` : '0ms',
+              }}
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              → {link.label}
+            </a>
+          );
+        })}
       </div>
     </div>
   );

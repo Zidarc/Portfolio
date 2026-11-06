@@ -10,6 +10,10 @@ import { CAP, type CrayonPlan } from '../crayon/strokes.ts';
 
 /** Height of a capital letter in an answer, in world units. */
 export const ANSWER_CAP = 20;
+/** An answer's link (to a project, a post, the contact form): its text size, and the room kept for it below. */
+export const LINK_SIZE = 17;
+export const LINK_GAP = 6;
+export const LINK_ROOM = LINK_GAP + LINK_SIZE * 1.4;
 /** How wide an answer is wrapped, in world units. */
 export const ANSWER_WIDTH = 440;
 /** However long the answer, it's written within about this long. */
