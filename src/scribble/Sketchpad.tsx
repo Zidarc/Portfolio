@@ -3,11 +3,13 @@ import { ThemeButton } from '../components/ThemeButton.tsx';
 import { CrayonText } from '../crayon/CrayonText.tsx';
 import { useTheme, type Theme } from '../theme.ts';
 import { chalkOf, crayonPasses, type Stroke } from './brush.ts';
-import { drawingBox, MAX_ZOOM, MIN_ZOOM, useCamera } from './camera.ts';
+import { drawingBox, MAX_ZOOM, MIN_ZOOM, useCamera, type Box } from './camera.ts';
 import { useToolCursor } from './cursors.ts';
 import { ScribbleSurface } from './ScribbleSurface.tsx';
 import { Toolbar } from './Toolbar.tsx';
-import { firstBaseline, LINE, NOTE_FONT, noteLines, type Note } from './notes.ts';
+import { firstBaseline, LINE, newNoteId, NOTE_FONT, noteLines, noteMeasure, noteSize, type Note } from './notes.ts';
+import { Starters } from './Starters.tsx';
+import { Thinking } from './Thinking.tsx';
 import { useScribbles } from './useScribbles.ts';
 import './scribble.css';
 
@@ -107,6 +109,11 @@ const MESSAGE_MS = 6000;
 function useAsk(sb: ReturnType<typeof useScribbles>, camera: ReturnType<typeof useCamera>) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  /** What's being read right now, on the sheet (where the "reading" doodle goes). */
+  const [reading, setReading] = useState<Box | null>(null);
+  // the answers arrive seconds later: add them to the sheet as it is then, so undo takes off just them
+  const latest = useRef(sb);
+  latest.current = sb;
 
   useEffect(() => {
     if (!message) return;
@@ -114,15 +121,17 @@ function useAsk(sb: ReturnType<typeof useScribbles>, camera: ReturnType<typeof u
     return () => clearTimeout(t);
   }, [message]);
 
-  const ask = async () => {
+  /** `extra`: a note just added to the sheet (a starter question), which this render can't see yet. */
+  const ask = async (extra?: Note) => {
     setBusy(true);
     setMessage(null);
     try {
       const { askSheet } = await import('./ai.ts');
-      const out = await askSheet(sb.strokes, sb.notes, ANSWER_COLOUR);
+      const notes = extra ? [...sb.notes, extra] : sb.notes;
+      const out = await askSheet(sb.strokes, notes, ANSWER_COLOUR, setReading);
       if (!out.ok) return setMessage(out.message);
       if (out.notes.length) {
-        sb.addMany({ strokes: out.strokes, notes: out.notes });
+        latest.current.addMany({ strokes: out.strokes, notes: out.notes });
         if (out.focus) camera.show(out.focus);
       }
       const answeredCount = out.notes.length;
@@ -135,10 +144,11 @@ function useAsk(sb: ReturnType<typeof useScribbles>, camera: ReturnType<typeof u
       setMessage('Something went wrong reading the sheet. Try again?');
     } finally {
       setBusy(false);
+      setReading(null);
     }
   };
 
-  return { busy, message, ask };
+  return { busy, message, reading, ask };
 }
 
 /**
@@ -170,7 +180,33 @@ export function Sketchpad() {
     return () => window.removeEventListener('keydown', onKey);
   });
 
-  const zoom = camera.current().z;
+  const view = camera.current();
+  const zoom = view.z;
+  const empty = !sb.strokes.length && !sb.notes.length;
+
+  /** A starter question: written on the sheet, a little above the middle of the view, and asked. */
+  const askStarter = (question: string) => {
+    const { width, height } = camera.size.current;
+    const view = camera.current(); // (now: the sheet has measured itself since this render)
+    const s = noteSize(sb.size);
+    const { w } = noteMeasure({ t: question, s });
+    const note: Note = {
+      id: newNoteId(),
+      x: Math.round(view.x + width / 2 / view.z - w / 2),
+      y: Math.round(view.y + (height * 0.3) / view.z),
+      t: question,
+      c: sb.colour,
+      s,
+    };
+    sb.addMany({ notes: [note] });
+    void ai.ask(note);
+  };
+
+  // the "reading" doodle goes just right of what's being read, kept on the sheet
+  const thinkingAt = ai.reading && {
+    left: Math.min(Math.max(8, (ai.reading.x1 - view.x) * view.z + 14), camera.size.current.width - 200),
+    top: Math.min(Math.max(8, (ai.reading.y0 - view.y) * view.z), camera.size.current.height - 60),
+  };
 
   return (
     <main className="sketchpad">
@@ -188,6 +224,8 @@ export function Sketchpad() {
       </div>
       <div ref={sheetRef} className="sketchpad__sheet">
         <ScribbleSurface sb={sb} active camera={camera} panning={hand} />
+        {empty && !ai.busy && <Starters onPick={askStarter} />}
+        {ai.busy && thinkingAt && <Thinking {...thinkingAt} />}
         <div className="sketchpad__view" role="toolbar" aria-label="Move and zoom">
           <button
             type="button"
@@ -221,7 +259,7 @@ export function Sketchpad() {
             disabled={ai.busy || (!sb.strokes.length && !sb.notes.length)}
             aria-busy={ai.busy}
             title="The AI reads what you've written or typed here and answers next to it, from Ali's CV, projects and blog"
-            onClick={ai.ask}
+            onClick={() => void ai.ask()}
           >
             <span aria-hidden="true">✨</span> {ai.busy ? 'reading…' : 'ask'}
           </button>

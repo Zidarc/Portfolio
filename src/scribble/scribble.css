@@ -352,3 +352,85 @@
   resize: none;
   cursor: text;
 }
+
+/* ---------- the AI on the sketchpad ---------- */
+
+/* "Try asking": on an empty sheet. Only the questions take clicks; drawing goes straight through the rest. */
+.sketchpad__starters {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  width: min(30rem, calc(100% - 2rem));
+  transform: translate(-50%, -50%);
+  color: var(--ink-soft);
+  font-family: var(--font-hand);
+  font-size: 1.15rem;
+  text-align: center;
+  pointer-events: none;
+}
+
+.sketchpad__starters p {
+  margin: 0 0 0.6rem;
+}
+
+.sketchpad__starters ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 0.7rem;
+  margin: 0 0 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+
+.sketchpad__starters button {
+  padding: 0.2rem 0.85rem;
+  border: 2px dashed color-mix(in srgb, var(--crayon-purple) 70%, transparent);
+  border-radius: 14px 6px 12px 8px / 8px 12px 6px 14px;
+  background: color-mix(in srgb, var(--paper) 85%, transparent);
+  color: var(--ink);
+  font: inherit;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.sketchpad__starters button:hover,
+.sketchpad__starters button:focus-visible {
+  border-style: solid;
+  background: color-mix(in srgb, var(--crayon-purple) 14%, var(--paper));
+}
+
+.sketchpad__starters-or {
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+/* the crayon doodling to itself while the AI reads */
+.sketchpad__thinking {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.7rem 0.2rem 0.3rem;
+  border: 2px solid color-mix(in srgb, var(--crayon-purple) 55%, transparent);
+  border-radius: 16px 8px 14px 10px / 10px 14px 8px 16px;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  color: var(--ink-soft);
+  font-family: var(--font-hand);
+  font-size: 1.05rem;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.sketchpad__thinking-doodle {
+  display: inline-block;
+  width: 38px;
+  height: 38px;
+}
+
+.sketchpad__thinking-doodle svg {
+  width: 100%;
+  height: 100%;
+}

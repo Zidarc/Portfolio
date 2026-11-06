@@ -284,9 +284,16 @@ async function collect(strokes: Stroke[], notes: Note[]): Promise<Pending | null
  * Read the sheet, ask, and work out where the answers go. Returns the new notes and arrows (the caller
  * adds them as one undo step) and a box to bring into view.
  */
-export async function askSheet(strokes: Stroke[], notes: Note[], colour: string): Promise<AskOutcome> {
+export async function askSheet(
+  strokes: Stroke[],
+  notes: Note[],
+  colour: string,
+  /** Told where on the sheet the things being read are, once they're known (for the "reading" doodle). */
+  onReading?: (box: Box) => void,
+): Promise<AskOutcome> {
   const pending = await collect(strokes, notes);
   if (!pending) return { ok: false, message: 'Nothing new to read. Write or type a question first!' };
+  onReading?.([...pending.targets.values()].map((t) => t.box).reduce(union));
 
   let reply: AskResponse;
   try {
