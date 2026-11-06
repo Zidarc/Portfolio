@@ -52,14 +52,14 @@ function lineWidth(line: string): number {
   return x * k;
 }
 
-/** Greedy word wrap to ANSWER_WIDTH. */
-export function wrapAnswer(text: string): string {
+/** Greedy word wrap to `width` (ANSWER_WIDTH, or narrower on a small screen). */
+export function wrapAnswer(text: string, width = ANSWER_WIDTH): string {
   const lines: string[] = [];
   for (const para of text.split('\n')) {
     let line = '';
     for (const word of para.split(' ').filter(Boolean)) {
       const next = line ? `${line} ${word}` : word;
-      if (line && lineWidth(next) > ANSWER_WIDTH) {
+      if (line && lineWidth(next) > width) {
         lines.push(line);
         line = word;
       } else line = next;

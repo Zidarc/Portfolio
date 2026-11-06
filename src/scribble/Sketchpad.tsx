@@ -128,7 +128,7 @@ function useAsk(sb: ReturnType<typeof useScribbles>, camera: ReturnType<typeof u
     try {
       const { askSheet } = await import('./ai.ts');
       const notes = extra ? [...sb.notes, extra] : sb.notes;
-      const out = await askSheet(sb.strokes, notes, ANSWER_COLOUR, setReading);
+      const out = await askSheet(sb.strokes, notes, ANSWER_COLOUR, setReading, camera.size.current.width / camera.current().z);
       if (!out.ok) return setMessage(out.message);
       if (out.notes.length) {
         latest.current.addMany({ strokes: out.strokes, notes: out.notes });
@@ -192,7 +192,8 @@ export function Sketchpad() {
     const { w } = noteMeasure({ t: question, s });
     const note: Note = {
       id: newNoteId(),
-      x: Math.round(view.x + width / 2 / view.z - w / 2),
+      // (on a phone, at the left edge: the answer goes under it and needs the whole width)
+      x: Math.round(width / view.z < 700 ? view.x + 20 / view.z : view.x + width / 2 / view.z - w / 2),
       y: Math.round(view.y + (height * 0.3) / view.z),
       t: question,
       c: sb.colour,

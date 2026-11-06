@@ -16,7 +16,7 @@
 import { ASK_LIMITS, markRef, typedRef, type AskInput, type AskItem, type AskResponse, type AskTurn } from '../shared/ask.ts';
 import { pathD, type Stroke } from './brush.ts';
 import { strokeBox, type Box } from './camera.ts';
-import { answerText, freshAnswers, wrapAnswer } from './answers.ts';
+import { ANSWER_WIDTH, answerText, freshAnswers, wrapAnswer } from './answers.ts';
 import { newNoteId, noteBox, noteMeasure, type Note } from './notes.ts';
 
 // ---------- groups of handwriting ----------
@@ -155,18 +155,24 @@ async function picture(groups: Group[]): Promise<string> {
 const GAP = 18;
 
 /** Where a box of size w × h can go near `target` without touching anything in `taken`. */
-export function findSpot(target: Box, w: number, h: number, taken: Box[]): { x: number; y: number; near: boolean } {
+export function findSpot(target: Box, w: number, h: number, taken: Box[], below = false): { x: number; y: number; near: boolean } {
   const free = (x: number, y: number) => {
     const b = grow({ x0: x, y0: y, x1: x + w, y1: y + h }, GAP);
     return !taken.some((t) => overlaps(b, t));
   };
   // right next to it first: to the right, below, to the left, above (each tried at a few offsets)
   const midY = (target.y0 + target.y1) / 2 - h / 2;
-  const nearby: [number, number][] = [
+  const beside: [number, number][] = [
     [target.x1 + GAP * 1.5, target.y0],
     [target.x1 + GAP * 1.5, midY],
+  ];
+  const under: [number, number][] = [
     [target.x0, target.y1 + GAP],
     [target.x0 - w / 3, target.y1 + GAP],
+  ];
+  // (on a narrow screen, under the question first: beside it would need zooming out to read)
+  const nearby: [number, number][] = [
+    ...(below ? [...under, ...beside] : [...beside, ...under]),
     [target.x0 - w - GAP * 1.5, target.y0],
     [target.x0, target.y0 - h - GAP],
   ];
@@ -299,7 +305,12 @@ export async function askSheet(
   colour: string,
   /** Told where on the sheet the things being read are, once they're known (for the "reading" doodle). */
   onReading?: (box: Box) => void,
+  /** How much of the sheet is in view, in world units: answers on a narrow screen are wrapped to fit it. */
+  viewWidth = Infinity,
 ): Promise<AskOutcome> {
+  // a narrow view (a phone) gets narrower answers, written under the question
+  const narrow = viewWidth < ANSWER_WIDTH * 1.6;
+  const wrapWidth = Math.max(200, Math.min(ANSWER_WIDTH, viewWidth - 40));
   const pending = await collect(strokes, notes);
   if (!pending) return { ok: false, message: 'Nothing new to read. Write or type a question first!' };
   onReading?.([...pending.targets.values()].map((t) => t.box).reduce(union));
@@ -332,7 +343,7 @@ export async function askSheet(
       skipped++;
       continue;
     }
-    const t = wrapAnswer(answerText(item.answer));
+    const t = wrapAnswer(answerText(item.answer), wrapWidth);
     if (!t) {
       unanswered.push(target.key);
       skipped++;
@@ -341,7 +352,7 @@ export async function askSheet(
     const q = item.text.slice(0, ASK_LIMITS.historyText);
     const draft: Note = { id: newNoteId(), x: 0, y: 0, t, c: colour, s: 0, ai: { for: target.key, ...(q ? { q } : {}), ...(item.link ? { link: item.link } : {}) } };
     const { w, h } = noteMeasure(draft);
-    const spot = findSpot(target.box, w, h, taken);
+    const spot = findSpot(target.box, w, h, taken, narrow);
     const note: Note = { ...draft, x: Math.round(spot.x), y: Math.round(spot.y) };
     freshAnswers.add(note.id); // so it writes itself in
     const box = noteBox(note);
