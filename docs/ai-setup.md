@@ -40,11 +40,16 @@ Two things to know about the free tier:
 2. **My Profile → API Tokens → Create Token → Custom token**. Give it the permission
    *Account → Workers AI → Read* (that is enough to run models), for your account only.
 3. Put them in `.env.local` as `CF_ACCOUNT_ID=...` and `CF_AI_TOKEN=...`.
-4. That's all: the default model, Llama 4 Scout, reads pictures and needs no licence step. (Set
-   `CF_AI_MODEL` to use another one; some, like Llama 3.2 Vision, first need a licence accepted.)
+4. That's all: the default model, Mistral Small 3.1, reads pictures, answers in about 4 seconds and needs
+   no licence step. (Set `CF_AI_MODEL` to use another one; some, like Llama 3.2 Vision, first need a
+   licence accepted, and bigger ones like Llama 4 Scout were too slow for the 9-second deadline.)
 
-The free plan gives 10,000 "neurons" a day (roughly a few hundred questions) and resets at midnight UTC.
-Stay on the free Workers plan: on a paid plan, usage past the allowance would be charged.
+The free plan gives 10,000 "neurons" a day and resets at midnight UTC. With the notes this site sends,
+that's roughly 100 to 150 questions (cached repeats are free). Stay on the free Workers plan: on a paid
+plan, usage past the allowance would be charged.
+
+**Your local tests use the same allowance as the live site**, since `.env.local` holds the same keys. Use
+practice answers (below) for anything but the AI itself.
 
 ## 3. Try it
 
@@ -58,13 +63,38 @@ Without any keys, local dev replies with **practice answers** (marked as such), 
 built and tested offline. To get practice answers even with keys set (say, while no provider has
 credit), start dev with `AI_PRACTICE=1` (in `.env.local`, or `$env:AI_PRACTICE=1; npm run dev`). The live site replies "The AI isn't set up yet" instead.
 
-## 4. Going live
+## 4. Check the answers
+
+`scripts/ask-eval.json` holds 30 questions with what each answer must and mustn't say (facts, made-up
+facts, off-topic requests, private details, prompt injection, follow-ups). After changing the rules, the
+notes or the model:
+
+```sh
+node scripts/ask-eval.mjs                        # all of them (about a quarter of a day's allowance)
+node scripts/ask-eval.mjs http://localhost:5173 recursion   # just the questions containing "recursion"
+```
+
+## 5. Going live
 
 Add the same variables on Netlify (**Site configuration → Environment variables**), or pass them to Docker
 with `--env-file`. Then run the test script against the live address.
 
-## Limits built in
+Optional extras:
 
-- Each visitor: 6 questions a minute, 60 a day (per server instance).
+- **`ASK_LOG_KEY`**: any long random string. With it set, `node scripts/ask-log.mjs` (with the same value
+  in `.env.local`) prints what visitors asked lately and what the AI said, with nothing about who asked.
+  Without it, the log can't be read at all.
+- **Embeddings**: after changing `content/ai/repos/` or the blog, run `node scripts/embed-content.ts` and
+  commit `content/ai/embeddings.json`. It helps questions find the right notes when they use other words.
+  Sections it doesn't cover yet are found by their words alone, so forgetting is harmless.
+- **Fallback answers**: `content/ai/faq.md` answers common typed questions when every provider is down or
+  out of allowance.
+
+## Limits and savings built in
+
+- Each visitor: 6 questions a minute, 60 a day. On Netlify the count is kept in Netlify Blobs, so it's
+  shared by every function instance; in Docker and dev it's in memory.
+- The same typed question gets its stored answer straight away for 7 days, or until the notes change.
+  Follow-up questions (with earlier answers on the sheet) are always asked fresh.
 - At most 30 things per request, 600 characters per typed note, about 1 MB of picture.
 - The whole answer has to arrive within 9 seconds, because Netlify stops functions after 10.

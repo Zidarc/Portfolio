@@ -31,7 +31,9 @@ About, Roles, Skills, Projects and Contact, each written in crayon handwriting t
 ### The sketchpad (`/draw`)
 An endless sheet of paper: pan, zoom, draw, and type with **Aa type**. Press **✨ ask** and an AI reads the
 sheet, answers questions about me in crayon handwriting next to each question, and draws an arrow to the
-answer if there's no room nearby. **Save image** downloads the whole sheet as a PNG.
+answer if there's no room nearby. An empty sheet offers a few questions to start with, a crayon doodles
+while it reads, follow-ups ("what about the other one?") make sense, and an answer about a project or post
+has a link under it. **Save image** downloads the whole sheet as a PNG.
 
 ### The blog (`/blog`)
 Posts are Markdown files in `content/blog/`, turned into pages at build time. The AI reads them too.
@@ -62,7 +64,7 @@ Add `?lab` to the URL for the crayon test bench.
 The sketchpad's **✨ ask** sends the sheet to `POST /api/ask`, which answers in a few seconds:
 
 ```
-sketchpad  ──►  /api/ask  ──►  Grok ──► Gemini ──► Cloudflare Workers AI
+sketchpad  ──►  /api/ask  ──►  cache? ──► Gemini ──► Cloudflare Workers AI ──► FAQ fallback
  (typed notes +         (system prompt: rules + what the AI knows about me)
   a picture of the                     │
   handwriting)                         ▼
@@ -76,20 +78,30 @@ sketchpad  ──►  /api/ask  ──►  Grok ──► Gemini ──► Cloud
 - The pieces go as a single picture, with a numbered box drawn round each one so the model can say which
   answer belongs where.
 - Anything already answered isn't sent again.
+- The last few questions and answers on the sheet go along too, so follow-ups make sense.
 
 **2. What it knows** (`server/ask-material.ts`), a small retrieval step with no database:
 - **Sent with every question:** my CV, an about-me page, and the site's own data (roles, projects, skills).
-- **Looked up per question:** each project's GitHub README and the blog posts. Sections are ranked by how
-  many words they share with the question, rarer words counting more, and the best ones are added until
-  the budget is full.
+- **Looked up per question:** each project's GitHub README and the blog posts. Sections are ranked by the
+  words they share with the question (rarer words count more) and by meaning (stored embeddings, made with a
+  free Cloudflare model), and the best ones are added until the budget is full.
 - **The rules** in `content/ai/rules.md`: only answer about me, keep it short, say so when it doesn't know.
 
 **3. The models** (`server/ask.ts`)
-- Each provider is tried in turn: xAI Grok, Google Gemini, then Cloudflare Workers AI (Mistral Small 3.1,
-  which reads images). Whichever has a key set is used.
+- Each provider with a key set is tried in turn: xAI Grok, Google Gemini, then Cloudflare Workers AI
+  (Mistral Small 3.1, which reads images).
 - A provider that refuses the key or runs out of allowance is skipped for 10 minutes.
-- The whole request has a 9-second deadline. Visitors are limited to 6 questions a minute and 60 a day.
-- Replies are strict JSON, checked and clipped before they reach the page.
+- The whole request has a 9-second deadline. Visitors are limited to 6 questions a minute and 60 a day,
+  counted in Netlify Blobs so every serverless instance shares the count.
+- Replies are strict JSON, checked and clipped before they reach the page. Answers are matched to questions
+  by the text the model copies back, since small models sometimes swap them, and links are only kept to
+  pages that exist.
+- A typed question asked before is answered from a cache straight away. If every provider is down, common
+  questions get an answer from `content/ai/faq.md`.
+- Questions and answers are logged by day with nothing about the visitor, readable with
+  `scripts/ask-log.mjs`.
+- `scripts/ask-eval.mjs` checks 30 questions (facts, made-up facts, off-topic, private details, prompt
+  injection, follow-ups) after any change to the rules, notes or model.
 
 **4. Writing the answer** (`src/scribble/answers.ts`)
 - Answers are wrapped to fit and written in the crayon handwriting.
@@ -119,6 +131,10 @@ Copy `.env.example` to `.env.local` for the optional parts:
 
 To try the AI endpoint on its own: `node scripts/ask-test.mjs` (with `npm run dev` running).
 
+```bash
+npm test          # Playwright smoke tests (desktop and phone), with practice AI answers; also run in CI
+```
+
 ## Deploy
 
 - **Netlify** (the live site): `netlify/functions/` serves `/api/ask` and `/api/contact`, and the keys are
@@ -142,7 +158,8 @@ docker run -p 8080:8080 --env-file .env.local portfolio   # http://localhost:808
 | `src/blog/`, `content/blog/` | the blog pages and posts |
 | `src/data/` | roles, projects, skills and links: one source for the page and the AI |
 | `server/` | the AI endpoint, its knowledge, the contact form, the blog build step, the Docker server |
-| `content/ai/` | what the AI knows: CV, about-me, rules, repo notes |
+| `content/ai/` | what the AI knows: CV, about-me, rules, repo notes, fallback answers, embeddings |
+| `tests/` | the Playwright smoke tests |
 | `netlify/functions/` | the same endpoints as Netlify Functions |
 | `legacy/` | the previous HTML/CSS/jQuery version, kept for reference |
 
