@@ -7,7 +7,7 @@
 ## Education
 
 - **FAST National University of Computer and Emerging Sciences (FAST NUCES)**, Karachi: Bachelors in
-  Computer Science, Aug 2025 – present.
+  Computer Science, Aug 2025 – present (class of 2029: expected to graduate in 2029).
 - **Cedar College**, Karachi: A-Levels, Dean's List, finished Jun 2024.
 
 ## Summary
