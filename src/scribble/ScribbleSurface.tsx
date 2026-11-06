@@ -60,17 +60,20 @@ const AnswerView = memo(function AnswerView({ note }: { note: Note }) {
   const [fresh] = useState(() => freshAnswers.has(note.id));
   return (
     <g transform={`translate(${note.x} ${note.y}) scale(${scale})`} fill="none" strokeLinecap="round" strokeLinejoin="round">
-      <CrayonDrawing
-        plan={plan}
-        seed={seed}
-        label={note.t}
-        decorative
-        texture={false}
-        instant={!fresh}
-        color={shownColour(note.c)}
-        style={{ width: `${plan.width}px`, height: `${plan.height}px` }}
-        onDone={() => freshAnswers.delete(note.id)}
-      />
+      {/* An svg inside an svg ignores CSS width and height (Chrome sizes it from attributes only, else 100% of
+          the sheet), so this one sets the size in attributes and the crayon drawing fills it. */}
+      <svg width={plan.width} height={plan.height} overflow="visible">
+        <CrayonDrawing
+          plan={plan}
+          seed={seed}
+          label={note.t}
+          decorative
+          texture={false}
+          instant={!fresh}
+          color={shownColour(note.c)}
+          onDone={() => freshAnswers.delete(note.id)}
+        />
+      </svg>
     </g>
   );
 });

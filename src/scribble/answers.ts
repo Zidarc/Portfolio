@@ -9,7 +9,7 @@ import { planHandwriting } from '../crayon/handwriting.ts';
 import { CAP, type CrayonPlan } from '../crayon/strokes.ts';
 
 /** Height of a capital letter in an answer, in world units. */
-export const ANSWER_CAP = 22;
+export const ANSWER_CAP = 20;
 /** How wide an answer is wrapped, in world units. */
 export const ANSWER_WIDTH = 440;
 /** However long the answer, it's written within about this long. */
