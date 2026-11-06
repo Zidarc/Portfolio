@@ -136,7 +136,10 @@ export function termsOf(text: string): Map<string, number> {
 }
 
 /** A document cut at its headings, and long sections cut again at paragraph breaks. */
-function chunksOf(file: string, text: string): Chunk[] {
+function chunksOf(file: string, raw: string): Chunk[] {
+  // one kind of line ending, so a section's id (the hash its embedding is stored under) is the same on
+  // Windows checkouts (CRLF) as on Netlify (LF)
+  const text = raw.replace(/\r\n?/g, '\n');
   const sections = text.split(/\n(?=#{1,3} )/);
   const doc = sections[0]?.match(/^#{1,3} (.+)/)?.[1] ?? file;
   const out: Chunk[] = [];

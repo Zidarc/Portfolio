@@ -9,6 +9,10 @@
 //
 // It sends a few questions per request and waits between requests, to stay under the rate limit
 // (6 a minute). Exits with 1 if any check fails.
+//
+// Mind the cost: it uses the same free allowance as the live site. On Cloudflare's free plan one full
+// run is roughly a quarter of the day's 10,000 neurons, so a few runs leave visitors "out of crayons"
+// until midnight UTC. Use the filter to re-check just the questions you changed.
 
 import { readFileSync } from 'node:fs';
 
