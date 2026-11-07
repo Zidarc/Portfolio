@@ -1,18 +1,33 @@
 # Setting up the sketchpad's AI mode
 
-`POST /api/ask` tries up to three providers in order, moving to the next when one is out of credit,
+`POST /api/ask` tries up to four providers in order, moving to the next when one is out of credit,
 rate-limited or down:
 
-1. **xAI Grok** (`XAI_API_KEY`): **paid**. It answers only once the xAI team has credits.
-2. **Google Gemini** (`GEMINI_API_KEY`): **free tier**.
-3. **Cloudflare Workers AI** (`CF_ACCOUNT_ID` + `CF_AI_TOKEN`): **free daily allowance**.
+1. **Groq** (`GROQ_API_KEY`): **free tier**, very fast, but only about one question a minute.
+2. **xAI Grok** (`XAI_API_KEY`): **paid**. It answers only once the xAI team has credits.
+3. **Google Gemini** (`GEMINI_API_KEY`): **free tier**.
+4. **Cloudflare Workers AI** (`CF_ACCOUNT_ID` + `CF_AI_TOKEN`): **free daily allowance**.
+
+Groq and Grok are different companies: a Groq key starts with `gsk_`, an xAI (Grok) key with `xai-`.
 
 The free ones have no billing set up, so when they run out the sketchpad says "I'm out of crayons for
 today" until they reset; nothing is charged. Any one provider is enough to start.
 
 What it answers from lives in [`content/ai/`](../content/ai/README.md).
 
-## 0. Grok (xAI)
+## Groq (free, fast)
+
+1. At console.groq.com, sign in and choose **API Keys → Create API Key**. Don't add billing: without it the
+   key stays on the free tier.
+2. Put it in `.env.local` (and Netlify) as `GROQ_API_KEY=gsk_...`.
+3. Optional: `GROQ_MODEL` picks the model (default `qwen/qwen3.8-27b`). It must read images, for handwriting;
+   Groq's model list changes, so if the default disappears pick a current vision model on console.groq.com.
+
+The free tier allows about 7,000 input tokens a minute, and each question sends about 6,500 (it gets the
+same shortened material as Cloudflare). So Groq answers roughly one question a minute, in under a second;
+questions in between go on to the next provider, and Groq is tried again once the minute it asks for is up.
+
+## Grok (xAI)
 
 1. In the xAI console (console.x.ai), create an API key and put it in `.env.local` as `XAI_API_KEY=...`.
 2. **It needs credits:** a new team gets "doesn't have any credits or licenses yet" until credits are

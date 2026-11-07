@@ -151,6 +151,6 @@ createServer((req, res) => {
     if (!res.headersSent) send(res, 500, 'Server error');
   });
 }).listen(PORT, () => {
-  const ai = [askConfig.xai && 'Grok', askConfig.gemini && 'Gemini', askConfig.cloudflare && 'Cloudflare'].filter(Boolean).join(' + ') || 'NOT configured';
+  const ai = [askConfig.groq && 'Groq', askConfig.xai && 'Grok', askConfig.gemini && 'Gemini', askConfig.cloudflare && 'Cloudflare'].filter(Boolean).join(' + ') || 'NOT configured';
   console.info(`portfolio on http://localhost:${PORT} (email ${mailConfig ? 'configured' : 'NOT configured'}, AI ${ai})`);
 });

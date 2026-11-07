@@ -3,7 +3,7 @@ import { useMediaQuery } from '../hooks/useMediaQuery.ts';
 import './Privacy.css';
 
 /** When this page last changed (shown on it). */
-const UPDATED = '7 November 2026';
+const UPDATED = '8 November 2026';
 
 /**
  * /privacy: what the site collects and what it doesn't. Kept in plain words, and kept true: if the
@@ -41,7 +41,7 @@ export function Privacy() {
       <p>
         Your drawings stay in your browser. Only when you press <strong>✨ ask</strong> does the sketchpad send
         something: your typed notes, a picture of your new handwriting, and the last few questions and answers on
-        the sheet. They go to an AI provider (currently Cloudflare Workers AI) to be answered. The provider's own
+        the sheet. They go to an AI provider (currently Groq or Cloudflare Workers AI) to be answered. The provider's own
         privacy terms apply to what it receives.
       </p>
       <p>

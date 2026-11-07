@@ -64,7 +64,7 @@ Add `?lab` to the URL for the crayon test bench.
 The sketchpad's **✨ ask** sends the sheet to `POST /api/ask`, which answers in a few seconds:
 
 ```
-sketchpad  ──►  /api/ask  ──►  cache? ──► Gemini ──► Cloudflare Workers AI ──► FAQ fallback
+sketchpad  ──►  /api/ask  ──►  cache? ──► Groq ──► Gemini ──► Cloudflare Workers AI ──► FAQ fallback
  (typed notes +         (system prompt: rules + what the AI knows about me)
   a picture of the                     │
   handwriting)                         ▼
@@ -88,9 +88,10 @@ sketchpad  ──►  /api/ask  ──►  cache? ──► Gemini ──► Clo
 - **The rules** in `content/ai/rules.md`: only answer about me, keep it short, say so when it doesn't know.
 
 **3. The models** (`server/ask.ts`)
-- Each provider with a key set is tried in turn: xAI Grok, Google Gemini, then Cloudflare Workers AI
-  (Mistral Small 3.1, which reads images).
-- A provider that refuses the key or runs out of allowance is skipped for 10 minutes.
+- Each provider with a key set is tried in turn: Groq's free tier (Qwen, very fast, about one question a
+  minute), xAI Grok, Google Gemini, then Cloudflare Workers AI (Mistral Small 3.1). All of them read images.
+- A provider that refuses the key or runs out of allowance is skipped for 10 minutes, or for as long as its
+  per-minute limit says.
 - The whole request has a 9-second deadline. Visitors are limited to 6 questions a minute and 60 a day,
   counted in Netlify Blobs so every serverless instance shares the count.
 - Replies are strict JSON, checked and clipped before they reach the page. Answers are matched to questions

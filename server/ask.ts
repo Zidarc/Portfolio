@@ -3,16 +3,17 @@
  * from a picture with numbered boxes) and answers from Ali's own material. Shared by the Netlify
  * function, the Docker Node server and the Vite dev server.
  *
- * Providers, tried in order until one answers: xAI's Grok (paid: only answers once the xAI team has
- * credits), then Google's Gemini API free tier, then Cloudflare Workers AI's free daily allowance. The
- * free ones have no billing, so running out stops the answers ("out of crayons") instead of costing
- * anything. See docs/ai-setup.md.
+ * Providers, tried in order until one answers: Groq's free tier (fast, but only a few questions a minute),
+ * xAI's Grok (paid: only answers once the xAI team has credits), Google's Gemini API, then Cloudflare
+ * Workers AI's free daily allowance. The free ones have no billing, so running out stops the answers
+ * ("out of crayons") instead of costing anything. See docs/ai-setup.md.
  */
 import { validateAsk, markRef, typedRef, ASK_LIMITS, type AskInput, type AskItem, type AskKind, type AskResponse } from '../src/shared/ask.ts';
 import { embed, faqAnswer, fitsIn, knowledgeFor, loadMaterial, type Material, type Page } from './ask-material.ts';
 import { hashOf, localStore, type AskStore } from './store.ts';
 
 export interface AskConfig {
+  groq?: { key: string; model: string };
   /** `model` empty: pick the cheapest model the key can use that reads images. */
   xai?: { key: string; model: string };
   gemini?: { key: string; model: string };
@@ -21,6 +22,8 @@ export interface AskConfig {
 
 export function askConfigFromEnv(env: Record<string, string | undefined>): AskConfig {
   const config: AskConfig = {};
+  // (the model has to read pictures, for handwriting)
+  if (env.GROQ_API_KEY) config.groq = { key: env.GROQ_API_KEY.trim(), model: (env.GROQ_MODEL || 'qwen/qwen3.8-27b').trim() };
   if (env.XAI_API_KEY) config.xai = { key: env.XAI_API_KEY.trim(), model: (env.XAI_MODEL ?? '').trim() };
   if (env.GEMINI_API_KEY) config.gemini = { key: env.GEMINI_API_KEY.trim(), model: (env.GEMINI_MODEL || 'gemini-3.5-flash').trim() };
   if (env.CF_ACCOUNT_ID && env.CF_AI_TOKEN) {
@@ -53,8 +56,11 @@ export interface AskResult {
 
 /** Netlify stops a function after 10 s; leave room to reply. */
 const DEADLINE_MS = 9_000;
-/** How much of the material (characters) Cloudflare's model is given, against the others' CONTEXT_BUDGET. */
-const CLOUDFLARE_CONTEXT = 24_000;
+/**
+ * How much of the material (characters) the short-reading providers are given, against the others'
+ * CONTEXT_BUDGET: Cloudflare's free models read slowly, and Groq's free tier allows 8,000 tokens a minute.
+ */
+const SHORT_CONTEXT = 24_000;
 /** How long the question's embedding may take (else Cloudflare's material is picked by shared words only). */
 const EMBED_MS = 1_200;
 /** How long a provider that refused the key or ran out of allowance is skipped. */
@@ -224,10 +230,18 @@ export function readItems(reply: string, input: AskInput, pages: Page[] = []): A
 /** quota: the free allowance is used up (or rate-limited). down: unreachable or erroring. */
 class ProviderError extends Error {
   readonly kind: 'quota' | 'down' | 'config' | 'bad-reply';
+  /** How long to skip the provider, when it said (a per-minute limit resets soon; a daily one doesn't). */
+  restMs?: number;
   constructor(kind: ProviderError['kind'], message: string) {
     super(message);
     this.kind = kind;
   }
+}
+
+/** How long a 429 says to wait (its Retry-After, or "try again in 39.96s" in the message), in ms. */
+function retryAfter(res: Response, body: string): number | undefined {
+  const s = Number(res.headers.get('retry-after') ?? /try again in ([\d.]+)s\b/i.exec(body)?.[1]);
+  return Number.isFinite(s) && s > 0 ? Math.min(Math.ceil(s * 1000), REST_MS) : undefined;
 }
 
 const splitDataUrl = (url: string) => {
@@ -249,8 +263,35 @@ async function post(url: string, headers: Record<string, string>, body: unknown,
     throw new ProviderError('down', err instanceof Error ? err.message : String(err));
   }
   const text = await res.text();
-  if (!res.ok) throw classify(res.status, text);
+  if (!res.ok) {
+    const err = classify(res.status, text);
+    if (res.status === 429) err.restMs = retryAfter(res, text);
+    throw err;
+  }
   return text;
+}
+
+async function askGroq(c: NonNullable<AskConfig['groq']>, system: string, input: AskInput, ms: number): Promise<string> {
+  const text = buildUserText(input);
+  const content = input.image ? [{ type: 'text', text }, { type: 'image_url', image_url: { url: input.image } }] : text;
+  const raw = await post(
+    'https://api.groq.com/openai/v1/chat/completions',
+    { authorization: `Bearer ${c.key}` },
+    {
+      model: c.model,
+      messages: [{ role: 'system', content: system }, { role: 'user', content }],
+      response_format: { type: 'json_object' },
+      // no thinking out loud: it's slower and spends the per-minute allowance
+      reasoning_effort: 'none',
+      temperature: 0.3,
+      max_tokens: 1200,
+    },
+    ms,
+  );
+  const data = JSON.parse(raw) as { choices?: { message?: { content?: string } }[] };
+  const reply = data.choices?.[0]?.message?.content;
+  if (!reply) throw new ProviderError('bad-reply', `empty reply: ${raw.slice(0, 300)}`);
+  return reply;
 }
 
 // xAI model list, worked out once per server instance
@@ -389,10 +430,10 @@ async function answer(raw: unknown, opts: AskOptions, store: AskStore, later: Pr
     return { status: 429, body: { ok: false, code: 'too-many', error: "That's a lot of questions! Give me a minute." } };
   }
 
-  const { xai, gemini, cloudflare } = opts.config;
-  if (!xai && !gemini && !cloudflare) {
+  const { groq, xai, gemini, cloudflare } = opts.config;
+  if (!groq && !xai && !gemini && !cloudflare) {
     if (opts.dryRun) return { status: 200, body: { ok: true, items: practice(input), provider: 'practice' } };
-    console.error('[ask] no AI provider configured (XAI_API_KEY, GEMINI_API_KEY or CF_ACCOUNT_ID + CF_AI_TOKEN)');
+    console.error('[ask] no AI provider configured (GROQ_API_KEY, XAI_API_KEY, GEMINI_API_KEY or CF_ACCOUNT_ID + CF_AI_TOKEN)');
     return { status: 503, body: { ok: false, code: 'not-set-up', error: "The AI isn't set up yet. Check back soon!" } };
   }
 
@@ -426,20 +467,21 @@ async function answer(raw: unknown, opts: AskOptions, store: AskStore, later: Pr
   }
 
   const system = buildSystem(material, rest);
-  // Cloudflare's free models read slowly: less material keeps them inside the deadline, picked by what the
-  // question means as well as its words (the embedding is fetched meanwhile, and skipped if it's slow)
+  // Cloudflare's free models read slowly and Groq's free tier reads little a minute: less material, picked by
+  // what the question means as well as its words (the embedding is fetched meanwhile, and skipped if slow)
   const query = queryOf(rest);
   const meaning =
-    cloudflare && query && material.vectors && !fitsIn(material, CLOUDFLARE_CONTEXT)
+    cloudflare && query && material.vectors && !fitsIn(material, SHORT_CONTEXT)
       ? embed(cloudflare, [query], EMBED_MS).then(
           ([v]) => v,
           (err: unknown) => void console.error('[ask] embedding:', err instanceof Error ? err.message : err),
         )
       : Promise.resolve(undefined);
-  const askShort = async (c: NonNullable<AskConfig['cloudflare']>, ms: number) => {
+  let shortSystem: Promise<string> | undefined;
+  const askShort = async (ask: (system: string, ms: number) => Promise<string>, ms: number) => {
     const waited = Date.now();
-    const shortSystem = buildSystem(material, rest, CLOUDFLARE_CONTEXT, await meaning);
-    return askCloudflare(c, shortSystem, rest, ms - (Date.now() - waited));
+    const short = await (shortSystem ??= meaning.then((v) => buildSystem(material, rest, SHORT_CONTEXT, v)));
+    return ask(short, ms - (Date.now() - waited));
   };
   const fresh = (items: AskItem[], provider: string): AskResult => {
     if (!history) {
@@ -459,9 +501,10 @@ async function answer(raw: unknown, opts: AskOptions, store: AskStore, later: Pr
 
   const left = () => DEADLINE_MS - (Date.now() - started);
   const attempts = [
+    groq && { name: 'groq', run: (ms: number) => askShort((s, left) => askGroq(groq, s, rest, left), ms) },
     xai && { name: 'grok', run: (ms: number) => askXai(xai, system, rest, ms) },
     gemini && { name: 'gemini', run: (ms: number) => askGemini(gemini, system, rest, ms) },
-    cloudflare && { name: 'cloudflare', run: (ms: number) => askShort(cloudflare, ms) },
+    cloudflare && { name: 'cloudflare', run: (ms: number) => askShort((s, left) => askCloudflare(cloudflare, s, rest, left), ms) },
   ].filter((a): a is { name: string; run: (ms: number) => Promise<string> } => !!a);
   // providers that just refused the key or ran out sit out for a while, so they don't eat everyone's time
   const awake = attempts.filter((a) => (resting.get(a.name) ?? 0) <= Date.now());
@@ -477,7 +520,7 @@ async function answer(raw: unknown, opts: AskOptions, store: AskStore, later: Pr
     } catch (err) {
       const e = err instanceof ProviderError ? err : new ProviderError('down', String(err));
       console.error(`[ask] ${attempt.name} ${e.kind}: ${e.message}`);
-      if (e.kind === 'config' || e.kind === 'quota') resting.set(attempt.name, Date.now() + REST_MS);
+      if (e.kind === 'config' || e.kind === 'quota') resting.set(attempt.name, Date.now() + (e.restMs ?? REST_MS));
       failures.push(e);
     }
   }
