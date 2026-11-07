@@ -40,9 +40,18 @@ export interface AskItem {
   text: string;
   /** Only for questions and statements. */
   answer?: string;
-  /** A page the answer is about (a project, a blog post, the contact form), shown under it. */
-  link?: { href: string; label: string };
+  /**
+   * A page the answer is about (a project, a blog post, the contact form), shown under it; `picture`: a
+   * screenshot of it (a path on this site), taped under the answer.
+   */
+  link?: { href: string; label: string; picture?: string };
+  /** A little crayon doodle drawn beside the answer, one of ANSWER_DOODLES. */
+  doodle?: AnswerDoodle;
 }
+
+/** The doodles an answer may have beside it (names from src/crayon/doodles.ts). */
+export const ANSWER_DOODLES = ['sparkle', 'check', 'heart', 'sun', 'rocket', 'bulb', 'crown', 'rainbow', 'flower', 'bolt', 'note', 'smiley', 'cat'] as const;
+export type AnswerDoodle = (typeof ANSWER_DOODLES)[number];
 
 export type AskErrorCode = 'bad-request' | 'too-many' | 'out-of-crayons' | 'not-set-up' | 'snapped';
 

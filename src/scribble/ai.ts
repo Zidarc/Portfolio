@@ -14,10 +14,11 @@
  * again; change a note and it's a new question. Things that got no answer (unreadable bits) are remembered for
  * the tab, so they aren't sent every time.
  */
-import { ASK_LIMITS, markRef, typedRef, type AskInput, type AskItem, type AskResponse, type AskTurn } from '../shared/ask.ts';
-import { pathD, type Stroke } from './brush.ts';
+import { doodleLines } from '../crayon/doodles.ts';
+import { ASK_LIMITS, markRef, typedRef, type AnswerDoodle, type AskInput, type AskItem, type AskResponse, type AskTurn } from '../shared/ask.ts';
+import { CRAYONS, pathD, type Stroke } from './brush.ts';
 import { strokeBox, type Box } from './camera.ts';
-import { ANSWER_WIDTH, answerText, freshAnswers, wrapAnswer } from './answers.ts';
+import { ANSWER_WIDTH, answerSize, answerText, DOODLE_ROOM, DOODLE_SIZE, freshAnswers, wrapAnswer } from './answers.ts';
 import { newNoteId, noteBox, noteMeasure, type Note } from './notes.ts';
 
 // ---------- groups of handwriting ----------
@@ -258,6 +259,36 @@ export function arrow(from: Box, to: Box, colour: string): Stroke[] {
   ];
 }
 
+// ---------- doodles beside answers ----------
+
+const crayon = (name: (typeof CRAYONS)[number]['name']) => CRAYONS.find((c) => c.name === name)!.value;
+/** The crayon each doodle is drawn in (the answer's own colour for the rest). */
+const DOODLE_COLOURS: Partial<Record<AnswerDoodle, string>> = {
+  heart: crayon('red'),
+  sun: crayon('orange'),
+  crown: crayon('yellow'),
+  bulb: crayon('yellow'),
+  bolt: crayon('yellow'),
+  check: crayon('green'),
+  flower: crayon('pink'),
+  rocket: crayon('blue'),
+};
+
+/** The doodle as AI strokes, DOODLE_SIZE across at most, its top-left corner at (x, y). */
+export function doodleStrokes(name: AnswerDoodle, x: number, y: number, colour: string): Stroke[] {
+  const lines = doodleLines(name, Math.floor(Math.random() * 1e9));
+  const all = lines.flat();
+  if (!all.length) return [];
+  const x0 = Math.min(...all.map((q) => q.x));
+  const y0 = Math.min(...all.map((q) => q.y));
+  const span = Math.max(Math.max(...all.map((q) => q.x)) - x0, Math.max(...all.map((q) => q.y)) - y0) || 1;
+  const k = DOODLE_SIZE / span;
+  const c = DOODLE_COLOURS[name] ?? colour;
+  return lines
+    .filter((l) => l.length > 1)
+    .map((l) => ({ c, s: 4, p: l.flatMap((q) => [Math.round(x + (q.x - x0) * k), Math.round(y + (q.y - y0) * k)]), a: 1 as const }));
+}
+
 // ---------- the whole thing ----------
 
 export type AskOutcome =
@@ -359,10 +390,16 @@ export async function askSheet(
     const q = item.text.slice(0, ASK_LIMITS.historyText);
     const draft: Note = { id: newNoteId(), x: 0, y: 0, t, c: colour, s: 0, ai: { for: target.key, ...(q ? { q } : {}), ...(item.link ? { link: item.link } : {}) } };
     const { w, h } = noteMeasure(draft);
-    const spot = findSpot(target.box, w, h, taken, narrow);
+    // a doodle goes to the right of the answer's first line: keep room for it
+    const spot = findSpot(target.box, w + (item.doodle ? DOODLE_ROOM : 0), h, taken, narrow);
     const note: Note = { ...draft, x: Math.round(spot.x), y: Math.round(spot.y) };
     freshAnswers.add(note.id); // so it writes itself in
-    const box = noteBox(note);
+    let box = noteBox(note);
+    if (item.doodle) {
+      const doodle = doodleStrokes(item.doodle, note.x + answerSize(note).w + 14, note.y, colour);
+      newStrokes.push(...doodle);
+      box = doodle.map(strokeBox).reduce(union, box);
+    }
     taken.push(grow(box, 4));
     newNotes.push(note);
     if (!spot.near) {

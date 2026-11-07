@@ -25,6 +25,8 @@ export interface Project {
   /** Missing while the repo doesn't exist yet. */
   repo?: string;
   live?: string;
+  /** A screenshot of the live site (made by scripts/project-shots.mjs), taped under the AI's answers about it. */
+  shot?: string;
   /** Rubber stamp on the box for unfinished work, e.g. "in development". */
   stamp?: string;
   theme: ProjectTheme;
@@ -60,6 +62,7 @@ export const projects: Project[] = [
     stack: ['React', 'Vite', 'Tailwind', 'TypeScript', 'Express', 'SQLite', 'Supabase', 'JWT'],
     repo: 'https://github.com/Zidarc/Cyber-Loop',
     live: 'https://recursion-hell.vercel.app',
+    shot: '/projects/recursion-hell.jpg',
     theme: 'stranger-things',
   },
   {
@@ -71,6 +74,7 @@ export const projects: Project[] = [
     stack: ['Next.js', 'React', 'JavaScript'],
     repo: 'https://github.com/GCC-FAST-NUCES-Karachi/GCC',
     live: 'https://www.gccfast.tech/',
+    shot: '/projects/gcc.jpg',
     theme: 'galaxy',
   },
   {
@@ -82,6 +86,7 @@ export const projects: Project[] = [
     stack: ['Next.js', 'React', 'TypeScript', 'Tailwind', 'MongoDB', 'Nodemailer', 'Tesseract OCR'],
     repo: 'https://github.com/mukhtar-x/GrandDebatePortal',
     live: 'https://www.tgd26.com/',
+    shot: '/projects/grand-debate.jpg',
     theme: 'mun',
   },
   {
@@ -133,6 +138,7 @@ export const projects: Project[] = [
     stack: ['HTML', 'CSS', 'JavaScript', 'Spline'],
     repo: 'https://github.com/ismailsilat7/NasaSpaceApps',
     live: 'https://ismailsilat7.github.io/NasaSpaceApps/',
+    shot: '/projects/astralis-7.jpg',
     theme: 'mission-control',
   },
   {
@@ -144,6 +150,7 @@ export const projects: Project[] = [
     stack: ['JavaScript', 'Leaflet', 'QGIS', 'GeoJSON'],
     repo: 'https://github.com/Zidarc/GEOCODE',
     live: 'https://zidarc.github.io/GEOCODE/',
+    shot: '/projects/geocode.jpg',
     theme: 'maps',
   },
   {

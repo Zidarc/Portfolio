@@ -376,6 +376,12 @@ export interface DoodleOptions extends CrayonStyle {
   seed: number;
 }
 
+/** A doodle's lines as plain points (in its own units), for drawing it with something else's crayon. */
+export function doodleLines(name: DoodleName, seed: number, messiness = 0.6): Point[][] {
+  const rng = createRng(seed);
+  return DOODLES[name](rng, messiness).map((s) => handDrawn(s.pts, messiness, rng));
+}
+
 export function planDoodle(name: DoodleName, opts: DoodleOptions): CrayonPlan {
   const m = opts.messiness;
   const rng = createRng(opts.seed);

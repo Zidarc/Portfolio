@@ -14,6 +14,14 @@ export const ANSWER_CAP = 20;
 export const LINK_SIZE = 17;
 export const LINK_GAP = 6;
 export const LINK_ROOM = LINK_GAP + LINK_SIZE * 1.4;
+/** A project's screenshot, taped under its link: its size (with the white border) and the room kept for it. */
+export const PICTURE_W = 216;
+export const PICTURE_H = 147;
+export const PICTURE_GAP = 12;
+export const PICTURE_ROOM = PICTURE_GAP + PICTURE_H + 8;
+/** A doodle beside an answer: its size, and the room kept to the answer's right. */
+export const DOODLE_SIZE = 54;
+export const DOODLE_ROOM = DOODLE_SIZE + 18;
 /** How wide an answer is wrapped, in world units. */
 export const ANSWER_WIDTH = 440;
 /** However long the answer, it's written within about this long. */

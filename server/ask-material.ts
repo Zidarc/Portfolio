@@ -40,12 +40,16 @@ export interface Page {
   id: string;
   label: string;
   href: string;
+  /** A screenshot of it, on this site (taped under the answer). */
+  picture?: string;
 }
 
 /** The projects with somewhere to go (the live site, else the code), plus the contact form. */
 function sitePages(): Page[] {
   return [
-    ...projects.flatMap((p) => (p.id !== 'mystery' && (p.live || p.repo) ? [{ id: p.id, label: p.name, href: (p.live ?? p.repo)! }] : [])),
+    ...projects.flatMap((p) =>
+      p.id !== 'mystery' && (p.live || p.repo) ? [{ id: p.id, label: p.name, href: (p.live ?? p.repo)!, ...(p.shot ? { picture: p.shot } : {}) }] : [],
+    ),
     { id: 'blog', label: 'the blog', href: '/blog' },
     { id: 'contact', label: 'the contact form', href: '/#contact' },
   ];

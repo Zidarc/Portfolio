@@ -99,6 +99,9 @@ sketchpad  ──►  /api/ask  ──►  cache? ──► Groq ──► Gemin
 - Replies are strict JSON, checked and clipped before they reach the page. Answers are matched to questions
   by the text the model copies back, since small models sometimes swap them, and links are only kept to
   pages that exist.
+- An answer about a project with a live site gets its screenshot taped under it, like a photo (made by
+  `scripts/project-shots.mjs`; the server attaches it, the model never picks a picture). The model may
+  also pick a small crayon doodle from a fixed list to draw beside an answer.
 - A typed question asked before is answered from a cache straight away. If every provider is down, common
   questions get an answer from `content/ai/faq.md`.
 - Questions and answers are logged by day with nothing about the visitor, readable with

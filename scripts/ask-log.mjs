@@ -26,7 +26,7 @@ if (!reply.ok) {
 const asked = new Map();
 /** Questions it had no notes for (rules.md makes it say "isn't in my notes"): what to add to content/ai next. */
 const unanswered = new Map();
-const NO_NOTES = /isn't in my notes|not in my notes|isn't on his list|don't know/i;
+const NO_NOTES = /isn['’]t in my notes|not in my notes|isn['’]t on his list|don['’]t know/i;
 for (const e of reply.entries) {
   const when = new Date(e.at).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' });
   if (e.error) {

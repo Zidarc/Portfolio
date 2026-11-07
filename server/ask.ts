@@ -8,7 +8,7 @@
  * Workers AI's free daily allowance. The free ones have no billing, so running out stops the answers
  * ("out of crayons") instead of costing anything. See docs/ai-setup.md.
  */
-import { validateAsk, markRef, typedRef, ASK_LIMITS, type AskInput, type AskItem, type AskKind, type AskResponse } from '../src/shared/ask.ts';
+import { validateAsk, markRef, typedRef, ASK_LIMITS, ANSWER_DOODLES, type AskInput, type AskItem, type AskKind, type AskResponse } from '../src/shared/ask.ts';
 import { embed, faqAnswer, fitsIn, knowledgeFor, loadMaterial, type Material, type Page } from './ask-material.ts';
 import { hashOf, localStore, type AskStore } from './store.ts';
 
@@ -109,6 +109,7 @@ interface CachedAnswer {
   kind: AskKind;
   answer: string;
   link?: AskItem['link'];
+  doodle?: AskItem['doodle'];
   at: number;
 }
 
@@ -149,11 +150,15 @@ Reply with JSON only, no other text:
   emoji, no links in brackets. It will be handwritten on the sheet, so keep it short.
 - For a "drawing": "text" says what you think it shows ("a cat", "a smiley face"), and "answer" is one
   short, warm reaction to it (at most 12 words), like a friend looking over their shoulder: notice
-  something specific in this drawing, in your own words, and don't turn it into praise of Ali. Never mock it. If you can't tell what it is, say something kind about it anyway, without guessing wildly. If it's
-  rude, don't describe it: a short, friendly line is enough.
+  something specific in this drawing, in your own words, and don't turn it into praise of Ali. Never
+  mock it. If you can't tell what it is, say something kind about it anyway, without guessing wildly.
+  If it's rude, don't describe it: a short, friendly line is enough.
 - "see": optional. When the answer is mainly about one project or blog post, or sends them to the
   contact form, the id of that page from "Pages an answer can link to" (a link is shown under the
-  answer). Leave it out otherwise; never make an id up, and never write the id in "answer".`;
+  answer). Leave it out otherwise; never make an id up, and never write the id in "answer".
+- "doodle": optional. A small crayon doodle drawn beside the answer, one of: ${ANSWER_DOODLES.join(', ')}.
+  Only when one fits naturally (a rocket for a launch, a crown for a win, a bulb for an idea, a heart
+  for thanks, a check for "yes"); leave it out for most answers.`;
 
 /** The rules, the material that fits this question (see ask-material.ts) and the reply format. */
 /** What steers the lookup: handwriting isn't read yet at this point, so the typed words and earlier questions. */
@@ -235,15 +240,20 @@ export function readItems(reply: string, input: AskInput, pages: Page[] = []): A
       if (cut !== answer) answer = /[.!?]$/.test(cut) ? cut : `${cut}.`;
     }
     const page = answer ? pages.find((p) => p.id === it?.see) : undefined;
+    const doodle = answer ? ANSWER_DOODLES.find((d) => d === it?.doodle) : undefined;
     return {
       ref,
       kind,
       text: typed?.text ?? clip(it?.text, ASK_LIMITS.text),
       ...(answer ? { answer } : {}),
-      ...(page ? { link: { href: page.href, label: page.label } } : {}),
+      ...(page ? { link: linkTo(page) } : {}),
+      ...(doodle ? { doodle } : {}),
     };
   });
 }
+
+/** The link under an answer about `page`, with its screenshot when it has one. */
+const linkTo = (page: Page): NonNullable<AskItem['link']> => ({ href: page.href, label: page.label, ...(page.picture ? { picture: page.picture } : {}) });
 
 // ---------- providers ----------
 
@@ -411,8 +421,9 @@ function practice(input: AskInput): AskItem[] {
       kind: (t.text.trim().endsWith('?') ? 'question' : 'statement') as AskKind,
       text: t.text,
       answer: `(practice answer, no AI key yet) You wrote "${t.text.slice(0, 40)}". The real AI will answer this from Ali's CV.`,
-      // (so the link under an answer can be tried offline too)
-      link: { href: '/#contact', label: 'the contact form' },
+      // (so the link, picture and doodle beside an answer can be tried offline too)
+      link: { href: 'https://recursion-hell.vercel.app', label: 'Recursion Hell', picture: '/projects/recursion-hell.jpg' },
+      doodle: 'sparkle' as const,
     })),
     // handwriting can't be read without a model, but it still gets an answer, so placing them can be tried
     ...input.marks.map((n) => ({
@@ -475,7 +486,7 @@ async function answer(raw: unknown, opts: AskOptions, store: AskStore, later: Pr
     const cached = await Promise.all(input.typed.map((t) => store.get<CachedAnswer>(cacheKey(material.version, t.text))));
     input.typed.forEach((t, i) => {
       const c = cached[i];
-      if (c && started - c.at < CACHE_MS) known.set(typedRef(t.id), { ref: typedRef(t.id), kind: c.kind, text: t.text, answer: c.answer, ...(c.link ? { link: c.link } : {}) });
+      if (c && started - c.at < CACHE_MS) known.set(typedRef(t.id), { ref: typedRef(t.id), kind: c.kind, text: t.text, answer: c.answer, ...(c.link ? { link: c.link } : {}), ...(c.doodle ? { doodle: c.doodle } : {}) });
     });
   }
   const rest: AskInput = { ...input, typed: input.typed.filter((t) => !known.has(typedRef(t.id))) };
@@ -511,7 +522,7 @@ async function answer(raw: unknown, opts: AskOptions, store: AskStore, later: Pr
     if (!history) {
       for (const it of items) {
         const typed = rest.typed.find((t) => typedRef(t.id) === it.ref);
-        if (typed && it.answer) later.push(store.set(cacheKey(material.version, typed.text), { kind: it.kind, answer: it.answer, link: it.link, at: started } satisfies CachedAnswer));
+        if (typed && it.answer) later.push(store.set(cacheKey(material.version, typed.text), { kind: it.kind, answer: it.answer, link: it.link, doodle: it.doodle, at: started } satisfies CachedAnswer));
       }
     }
     const all = inOrder(items);
@@ -559,7 +570,7 @@ async function answer(raw: unknown, opts: AskOptions, store: AskStore, later: Pr
   if (fallback.length && fallback.every((f) => f.e)) {
     const items = fallback.map(({ t, e }): AskItem => {
       const page = material.pages.find((p) => p.id === e!.see);
-      return { ref: typedRef(t.id), kind: 'question', text: t.text, answer: e!.answer, ...(page ? { link: { href: page.href, label: page.label } } : {}) };
+      return { ref: typedRef(t.id), kind: 'question', text: t.text, answer: e!.answer, ...(page ? { link: linkTo(page) } : {}) };
     });
     const all = inOrder(items);
     later.push(logAsk(store, { provider: 'faq', ms: Date.now() - started, history, items: all }));

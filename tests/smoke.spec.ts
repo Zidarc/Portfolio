@@ -45,15 +45,19 @@ test('the blog loads', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test('the sketchpad answers a starter question, with a link', async ({ page }) => {
+test('the sketchpad answers a starter question, with a link, a picture and a doodle', async ({ page }) => {
   const errors = watchErrors(page);
   await page.goto('/draw');
   await page.locator('.sketchpad__starters button').first().click();
-  // (practice answers: AI_PRACTICE=1)
+  // (practice answers: AI_PRACTICE=1, about Recursion Hell, with its picture and a sparkle)
   await expect(page.locator('.scribble-surface__link')).toBeVisible();
+  await expect(page.locator('.scribble-surface__picture img')).toHaveJSProperty('complete', true);
+  expect(await page.locator('.scribble-surface__picture img').evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
   const notes = await savedNotes(page);
   expect(notes.filter((n) => !n.ai)).toHaveLength(1);
   expect(notes.filter((n) => n.ai?.link)).toHaveLength(1);
+  // the doodle: strokes drawn by the AI
+  await expect.poll(() => page.evaluate(() => (JSON.parse(sessionStorage.getItem('scribbles-sketchpad') ?? '[]') as { a?: 1 }[]).filter((s) => s.a).length)).toBeGreaterThan(0);
   await expect(page.locator('.sketchpad__starters')).toHaveCount(0);
   expect(errors).toEqual([]);
 });

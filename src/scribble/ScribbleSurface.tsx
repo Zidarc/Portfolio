@@ -2,7 +2,7 @@ import { memo, startTransition, useEffect, useId, useRef, useState, type CSSProp
 import { flushSync } from 'react-dom';
 import { CrayonDrawing } from '../crayon/CrayonDrawing.tsx';
 import { useTheme } from '../theme.ts';
-import { answerHand, answerSize, freshAnswers, LINK_GAP, LINK_SIZE } from './answers.ts';
+import { answerHand, answerSize, freshAnswers, LINK_GAP, LINK_ROOM, LINK_SIZE, PICTURE_GAP, PICTURE_H, PICTURE_W } from './answers.ts';
 import { crayonPasses, grainTile, shownColour, type Pass, type Stroke } from './brush.ts';
 import { homeView, overlaps, strokeBox, visibleBox, zoomAt, type Camera, type View } from './camera.ts';
 import { toolCursor } from './cursors.ts';
@@ -471,24 +471,50 @@ export function ScribbleSurface({ sb, active, camera, panning = false, className
           if (!link) return null;
           const { plan } = answerHand(n);
           const { h } = answerSize(n);
+          const delay = freshAnswers.has(n.id) ? Math.round(plan.totalDuration) : 0;
           return (
-            <a
-              key={n.id}
-              className="scribble-surface__link"
-              href={link.href}
-              target="_blank"
-              rel="noopener"
-              style={{
-                left: (n.x - view.x) * view.z,
-                top: (n.y + h + LINK_GAP - view.y) * view.z,
-                fontSize: LINK_SIZE * view.z,
-                color: shownColour(n.c),
-                animationDelay: freshAnswers.has(n.id) ? `${Math.round(plan.totalDuration)}ms` : '0ms',
-              }}
-              onPointerDown={(e) => e.stopPropagation()}
-            >
-              → {link.label}
-            </a>
+            <div key={n.id} className="scribble-surface__extras">
+              <a
+                className="scribble-surface__link"
+                href={link.href}
+                target="_blank"
+                rel="noopener"
+                style={{
+                  left: (n.x - view.x) * view.z,
+                  top: (n.y + h + LINK_GAP - view.y) * view.z,
+                  fontSize: LINK_SIZE * view.z,
+                  color: shownColour(n.c),
+                  animationDelay: `${delay}ms`,
+                }}
+                onPointerDown={(e) => e.stopPropagation()}
+              >
+                → {link.label}
+              </a>
+              {link.picture && (
+                // the project's screenshot, taped to the sheet like a photo (it opens the project too)
+                <a
+                  className="scribble-surface__picture"
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener"
+                  tabIndex={-1}
+                  aria-hidden="true"
+                  style={
+                    {
+                      left: (n.x - view.x) * view.z,
+                      top: (n.y + h + LINK_ROOM + PICTURE_GAP - view.y) * view.z,
+                      width: PICTURE_W * view.z,
+                      height: PICTURE_H * view.z,
+                      '--z': view.z,
+                      animationDelay: `${delay + 250}ms`,
+                    } as CSSProperties
+                  }
+                  onPointerDown={(e) => e.stopPropagation()}
+                >
+                  <img src={link.picture} alt="" loading="lazy" decoding="async" draggable={false} />
+                </a>
+              )}
+            </div>
           );
         })}
       </div>
