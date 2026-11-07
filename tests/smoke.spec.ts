@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 import { expect, test, type Page } from '@playwright/test';
 
 /** Fails the test on any uncaught error in the page. */
@@ -76,4 +77,43 @@ test('the sketchpad draws, types, and draws again after typing', async ({ page, 
   await scribble(page);
   await expect.poll(() => savedStrokes(page)).toBe(2);
   expect(errors).toEqual([]);
+});
+
+test('dragging with the right mouse button moves the page, and skips the menu', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'a mouse thing');
+  await page.goto('/');
+  await page.locator('#about').waitFor({ state: 'attached' });
+  // note whether the right-click menu would have opened (bubble phase, after the site's own listener)
+  await page.evaluate(() => {
+    (window as unknown as { menus: boolean[] }).menus = [];
+    window.addEventListener('contextmenu', (e) => (window as unknown as { menus: boolean[] }).menus.push(e.defaultPrevented));
+  });
+  const before = await page.evaluate(() => scrollY);
+  await page.mouse.move(600, 600);
+  await page.mouse.down({ button: 'right' });
+  for (let i = 1; i <= 10; i++) await page.mouse.move(600, 600 - i * 30);
+  await page.mouse.up({ button: 'right' });
+  expect(await page.evaluate(() => scrollY)).toBeGreaterThan(before + 200);
+  expect(await page.evaluate(() => (window as unknown as { menus: boolean[] }).menus)).toEqual([true]);
+
+  // a plain right-click (no drag) keeps its menu
+  await page.mouse.down({ button: 'right' });
+  await page.mouse.up({ button: 'right' });
+  expect((await page.evaluate(() => (window as unknown as { menus: boolean[] }).menus)).at(-1)).toBe(false);
+});
+
+test('dragging with the right mouse button moves the sketchpad', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'a mouse thing');
+  await page.goto('/draw');
+  const box = (await page.locator('.sketchpad__sheet').boundingBox())!;
+  // (away from the middle, where an empty sheet has its starter questions)
+  const x = box.x + box.width * 0.2;
+  const y = box.y + box.height * 0.2;
+  await page.mouse.move(x, y);
+  await page.mouse.down({ button: 'right' });
+  for (let i = 1; i <= 10; i++) await page.mouse.move(x + i * 20, y + i * 10);
+  await page.mouse.up({ button: 'right' });
+  // (the moved view is saved once the drag ends)
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('scribbles-sketchpad-view'))).not.toBeNull();
+  expect(await savedStrokes(page)).toBe(0); // it moved the sheet, it didn't draw
 });

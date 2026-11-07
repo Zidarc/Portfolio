@@ -144,3 +144,10 @@ html.theme-wipe::view-transition-new(root) {
     scroll-behavior: auto;
   }
 }
+
+/* dragging the page with the right mouse button (src/dragScroll.ts) */
+html.is-drag-scrolling,
+html.is-drag-scrolling * {
+  cursor: grabbing !important;
+  user-select: none;
+}

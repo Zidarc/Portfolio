@@ -231,7 +231,7 @@ export function Sketchpad() {
           <button
             type="button"
             aria-pressed={hand}
-            title="Move around (or hold space, drag with two fingers, or scroll)"
+            title="Move around (or drag with the right mouse button, hold space, drag with two fingers, or scroll)"
             onClick={() => setHand(!hand)}
           >
             <span aria-hidden="true">✋</span>

@@ -255,7 +255,8 @@ export function ScribbleSurface({ sb, active, camera, panning = false, className
       startPinch();
       return;
     }
-    if (camera && (moving || e.button === 1)) {
+    // the hand tool, space, or dragging with the middle or right mouse button moves the sheet
+    if (camera && (moving || e.button === 1 || e.button === 2)) {
       gesture.current = { kind: 'pan', id: e.pointerId, from: live.current, sx: pos.x, sy: pos.y };
       return;
     }
@@ -396,6 +397,8 @@ export function ScribbleSurface({ sb, active, camera, panning = false, className
       className={['scribble-surface', active ? 'is-active' : '', className].filter(Boolean).join(' ')}
       style={active ? { ...style, cursor } : style}
       onPointerDown={down}
+      // (the right button moves the sheet, so its menu would only get in the way)
+      onContextMenu={camera ? (e) => e.preventDefault() : undefined}
       onPointerMove={move}
       onPointerUp={up}
       onPointerCancel={up}
