@@ -16,6 +16,10 @@ export function Footer() {
         ·{' '}
         <a className="footer__link" href="/blog">
           read the blog
+        </a>{' '}
+        ·{' '}
+        <a className="footer__link" href="/privacy">
+          privacy
         </a>
       </p>
     </footer>

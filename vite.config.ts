@@ -72,7 +72,7 @@ function api(env: Record<string, string>): Plugin {
 function prettyUrls(): Plugin {
   const rewrite: Connect.NextHandleFunction = (req, _res, next) => {
     const [path = '', query] = (req.url ?? '').split('?');
-    const page = path === '/draw' ? '/draw.html' : path === '/blog' || path.startsWith('/blog/') ? '/blog.html' : null;
+    const page = path === '/draw' ? '/draw.html' : path === '/privacy' ? '/privacy.html' : path === '/blog' || path.startsWith('/blog/') ? '/blog.html' : null;
     if (page) req.url = query === undefined ? page : `${page}?${query}`;
     next();
   };
@@ -92,6 +92,7 @@ export default defineConfig(({ mode }) => ({
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         notFound: fileURLToPath(new URL('./404.html', import.meta.url)),
         sketchpad: fileURLToPath(new URL('./draw.html', import.meta.url)),
+        privacy: fileURLToPath(new URL('./privacy.html', import.meta.url)),
         blog: fileURLToPath(new URL('./blog.html', import.meta.url)),
       },
     },

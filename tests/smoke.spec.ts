@@ -117,3 +117,13 @@ test('dragging with the right mouse button moves the sketchpad', async ({ page, 
   await expect.poll(() => page.evaluate(() => sessionStorage.getItem('scribbles-sketchpad-view'))).not.toBeNull();
   expect(await savedStrokes(page)).toBe(0); // it moved the sheet, it didn't draw
 });
+
+test('the privacy page loads, and the footer links to it', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('/privacy');
+  await expect(page).toHaveTitle(/Privacy/);
+  await expect(page.getByRole('heading', { name: 'The contact form' })).toBeVisible();
+  await page.goto('/');
+  await expect(page.locator('footer a[href="/privacy"]')).toBeAttached();
+  expect(errors).toEqual([]);
+});
