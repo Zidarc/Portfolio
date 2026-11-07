@@ -13,7 +13,11 @@ import { embed, faqAnswer, fitsIn, knowledgeFor, loadMaterial, type Material, ty
 import { hashOf, localStore, type AskStore } from './store.ts';
 
 export interface AskConfig {
-  groq?: { key: string; model: string };
+  /**
+   * `model` reads pictures (any question); `textModels` only answer typed notes. Groq's free limits are per
+   * model, so each one is another question a minute.
+   */
+  groq?: { key: string; model: string; textModels: string[] };
   /** `model` empty: pick the cheapest model the key can use that reads images. */
   xai?: { key: string; model: string };
   gemini?: { key: string; model: string };
@@ -23,7 +27,13 @@ export interface AskConfig {
 export function askConfigFromEnv(env: Record<string, string | undefined>): AskConfig {
   const config: AskConfig = {};
   // (the model has to read pictures, for handwriting)
-  if (env.GROQ_API_KEY) config.groq = { key: env.GROQ_API_KEY.trim(), model: (env.GROQ_MODEL || 'qwen/qwen3.8-27b').trim() };
+  if (env.GROQ_API_KEY) {
+    config.groq = {
+      key: env.GROQ_API_KEY.trim(),
+      model: (env.GROQ_MODEL || 'qwen/qwen3.8-27b').trim(),
+      textModels: (env.GROQ_TEXT_MODELS ?? 'openai/gpt-oss-120b,openai/gpt-oss-20b').split(',').map((m) => m.trim()).filter(Boolean),
+    };
+  }
   if (env.XAI_API_KEY) config.xai = { key: env.XAI_API_KEY.trim(), model: (env.XAI_MODEL ?? '').trim() };
   if (env.GEMINI_API_KEY) config.gemini = { key: env.GEMINI_API_KEY.trim(), model: (env.GEMINI_MODEL || 'gemini-3.5-flash').trim() };
   if (env.CF_ACCOUNT_ID && env.CF_AI_TOKEN) {
@@ -58,9 +68,15 @@ export interface AskResult {
 const DEADLINE_MS = 9_000;
 /**
  * How much of the material (characters) the short-reading providers are given, against the others'
- * CONTEXT_BUDGET: Cloudflare's free models read slowly, and Groq's free tier allows 8,000 tokens a minute.
+ * CONTEXT_BUDGET: Cloudflare's free models read slowly.
  */
 const SHORT_CONTEXT = 24_000;
+/**
+ * Groq's free tier takes at most 7,000 input tokens a minute per model, so one question must stay under
+ * that (about 3.8 characters a token, rules and all: the largest question comes to ~5,600), and a picture of handwriting costs another ~1,500.
+ */
+const GROQ_CONTEXT = 15_000;
+const GROQ_CONTEXT_WITH_PICTURE = 11_000;
 /** How long the question's embedding may take (else Cloudflare's material is picked by shared words only). */
 const EMBED_MS = 1_200;
 /** How long a provider that refused the key or ran out of allowance is skipped. */
@@ -250,6 +266,8 @@ const splitDataUrl = (url: string) => {
 };
 
 function classify(status: number, body: string): ProviderError {
+  // this one question was too big for it (Groq's per-minute size): the next question may well fit
+  if (status === 413) return new ProviderError('down', `${status} ${body.slice(0, 300)}`);
   if (status === 429 || /quota|exceeded|allocation|rate.?limit|credits/i.test(body)) return new ProviderError('quota', `${status} ${body.slice(0, 300)}`);
   if (status === 400 || status === 401 || status === 403 || status === 404) return new ProviderError('config', `${status} ${body.slice(0, 300)}`);
   return new ProviderError('down', `${status} ${body.slice(0, 300)}`);
@@ -271,20 +289,21 @@ async function post(url: string, headers: Record<string, string>, body: unknown,
   return text;
 }
 
-async function askGroq(c: NonNullable<AskConfig['groq']>, system: string, input: AskInput, ms: number): Promise<string> {
+async function askGroq(key: string, model: string, system: string, input: AskInput, ms: number): Promise<string> {
   const text = buildUserText(input);
   const content = input.image ? [{ type: 'text', text }, { type: 'image_url', image_url: { url: input.image } }] : text;
+  // as little thinking out loud as each model allows: it's slower and spends the per-minute allowance
+  const thinking = /gpt-oss/.test(model) ? { reasoning_effort: 'low', include_reasoning: false } : { reasoning_effort: 'none' };
   const raw = await post(
     'https://api.groq.com/openai/v1/chat/completions',
-    { authorization: `Bearer ${c.key}` },
+    { authorization: `Bearer ${key}` },
     {
-      model: c.model,
+      model,
       messages: [{ role: 'system', content: system }, { role: 'user', content }],
       response_format: { type: 'json_object' },
-      // no thinking out loud: it's slower and spends the per-minute allowance
-      reasoning_effort: 'none',
+      ...thinking,
       temperature: 0.3,
-      max_tokens: 1200,
+      max_tokens: 1500,
     },
     ms,
   );
@@ -477,10 +496,11 @@ async function answer(raw: unknown, opts: AskOptions, store: AskStore, later: Pr
           (err: unknown) => void console.error('[ask] embedding:', err instanceof Error ? err.message : err),
         )
       : Promise.resolve(undefined);
-  let shortSystem: Promise<string> | undefined;
-  const askShort = async (ask: (system: string, ms: number) => Promise<string>, ms: number) => {
+  const shortSystems = new Map<number, Promise<string>>();
+  const askShort = async (ask: (system: string, ms: number) => Promise<string>, ms: number, budget = SHORT_CONTEXT) => {
     const waited = Date.now();
-    const short = await (shortSystem ??= meaning.then((v) => buildSystem(material, rest, SHORT_CONTEXT, v)));
+    if (!shortSystems.has(budget)) shortSystems.set(budget, meaning.then((v) => buildSystem(material, rest, budget, v)));
+    const short = await shortSystems.get(budget)!;
     return ask(short, ms - (Date.now() - waited));
   };
   const fresh = (items: AskItem[], provider: string): AskResult => {
@@ -501,7 +521,13 @@ async function answer(raw: unknown, opts: AskOptions, store: AskStore, later: Pr
 
   const left = () => DEADLINE_MS - (Date.now() - started);
   const attempts = [
-    groq && { name: 'groq', run: (ms: number) => askShort((s, left) => askGroq(groq, s, rest, left), ms) },
+    // Groq's models one after another (the text-only ones when nothing was handwritten)
+    ...(groq ? [groq.model, ...(rest.image ? [] : groq.textModels)] : []).map((model) => ({
+      name: `groq ${model}`,
+      // it answers in about a second; a slow one mustn't leave the others no time
+      run: (ms: number) =>
+        askShort((s, left) => askGroq(groq!.key, model, s, rest, left), Math.min(ms, 3_500), rest.image ? GROQ_CONTEXT_WITH_PICTURE : GROQ_CONTEXT),
+    })),
     xai && { name: 'grok', run: (ms: number) => askXai(xai, system, rest, ms) },
     gemini && { name: 'gemini', run: (ms: number) => askGemini(gemini, system, rest, ms) },
     cloudflare && { name: 'cloudflare', run: (ms: number) => askShort((s, left) => askCloudflare(cloudflare, s, rest, left), ms) },

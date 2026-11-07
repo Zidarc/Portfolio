@@ -88,8 +88,8 @@ sketchpad  ──►  /api/ask  ──►  cache? ──► Groq ──► Gemin
 - **The rules** in `content/ai/rules.md`: only answer about me, keep it short, say so when it doesn't know.
 
 **3. The models** (`server/ask.ts`)
-- Each provider with a key set is tried in turn: Groq's free tier (Qwen, very fast, about one question a
-  minute), xAI Grok, Google Gemini, then Cloudflare Workers AI (Mistral Small 3.1). All of them read images.
+- Each provider with a key set is tried in turn: Groq's free tier (Qwen for handwriting, plus two gpt-oss
+  models for typed questions; very fast, about one question a minute each), xAI Grok, Google Gemini, then Cloudflare Workers AI (Mistral Small 3.1). Handwriting goes only to the ones that read images.
 - A provider that refuses the key or runs out of allowance is skipped for 10 minutes, or for as long as its
   per-minute limit says.
 - The whole request has a 9-second deadline. Visitors are limited to 6 questions a minute and 60 a day,

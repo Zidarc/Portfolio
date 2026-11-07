@@ -20,7 +20,7 @@ export interface HandwritingOptions extends CrayonStyle {
 /** Kids draw the round part of these before the stem, and dot i/j last. */
 const KID_ORDER: Record<string, number[]> = { a: [1, 0], d: [1, 0], g: [1, 0], q: [1, 0], i: [1, 0], j: [1, 0] };
 
-const SUBSTITUTES: Record<string, string> = { '‘': "'", '’': "'", '“': '"', '”': '"', '–': '-', '—': '-', '…': '...' };
+const SUBSTITUTES: Record<string, string> = { '‘': "'", '’': "'", '“': '"', '”': '"', '–': '-', '—': '-', '…': '...', '‐': '-', '‑': '-', ' ': ' ', ' ': ' ' };
 
 export function planHandwriting(text: string, opts: HandwritingOptions): CrayonPlan {
   const m = opts.messiness;

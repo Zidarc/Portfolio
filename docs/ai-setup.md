@@ -23,9 +23,12 @@ What it answers from lives in [`content/ai/`](../content/ai/README.md).
 3. Optional: `GROQ_MODEL` picks the model (default `qwen/qwen3.8-27b`). It must read images, for handwriting;
    Groq's model list changes, so if the default disappears pick a current vision model on console.groq.com.
 
-The free tier allows about 7,000 input tokens a minute, and each question sends about 6,500 (it gets the
-same shortened material as Cloudflare). So Groq answers roughly one question a minute, in under a second;
-questions in between go on to the next provider, and Groq is tried again once the minute it asks for is up.
+The free tier allows about 7,000 input tokens a minute **per model**, and each question sends about 6,500
+(it gets the same shortened material as Cloudflare). So each model answers roughly one question a minute,
+in under a second. Typed questions (no handwriting) can also go to Groq's text-only models,
+`GROQ_TEXT_MODELS` (default `openai/gpt-oss-120b,openai/gpt-oss-20b`), so Groq can take about three typed
+questions a minute. Questions beyond that go on to the next provider, and each Groq model is tried again
+once the wait it asks for is up.
 
 ## Grok (xAI)
 

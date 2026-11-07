@@ -9,6 +9,7 @@ The AI mode on `/draw` answers from here (read by `server/ask-material.ts`):
   Re-run it after changing `repos/` or the blog.
 - **Markdown files at the top of this folder** (`cv.md`, `about.md`, …): sent with **every** question.
   Keep these to the essentials.
+- **To find out what to add:** `node scripts/ask-log.mjs` ends with the questions it had no notes for.
 - **`repos/`**: each project repo's README and GitHub details, made by
   `node scripts/fetch-repo-notes.mjs` (re-run it when the repos change). **Looked up** per question.
 - **`../blog/`**: blog posts, one Markdown file each. **Looked up** per question too, so the blog and the AI
