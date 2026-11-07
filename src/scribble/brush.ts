@@ -107,18 +107,24 @@ export function grainTile(): string {
 /** How far the eraser reaches for a given size from the size picker. */
 export const eraserRadius = (size: number) => Math.round(size * 1.4 + 6);
 
-/** The same line with points no more than `step` apart, so a cut can land anywhere along it. */
-function densify(p: number[], step: number): number[] {
+/**
+ * The same line with points no more than `step` apart, so a cut can land anywhere along it. `own`
+ * marks which of them are the line's own points (the rest are in between, on the straight join).
+ */
+function densify(p: number[], step: number): { p: number[]; own: boolean[] } {
   const out = [p[0]!, p[1]!];
+  const own = [true];
+  const tenth = (v: number) => Math.round(v * 10) / 10;
   for (let i = 2; i < p.length; i += 2) {
     const x0 = p[i - 2]!;
     const y0 = p[i - 1]!;
-    const n = Math.ceil(Math.hypot(p[i]! - x0, p[i + 1]! - y0) / step);
+    const n = Math.max(1, Math.ceil(Math.hypot(p[i]! - x0, p[i + 1]! - y0) / step));
     for (let k = 1; k <= n; k++) {
-      out.push(Math.round(x0 + ((p[i]! - x0) * k) / n), Math.round(y0 + ((p[i + 1]! - y0) * k) / n));
+      out.push(k === n ? p[i]! : tenth(x0 + ((p[i]! - x0) * k) / n), k === n ? p[i + 1]! : tenth(y0 + ((p[i + 1]! - y0) * k) / n));
+      own.push(k === n);
     }
   }
-  return out;
+  return { p: out, own };
 }
 
 /**
@@ -135,16 +141,32 @@ export function rubOut(strokes: Stroke[], x: number, y: number, r: number): Stro
       out.push(stroke);
       continue;
     }
-    const p = densify(stroke.p, 3);
+    // Walk the line in small steps to find where the eraser cuts it, but keep only the line's own points
+    // (plus a new end at each cut). Rebuilding the pieces from the small steps made every rubbed line
+    // lumpy, and its offset passes stopped lining up, so the lines round the eraser looked thicker.
+    const { p, own } = densify(stroke.p, 3);
     let piece: number[] = [];
+    /** The last point walked over that wasn't kept, so a piece can end exactly where it was cut. */
+    let skipped: [number, number] | null = null;
     let cut = false;
+    const finish = () => {
+      if (skipped) piece.push(skipped[0], skipped[1]);
+      if (piece.length >= 4) out.push({ ...stroke, p: piece });
+      piece = [];
+      skipped = null;
+    };
     for (let i = 0; i < p.length; i += 2) {
-      if ((p[i]! - x) ** 2 + (p[i + 1]! - y) ** 2 <= reach * reach) {
+      const px = p[i]!;
+      const py = p[i + 1]!;
+      if ((px - x) ** 2 + (py - y) ** 2 <= reach * reach) {
         cut = true;
-        if (piece.length >= 4) out.push({ ...stroke, p: piece });
-        piece = [];
+        finish();
+      } else if (!piece.length || own[i / 2]) {
+        // a piece starts at the first point past a cut, then follows the line's own points
+        piece.push(px, py);
+        skipped = null;
       } else {
-        piece.push(p[i]!, p[i + 1]!);
+        skipped = [px, py];
       }
     }
     if (!cut) {
@@ -152,7 +174,7 @@ export function rubOut(strokes: Stroke[], x: number, y: number, r: number): Stro
       continue;
     }
     changed = true;
-    if (piece.length >= 4) out.push({ ...stroke, p: piece });
+    finish();
   }
   return changed ? out : strokes;
 }
