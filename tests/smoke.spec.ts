@@ -83,23 +83,34 @@ test('dragging with the right mouse button moves the page, and skips the menu', 
   test.skip(isMobile, 'a mouse thing');
   await page.goto('/');
   await page.locator('#about').waitFor({ state: 'attached' });
-  // note whether the right-click menu would have opened (bubble phase, after the site's own listener)
+  // note each right-click menu event: whether the site cancelled it, and whether the button was still down
+  // (Windows asks for the menu as the button comes up; Linux and macOS as it goes down, before any drag,
+  // and there the site leaves the menu alone)
   await page.evaluate(() => {
-    (window as unknown as { menus: boolean[] }).menus = [];
-    window.addEventListener('contextmenu', (e) => (window as unknown as { menus: boolean[] }).menus.push(e.defaultPrevented));
+    const w = window as unknown as { menus: { cancelled: boolean; pressed: boolean }[]; pressed: boolean };
+    w.menus = [];
+    w.pressed = false;
+    window.addEventListener('pointerdown', (e) => e.button === 2 && (w.pressed = true), true);
+    window.addEventListener('pointerup', (e) => e.button === 2 && (w.pressed = false), true);
+    window.addEventListener('contextmenu', (e) => w.menus.push({ cancelled: e.defaultPrevented, pressed: w.pressed }));
   });
+  const menus = () => page.evaluate(() => (window as unknown as { menus: { cancelled: boolean; pressed: boolean }[] }).menus);
+
   const before = await page.evaluate(() => scrollY);
   await page.mouse.move(600, 600);
   await page.mouse.down({ button: 'right' });
   for (let i = 1; i <= 10; i++) await page.mouse.move(600, 600 - i * 30);
   await page.mouse.up({ button: 'right' });
   expect(await page.evaluate(() => scrollY)).toBeGreaterThan(before + 200);
-  expect(await page.evaluate(() => (window as unknown as { menus: boolean[] }).menus)).toEqual([true]);
+  const [dragMenu] = await menus();
+  expect(dragMenu).toBeDefined();
+  // after a drag, a menu asked for as the button came up is skipped
+  if (!dragMenu!.pressed) expect(dragMenu!.cancelled).toBe(true);
 
-  // a plain right-click (no drag) keeps its menu
+  // a plain right-click (no drag) keeps its menu, on every system
   await page.mouse.down({ button: 'right' });
   await page.mouse.up({ button: 'right' });
-  expect((await page.evaluate(() => (window as unknown as { menus: boolean[] }).menus)).at(-1)).toBe(false);
+  expect((await menus()).at(-1)?.cancelled).toBe(false);
 });
 
 test('dragging with the right mouse button moves the sketchpad', async ({ page, isMobile }) => {
