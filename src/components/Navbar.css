@@ -28,13 +28,20 @@
 
 /* ---------- desktop links ---------- */
 
+/* when space runs short only the links give way (a little: below 1000px the menu button takes over) */
+.nav__logo,
+.nav__tools {
+  flex: none;
+}
+
 .nav__list {
   display: flex;
   align-items: center;
   /* room for each arrow to sit in front of its label */
   gap: clamp(2.6rem, 4.5vw, 3.6rem);
   margin: 0;
-  padding: 0;
+  /* and for the first one's, so Home's arrow doesn't run into the logo (arrow 34px + 6px) */
+  padding: 0 0 0 40px;
   list-style: none;
 }
 
@@ -121,7 +128,7 @@
 
 /* ---------- phone sheet ---------- */
 
-@media (max-width: 760px) {
+@media (max-width: 999px) {
   .nav nav {
     display: none;
   }
