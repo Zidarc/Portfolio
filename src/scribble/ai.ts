@@ -4,13 +4,14 @@
  *
  * 1. Read: typed notes go as text. Handwriting is grouped (strokes close together are one group) and
  *    every new group goes into one picture, each in its own numbered box.
- * 2. Ask /api/ask, which says what each thing is and answers the questions and remarks.
+ * 2. Ask /api/ask, which says what each thing is, answers the questions and remarks, and reacts to
+ *    drawings.
  * 3. Write each answer in crayon handwriting (answers.ts), in free space next to what it answers. If there's no room right next to
  *    it, the answer goes in the nearest free spot further out, with a crayon arrow pointing to it.
  *
  * Each answer notes the fingerprint of what it answers (the note's text, or the group's strokes), so
  * nothing with an answer on the sheet is asked again. Undo or rub out an answer and it can be asked
- * again; change a note and it's a new question. Things that got no answer (drawings) are remembered for
+ * again; change a note and it's a new question. Things that got no answer (unreadable bits) are remembered for
  * the tab, so they aren't sent every time.
  */
 import { ASK_LIMITS, markRef, typedRef, type AskInput, type AskItem, type AskResponse, type AskTurn } from '../shared/ask.ts';
@@ -88,7 +89,7 @@ const noteKey = (n: Note) => `n${n.id}:${fingerprint(n.t)}`;
 
 const NO_ANSWER = 'scribbles-sketchpad-no-answer';
 
-/** Things read before that needed no answer (drawings, unreadable bits). */
+/** Things read before that got no answer (unreadable bits). */
 function noAnswer(): Set<string> {
   try {
     return new Set(JSON.parse(sessionStorage.getItem(NO_ANSWER) ?? '[]') as string[]);
@@ -108,11 +109,17 @@ function rememberNoAnswer(keys: string[]) {
 
 // ---------- the picture of the handwriting ----------
 
-/** Each group is drawn this wide at most (and never bigger than 2x), one under another, with its number. */
-const TILE_W = 520;
-const TILE_MAX_H = 220;
+/**
+ * Each group is drawn this wide at most (and never bigger than 2x), one under another, with its number.
+ * Wide enough that a long line of handwriting keeps letters a model can read (at 520 they shrank to ~14px).
+ */
+const TILE_W = 900;
+const TILE_MAX_H = 360;
 const PAD = 14;
 const LABEL_W = 46;
+/** Line width in the picture, whatever the crayon: thin enough that thick crayon letters don't blot. */
+const LINE_MIN = 2.5;
+const LINE_MAX = 5;
 
 /** One picture of the groups, each in a numbered box, as a JPEG data URL. Black on white reads best. */
 async function picture(groups: Group[]): Promise<string> {
@@ -132,7 +139,7 @@ async function picture(groups: Group[]): Promise<string> {
       `<rect x="${LABEL_W}" y="${top}" width="${t.w + PAD * 2}" height="${boxH}" fill="none" stroke="#d6453d" stroke-width="3" rx="6"/>`,
       `<text x="${LABEL_W / 2}" y="${top + boxH / 2 + 10}" font-size="28" font-family="Arial, sans-serif" font-weight="bold" text-anchor="middle" fill="#d6453d">${i + 1}</text>`,
       `<g transform="translate(${LABEL_W + PAD} ${top + PAD}) scale(${t.scale}) translate(${-t.g.box.x0} ${-t.g.box.y0})" fill="none" stroke="#111" stroke-linecap="round" stroke-linejoin="round">`,
-      ...t.g.strokes.map((s) => `<path d="${pathD(s.p)}" stroke-width="${Math.max(s.s, 2.5 / t.scale)}"/>`),
+      ...t.g.strokes.map((s) => `<path d="${pathD(s.p)}" stroke-width="${Math.min(LINE_MAX, Math.max(LINE_MIN, s.s * t.scale)) / t.scale}"/>`),
       '</g>',
     );
     y += boxH + PAD;

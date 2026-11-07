@@ -77,6 +77,8 @@ sketchpad  ──►  /api/ask  ──►  cache? ──► Groq ──► Gemin
   line join up.
 - The pieces go as a single picture, with a numbered box drawn round each one so the model can say which
   answer belongs where.
+- The picture is always thin dark lines on white, whatever the crayon or theme, and wide enough that a long
+  line keeps readable letters. Drawings get a short reaction too.
 - Anything already answered isn't sent again.
 - The last few questions and answers on the sheet go along too, so follow-ups make sense.
 

@@ -145,8 +145,12 @@ Reply with JSON only, no other text:
 - "text": what they wrote. Read handwriting carefully; for typed notes, copy it.
 - "kind": "question"; "statement" (a remark, not a question); "drawing" (a picture, not words);
   "unclear" (you can't make it out).
-- "answer": only for questions and statements; leave it out otherwise. Plain text: no Markdown, no
+- "answer": for questions and statements; leave it out for "unclear". Plain text: no Markdown, no
   emoji, no links in brackets. It will be handwritten on the sheet, so keep it short.
+- For a "drawing": "text" says what you think it shows ("a cat", "a smiley face"), and "answer" is one
+  short, warm reaction to it (at most 12 words), like a friend looking over their shoulder: notice
+  something specific in this drawing, in your own words, and don't turn it into praise of Ali. Never mock it. If you can't tell what it is, say something kind about it anyway, without guessing wildly. If it's
+  rude, don't describe it: a short, friendly line is enough.
 - "see": optional. When the answer is mainly about one project or blog post, or sends them to the
   contact form, the id of that page from "Pages an answer can link to" (a link is shown under the
   answer). Leave it out otherwise; never make an id up, and never write the id in "answer".`;
@@ -224,7 +228,7 @@ export function readItems(reply: string, input: AskInput, pages: Page[] = []): A
     const it = byRef.get(ref);
     const typed = input.typed.find((t) => typedRef(t.id) === ref);
     const kind = it && KINDS.has(it.kind as AskKind) ? (it.kind as AskKind) : 'unclear';
-    let answer = kind === 'question' || kind === 'statement' ? clip(it?.answer, ASK_LIMITS.answer) : '';
+    let answer = kind === 'unclear' ? '' : clip(it?.answer, ASK_LIMITS.answer);
     // a page id written into the answer ("See synergy.") reads oddly; the link says it instead
     for (const p of pages) {
       const cut = answer.replace(new RegExp(`\\s*\\(?\\bsee:? ${p.id.replace(/[^a-z0-9]/gi, '\\$&')}\\b\\)?\\.?`, 'gi'), '').trim();
