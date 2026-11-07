@@ -51,7 +51,7 @@ export function Hats() {
           <CrayonDoodle name="sparkle" decorative play={icpcInView} tempo={1.8} color="var(--crayon-yellow)" />
         </span>
         <p>
-          <strong>ICPC 2026:</strong> ranked 47th and qualified for the regional onsite round.
+          <strong>ICPC 2026:</strong> ranked 37th and qualified for the regional onsite round.
         </p>
       </div>
 
