@@ -30,6 +30,9 @@ export function installDragScroll() {
   };
 
   window.addEventListener('pointerdown', (e) => {
+    // a new press: the menu skipped after the last drag has had its chance (where the menu comes as the
+    // button goes down, none follows a drag, and the next right-click must still get its menu)
+    justDragged = false;
     if (e.pointerType !== 'mouse' || e.button !== 2) return;
     // text fields and the sketchpad sheet keep their own right-click
     if ((e.target as Element | null)?.closest('input, textarea, select, [contenteditable], .sketchpad__sheet')) return;
