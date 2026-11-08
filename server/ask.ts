@@ -72,11 +72,13 @@ const DEADLINE_MS = 9_000;
  */
 const SHORT_CONTEXT = 24_000;
 /**
- * Groq's free tier takes at most 7,000 input tokens a minute per model, so one question must stay under
- * that (about 3.8 characters a token, rules and all: the largest question comes to ~5,600), and a picture of handwriting costs another ~1,500.
+ * Groq's free tier takes at most 7,000 input tokens a minute per model, and refuses a single request
+ * bigger than that. Measured (November 2026): about 3.4 characters a token; the rules, page list and reply
+ * format add ~6,200 characters to the material; a picture of handwriting costs ~1,550 tokens whatever its
+ * size. So about 6,250 tokens for a typed question, and 4,750 + the picture (6,300) with handwriting.
  */
 const GROQ_CONTEXT = 15_000;
-const GROQ_CONTEXT_WITH_PICTURE = 11_000;
+const GROQ_CONTEXT_WITH_PICTURE = 10_000;
 /** How long the question's embedding may take (else Cloudflare's material is picked by shared words only). */
 const EMBED_MS = 1_200;
 /** How long a provider that refused the key or ran out of allowance is skipped. */
@@ -143,7 +145,10 @@ Reply with JSON only, no other text:
 {"items":[{"ref":"...","kind":"question|statement|drawing|unclear","text":"...","answer":"...","see":"..."}]}
 
 - One item for every ref you are given, using exactly that ref.
-- "text": what they wrote. Read handwriting carefully; for typed notes, copy it.
+- "text": what they wrote. Read handwriting carefully; for typed notes, copy it. Handwriting is quick and
+  messy: a box with words in it is writing, and small marks among the words are punctuation (the dot
+  under a question mark's hook, an i's dot, a full stop, a comma), not arrows or little drawings.
+  A curl with a dot under it at the end of a line is a question mark.
 - "kind": "question"; "statement" (a remark, not a question); "drawing" (a picture, not words);
   "unclear" (you can't make it out).
 - "answer": for questions and statements; leave it out for "unclear". Plain text: no Markdown, no
@@ -317,7 +322,9 @@ async function askGroq(key: string, model: string, system: string, input: AskInp
       response_format: { type: 'json_object' },
       ...thinking,
       temperature: 0.3,
-      max_tokens: 1500,
+      // the free tier's picture model allows 1,000 output tokens a minute and refuses any request that
+      // asks for more; a full sheet of answers is about 600
+      max_tokens: 800,
     },
     ms,
   );

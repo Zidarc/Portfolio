@@ -59,10 +59,13 @@ export function groupStrokes(strokes: Stroke[]): Group[] {
   // union-find over strokes whose (slightly grown) boxes touch
   const parent = own.map((_, i) => i);
   const find = (i: number): number => (parent[i] === i ? i : (parent[i] = find(parent[i]!)));
+  // a dot reaches twice as far, so a question mark's dot set a little apart stays with its question
+  // (on its own, a lone dot would be read as a little drawing)
+  const reach = own.map((s) => (spread(s) <= 14 ? 2 : 1));
   for (let i = 0; i < own.length; i++) {
-    const a = grow(boxes[i]!, JOIN_GAP / 2, LINE_GAP / 2);
+    const a = grow(boxes[i]!, (JOIN_GAP / 2) * reach[i]!, (LINE_GAP / 2) * reach[i]!);
     for (let j = i + 1; j < own.length; j++) {
-      if (overlaps(a, grow(boxes[j]!, JOIN_GAP / 2, LINE_GAP / 2)) || sameLine(boxes[i]!, boxes[j]!)) parent[find(i)] = find(j);
+      if (overlaps(a, grow(boxes[j]!, (JOIN_GAP / 2) * reach[j]!, (LINE_GAP / 2) * reach[j]!)) || sameLine(boxes[i]!, boxes[j]!)) parent[find(i)] = find(j);
     }
   }
   const groups = new Map<number, Group>();
@@ -121,6 +124,43 @@ const LABEL_W = 46;
 /** Line width in the picture, whatever the crayon: thin enough that thick crayon letters don't blot. */
 const LINE_MIN = 2.5;
 const LINE_MAX = 5;
+/** A dot (of a ?, !, i or full stop) is drawn as a round dot this wide in the picture. */
+const DOT_W = 9;
+
+/** How far a stroke's points spread (without the crayon's width). */
+function spread(s: Stroke): number {
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (let i = 0; i < s.p.length; i += 2) {
+    x0 = Math.min(x0, s.p[i]!);
+    x1 = Math.max(x1, s.p[i]!);
+    y0 = Math.min(y0, s.p[i + 1]!);
+    y1 = Math.max(y1, s.p[i + 1]!);
+  }
+  return Math.max(x1 - x0, y1 - y0);
+}
+
+/**
+ * The strokes of a group that are dots: tiny next to the group's other strokes. People dot with a quick
+ * flick, and drawn as it is, the flick under a question mark's hook looked like an arrow head to the AI.
+ */
+function dotsOf(strokes: Stroke[]): Set<Stroke> {
+  const sizes = strokes.map(spread);
+  const sorted = [...sizes].sort((a, b) => a - b);
+  const typical = sorted[Math.floor(sorted.length / 2)] ?? 0;
+  const limit = Math.min(14, Math.max(5, typical * 0.3));
+  return new Set(strokes.length > 1 ? strokes.filter((_, i) => sizes[i]! <= limit) : []);
+}
+
+/** A stroke in the picture: a line, or for a dot, a round dot where it was. */
+function strokeSvg(s: Stroke, scale: number, dot: boolean): string {
+  if (dot) {
+    let x = 0, y = 0;
+    for (let i = 0; i < s.p.length; i += 2) (x += s.p[i]!), (y += s.p[i + 1]!);
+    const n = s.p.length / 2;
+    return `<circle cx="${x / n}" cy="${y / n}" r="${DOT_W / 2 / scale}" fill="#111" stroke="none"/>`;
+  }
+  return `<path d="${pathD(s.p)}" stroke-width="${Math.min(LINE_MAX, Math.max(LINE_MIN, s.s * scale)) / scale}"/>`;
+}
 
 /** One picture of the groups, each in a numbered box, as a JPEG data URL. Black on white reads best. */
 async function picture(groups: Group[]): Promise<string> {
@@ -140,7 +180,7 @@ async function picture(groups: Group[]): Promise<string> {
       `<rect x="${LABEL_W}" y="${top}" width="${t.w + PAD * 2}" height="${boxH}" fill="none" stroke="#d6453d" stroke-width="3" rx="6"/>`,
       `<text x="${LABEL_W / 2}" y="${top + boxH / 2 + 10}" font-size="28" font-family="Arial, sans-serif" font-weight="bold" text-anchor="middle" fill="#d6453d">${i + 1}</text>`,
       `<g transform="translate(${LABEL_W + PAD} ${top + PAD}) scale(${t.scale}) translate(${-t.g.box.x0} ${-t.g.box.y0})" fill="none" stroke="#111" stroke-linecap="round" stroke-linejoin="round">`,
-      ...t.g.strokes.map((s) => `<path d="${pathD(s.p)}" stroke-width="${Math.min(LINE_MAX, Math.max(LINE_MIN, s.s * t.scale)) / t.scale}"/>`),
+      ...((dots) => t.g.strokes.map((s) => strokeSvg(s, t.scale, dots.has(s))))(dotsOf(t.g.strokes)),
       '</g>',
     );
     y += boxH + PAD;

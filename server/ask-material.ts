@@ -206,9 +206,17 @@ export function knowledgeFor(m: Material, query: string, budget = CONTEXT_BUDGET
     } else skipped.push(r.c);
   }
   picked.sort((a, b) => a.i - b.i); // back in reading order
-  const titles = [...new Set(skipped.map((c) => c.title))].slice(0, 80);
-  const also = titles.length ? `\n\n## Also written about (not included here; say where to read more if asked)\n${titles.map((t) => `- ${t}`).join('\n')}` : '';
-  return [m.core, ...picked.map((r) => r.c.text)].join('\n\n') + also;
+  const body = [m.core, ...picked.map((r) => r.c.text)].join('\n\n');
+  // the list of what's left out, as much of it as the budget still has room for
+  const head = '\n\n## Also written about (not included here; say where to read more if asked)';
+  let room = budget - body.length - head.length;
+  const titles: string[] = [];
+  for (const t of new Set(skipped.map((c) => c.title))) {
+    if (titles.length >= 80 || t.length + 3 > room) break;
+    titles.push(t);
+    room -= t.length + 3;
+  }
+  return body + (titles.length ? `${head}\n${titles.map((t) => `- ${t}`).join('\n')}` : '');
 }
 
 // ---------- meanings (embeddings) ----------
