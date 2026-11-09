@@ -11,7 +11,8 @@
  * "m<number>" for a numbered box. Drawings and anything unreadable come back without an answer.
  */
 
-export type AskKind = 'question' | 'statement' | 'drawing' | 'unclear';
+/** "repeat": already answered on the sheet (asked again, or only circled or underlined): no answer. */
+export type AskKind = 'question' | 'statement' | 'drawing' | 'unclear' | 'repeat';
 
 export interface AskTyped {
   id: string;

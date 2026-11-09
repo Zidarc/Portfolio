@@ -19,7 +19,13 @@ export interface Note {
    * An answer written by the AI: the fingerprint of what it answers (see scribble/ai.ts) and the
    * question as the AI read it (sent back with later questions, so follow-ups make sense).
    */
-  ai?: { for: string; q?: string; link?: { href: string; label: string; picture?: string } };
+  ai?: {
+    for: string;
+    q?: string;
+    link?: { href: string; label: string; picture?: string };
+    /** Fingerprints of the handwriting strokes this answers, so a loop drawn round them later isn't read as asking again. */
+    read?: string[];
+  };
 }
 
 /** Font size for each size in the crayon box's size picker. */

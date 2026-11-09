@@ -138,7 +138,9 @@ function useAsk(sb: ReturnType<typeof useScribbles>, camera: ReturnType<typeof u
       setMessage(
         answeredCount
           ? `Answered ${answeredCount === 1 ? 'one thing' : `${answeredCount} things`}. AI answers can be wrong; it only knows Ali's CV, projects and blog.`
-          : "I read it, but didn't find a question or remark to answer (drawings get no answer yet).",
+          : out.repeats
+            ? 'That one is answered already: have a look on the sheet. Ask something new?'
+            : "I read it, but didn't find a question or remark to answer.",
       );
     } catch {
       setMessage('Something went wrong reading the sheet. Try again?');

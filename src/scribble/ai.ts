@@ -88,6 +88,8 @@ function fingerprint(text: string): string {
 }
 
 const noteKey = (n: Note) => `n${n.id}:${fingerprint(n.t)}`;
+/** One stroke's fingerprint: an answer notes the strokes it read, so they're never read as new again. */
+const strokeId = (s: Stroke) => `s${fingerprint(s.p.join(','))}`;
 
 // ---------- what's already been dealt with ----------
 
@@ -152,18 +154,19 @@ function dotsOf(strokes: Stroke[]): Set<Stroke> {
 }
 
 /** A stroke in the picture: a line, or for a dot, a round dot where it was. */
-function strokeSvg(s: Stroke, scale: number, dot: boolean): string {
+function strokeSvg(s: Stroke, scale: number, dot: boolean, old: boolean): string {
+  const ink = old ? ' stroke="#b4b4b4"' : '';
   if (dot) {
     let x = 0, y = 0;
     for (let i = 0; i < s.p.length; i += 2) (x += s.p[i]!), (y += s.p[i + 1]!);
     const n = s.p.length / 2;
-    return `<circle cx="${x / n}" cy="${y / n}" r="${DOT_W / 2 / scale}" fill="#111" stroke="none"/>`;
+    return `<circle cx="${x / n}" cy="${y / n}" r="${DOT_W / 2 / scale}" fill="${old ? '#b4b4b4' : '#111'}" stroke="none"/>`;
   }
-  return `<path d="${pathD(s.p)}" stroke-width="${Math.min(LINE_MAX, Math.max(LINE_MIN, s.s * scale)) / scale}"/>`;
+  return `<path${ink} d="${pathD(s.p)}" stroke-width="${Math.min(LINE_MAX, Math.max(LINE_MIN, s.s * scale)) / scale}"/>`;
 }
 
 /** One picture of the groups, each in a numbered box, as a JPEG data URL. Black on white reads best. */
-async function picture(groups: Group[]): Promise<string> {
+async function picture(groups: Group[], read: Set<string>): Promise<string> {
   const tiles = groups.map((g) => {
     const w = g.box.x1 - g.box.x0;
     const h = g.box.y1 - g.box.y0;
@@ -180,7 +183,8 @@ async function picture(groups: Group[]): Promise<string> {
       `<rect x="${LABEL_W}" y="${top}" width="${t.w + PAD * 2}" height="${boxH}" fill="none" stroke="#d6453d" stroke-width="3" rx="6"/>`,
       `<text x="${LABEL_W / 2}" y="${top + boxH / 2 + 10}" font-size="28" font-family="Arial, sans-serif" font-weight="bold" text-anchor="middle" fill="#d6453d">${i + 1}</text>`,
       `<g transform="translate(${LABEL_W + PAD} ${top + PAD}) scale(${t.scale}) translate(${-t.g.box.x0} ${-t.g.box.y0})" fill="none" stroke="#111" stroke-linecap="round" stroke-linejoin="round">`,
-      ...((dots) => t.g.strokes.map((s) => strokeSvg(s, t.scale, dots.has(s))))(dotsOf(t.g.strokes)),
+      // strokes already answered in grey, so a loop drawn round an old question shows as just a loop
+      ...((dots) => t.g.strokes.map((s) => strokeSvg(s, t.scale, dots.has(s), read.has(strokeId(s)))))(dotsOf(t.g.strokes)),
       '</g>',
     );
     y += boxH + PAD;
@@ -332,31 +336,34 @@ export function doodleStrokes(name: AnswerDoodle, x: number, y: number, colour: 
 // ---------- the whole thing ----------
 
 export type AskOutcome =
-  | { ok: true; strokes: Stroke[]; notes: Note[]; read: number; skipped: number; focus: Box | null }
+  | { ok: true; strokes: Stroke[]; notes: Note[]; read: number; skipped: number; repeats: number; focus: Box | null }
   | { ok: false; message: string };
 
 /** What goes to the server, and where each thing sits on the sheet. */
 interface Pending {
   input: AskInput;
-  targets: Map<string, { box: Box; key: string }>;
+  /** `strokes`: the fingerprints of a box's strokes (none for a typed note). */
+  targets: Map<string, { box: Box; key: string; strokes: string[] }>;
 }
 
 /** Everything new on the sheet, ready to send (at most ASK_LIMITS.items things, oldest first). */
 async function collect(strokes: Stroke[], notes: Note[]): Promise<Pending | null> {
   // answered (an AI answer for it is on the sheet), or read before and needing no answer
   const done = new Set([...noAnswer(), ...notes.flatMap((n) => (n.ai ? [n.ai.for] : []))]);
-  const targets = new Map<string, { box: Box; key: string }>();
+  // strokes already read: a group with nothing else (two answered questions now touching) isn't sent
+  const read = new Set([...done, ...notes.flatMap((n) => n.ai?.read ?? [])]);
+  const targets: Pending['targets'] = new Map();
   const typed = notes
     .filter((n) => !n.ai && n.t.trim() && !done.has(noteKey(n)))
     .slice(0, ASK_LIMITS.items)
     .map((n) => {
-      targets.set(typedRef(n.id), { box: noteBox(n), key: noteKey(n) });
+      targets.set(typedRef(n.id), { box: noteBox(n), key: noteKey(n), strokes: [] });
       return { id: n.id, text: n.t.trim().slice(0, ASK_LIMITS.text) };
     });
   const groups = groupStrokes(strokes)
-    .filter((g) => !done.has(g.key))
+    .filter((g) => !done.has(g.key) && g.strokes.some((s) => !read.has(strokeId(s))))
     .slice(0, Math.max(0, Math.min(12, ASK_LIMITS.items - typed.length)));
-  groups.forEach((g, i) => targets.set(markRef(i + 1), { box: g.box, key: g.key }));
+  groups.forEach((g, i) => targets.set(markRef(i + 1), { box: g.box, key: g.key, strokes: g.strokes.map(strokeId) }));
   if (!typed.length && !groups.length) return null;
   // the last few questions answered on the sheet, so a follow-up ("what about the other one?") makes sense
   const history: AskTurn[] = notes
@@ -366,7 +373,7 @@ async function collect(strokes: Stroke[], notes: Note[]): Promise<Pending | null
     input: {
       typed,
       marks: groups.map((_, i) => i + 1),
-      ...(groups.length ? { image: await picture(groups) } : {}),
+      ...(groups.length ? { image: await picture(groups, read) } : {}),
       ...(history.length ? { history } : {}),
     },
     targets,
@@ -413,22 +420,24 @@ export async function askSheet(
   const unanswered: string[] = [];
   let focus: Box | null = null;
   let skipped = 0;
+  let repeats = 0;
   for (const item of reply.items as AskItem[]) {
     const target = pending.targets.get(item.ref);
     if (!target) continue;
+    if (item.kind === 'repeat') repeats++;
     if (!item.answer) {
-      unanswered.push(target.key);
+      unanswered.push(target.key, ...target.strokes);
       skipped++;
       continue;
     }
     const t = wrapAnswer(answerText(item.answer), wrapWidth);
     if (!t) {
-      unanswered.push(target.key);
+      unanswered.push(target.key, ...target.strokes);
       skipped++;
       continue;
     }
     const q = item.text.slice(0, ASK_LIMITS.historyText);
-    const draft: Note = { id: newNoteId(), x: 0, y: 0, t, c: colour, s: 0, ai: { for: target.key, ...(q ? { q } : {}), ...(item.link ? { link: item.link } : {}) } };
+    const draft: Note = { id: newNoteId(), x: 0, y: 0, t, c: colour, s: 0, ai: { for: target.key, ...(q ? { q } : {}), ...(target.strokes.length ? { read: target.strokes } : {}), ...(item.link ? { link: item.link } : {}) } };
     const { w, h } = noteMeasure(draft);
     // a doodle goes to the right of the answer's first line: keep room for it
     const spot = findSpot(target.box, w + (item.doodle ? DOODLE_ROOM : 0), h, taken, narrow);
@@ -450,6 +459,6 @@ export async function askSheet(
     focus = focus ? union(focus, union(box, target.box)) : union(box, target.box);
   }
   rememberNoAnswer(unanswered);
-  return { ok: true, strokes: newStrokes, notes: newNotes, read: reply.items.length, skipped, focus };
+  return { ok: true, strokes: newStrokes, notes: newNotes, read: reply.items.length, skipped, repeats, focus };
 }
 
