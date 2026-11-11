@@ -24,8 +24,6 @@ About, Roles, Skills, Projects and Contact, each written in crayon handwriting t
   page from where you clicked, and moving between pages turns the sheet.
 - **Billo:** the black pixel cat from my [GitHub profile](https://github.com/Zidarc). The hero shows her
   live mood, and visitors feed her through GitHub issues. She also hides somewhere on this site.
-- **Sound** (off by default): paper and crayon sounds, synthesised with Web Audio, so there are no audio
-  files.
 - **Contact form:** messages go to my inbox through the Gmail API.
 
 ### The sketchpad (`/draw`)
