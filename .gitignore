@@ -9,3 +9,7 @@ private/
 # Playwright
 test-results/
 playwright-report/
+
+# Brag-plugin output
+brag-output/
+brag-output-2026-11-11-084120
