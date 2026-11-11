@@ -161,9 +161,11 @@ Reply with JSON only, no other text:
   something specific in this drawing, in your own words, and don't turn it into praise of Ali. Never
   mock it. If you can't tell what it is, say something kind about it anyway, without guessing wildly.
   If it's rude, don't describe it: a short, friendly line is enough.
-- "see": optional. When the answer is mainly about one project or blog post, or sends them to the
-  contact form, the id of that page from "Pages an answer can link to" (a link is shown under the
-  answer). Leave it out otherwise; never make an id up, and never write the id in "answer".
+- "see": optional. Only when the visitor asked about one particular project or blog post (by name, or
+  "your favourite project", "the trading one"), or the answer sends them to the contact form: the id of
+  that page from "Pages an answer can link to" (a link is shown under the answer). A project you only
+  mention as an example in a wider answer ("what does Ali do?", "has he used Postgres?") gets no "see".
+  Leave it out otherwise; never make an id up, and never write the id in "answer".
 - "doodle": optional. A small crayon doodle drawn beside the answer, one of: ${ANSWER_DOODLES.join(', ')}.
   Only when one fits naturally (a rocket for a launch, a crown for a win, a bulb for an idea, a heart
   for thanks, a check for "yes"); leave it out for most answers.`;
@@ -256,7 +258,9 @@ export function readItems(reply: string, input: AskInput, pages: Page[] = []): A
       const cut = answer.replace(new RegExp(`\\s*\\(?\\bsee:? ${p.id.replace(/[^a-z0-9]/gi, '\\$&')}\\b\\)?\\.?`, 'gi'), '').trim();
       if (cut !== answer) answer = /[.!?]$/.test(cut) ? cut : `${cut}.`;
     }
-    const page = answer ? pages.find((p) => p.id === it?.see) : undefined;
+    const seen = answer ? pages.find((p) => p.id === it?.see) : undefined;
+    // models attach a link to any project they mention; keep it only when the question is about that page
+    const page = seen && asksAbout(text, seen) ? seen : undefined;
     const doodle = answer ? ANSWER_DOODLES.find((d) => d === it?.doodle) : undefined;
     return {
       ref,
@@ -267,6 +271,27 @@ export function readItems(reply: string, input: AskInput, pages: Page[] = []): A
       ...(doodle ? { doodle } : {}),
     };
   });
+}
+
+/** Words too common to tie a question to a page ("the", "project"…). */
+const LINK_STOP = new Set(['about', 'project', 'website', 'portal', 'module', 'editor', 'the', 'with', 'from', 'that', 'this', 'what', 'your']);
+/** The question picks out one project without naming it: "your favourite project", "what about the other one?". */
+const POINTS_AT_ONE = /\b(favou?rite|best|proudest|coolest|hardest|biggest|other one|that one|that project|this project)\b/i;
+
+/**
+ * Whether a question is about `page`, so its link belongs under the answer: it names the page (a word of
+ * its name or id), or asks for one project ("your favourite"). The contact form is always fine to link.
+ */
+export function asksAbout(question: string, page: Page): boolean {
+  if (page.id === 'contact') return true;
+  const q = normalise(question);
+  if (page.id === 'blog' || page.id.startsWith('blog/')) {
+    if (/\b(blog|post|posts|wrote|write|writing|article)\b/.test(q)) return true;
+  } else if (POINTS_AT_ONE.test(q)) return true;
+  const parts = (s: string, min: number) => s.toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length >= min && !LINK_STOP.has(w));
+  // the id's words may be short ("gcc"); the name's need four letters, so "the" or "hub" don't count
+  const words = [...parts(page.label, 4), ...parts(page.id.replace(/^blog\//, ''), 3)];
+  return words.some((w) => new RegExp(`\\b${w}`).test(q));
 }
 
 /** The link under an answer about `page`, with its screenshot when it has one. */
