@@ -4,7 +4,6 @@ import { Footer } from './components/Footer.tsx';
 import { BilloRun } from './components/BilloRun.tsx';
 import { Navbar } from './components/Navbar.tsx';
 import { PageBreak } from './components/PageBreak.tsx';
-import { SoundToggle } from './components/SoundToggle.tsx';
 import { PageScribble } from './scribble/PageScribble.tsx';
 import { CrayonLab } from './lab/CrayonLab.tsx';
 import { loaderDone } from './loader.ts';
@@ -82,7 +81,6 @@ function Site() {
         ))}
       </main>
       {all && <Footer />}
-      <SoundToggle />
       {all && <PageScribble />}
       {all && <BilloRun />}
       <CrayonCursor />
