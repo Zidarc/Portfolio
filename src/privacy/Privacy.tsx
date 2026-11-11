@@ -54,7 +54,7 @@ export function Privacy() {
 
       <h2>Stored in your browser</h2>
       <ul>
-        <li>Your day or night choice, and whether sounds are on, stay until you clear them.</li>
+        <li>Your day or night choice stays until you clear it.</li>
         <li>
           Your sketchpad drawings, where you'd moved to on the sheet, and whether you've already seen the opening
           drawing stay until you close the tab. The drawings never leave your browser unless you press ask.
