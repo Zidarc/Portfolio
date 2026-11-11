@@ -4,7 +4,7 @@ A portfolio drawn in crayon. Every heading, doodle and outline on the page is dr
 scroll to it, the whole site is paper you can scribble on, and a sketchpad lets you ask an AI about me by
 writing questions on the sheet.
 
-**Live:** https://ali-hussain-portfolio.netlify.app · **Sketchpad:** [/draw](https://ali-hussain-portfolio.netlify.app/draw) · **Blog:** [/blog](https://ali-hussain-portfolio.netlify.app/blog)
+**Live:** https://alihussain.codes · **Sketchpad:** [/draw](https://alihussain.codes/draw) · **Blog:** [/blog](https://alihussain.codes/blog)
 
 Built with React 19, TypeScript and Vite. There's no UI library, no canvas library and no animation library:
 the crayon rendering is written from scratch in SVG.

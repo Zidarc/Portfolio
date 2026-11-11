@@ -23,7 +23,7 @@ export default function OgCard() {
           Backend &amp; systems · CS '29, FAST NUCES
           <br />I build things that don't fall over.
         </p>
-        <p className="og__url">ali-hussain-portfolio.netlify.app</p>
+        <p className="og__url">alihussain.codes</p>
       </div>
 
       <div className="og__portrait">

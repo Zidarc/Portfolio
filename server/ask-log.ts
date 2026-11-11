@@ -3,7 +3,7 @@
  * can see what people want to know (and add it to content/ai/). No IPs or anything about the visitor
  * are kept. Locked with ASK_LOG_KEY: without it set, the log can't be read at all.
  *
- *   node scripts/ask-log.mjs https://ali-hussain-portfolio.netlify.app 7
+ *   node scripts/ask-log.mjs https://alihussain.codes 7
  */
 import { timingSafeEqual } from 'node:crypto';
 import type { AskStore } from './store.ts';

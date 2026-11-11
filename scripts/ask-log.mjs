@@ -3,12 +3,12 @@
 //
 // Usage: set ASK_LOG_KEY (the same value as on Netlify) in the shell or .env.local, then
 //   node scripts/ask-log.mjs                                              # live site, last 7 days
-//   node scripts/ask-log.mjs https://ali-hussain-portfolio.netlify.app 30 # last 30 days
+//   node scripts/ask-log.mjs https://alihussain.codes 30 # last 30 days
 //   node scripts/ask-log.mjs http://localhost:5173                        # the dev server's (memory) log
 
 import { existsSync, readFileSync } from 'node:fs';
 
-const [origin = 'https://ali-hussain-portfolio.netlify.app', days = '7'] = process.argv.slice(2);
+const [origin = 'https://alihussain.codes', days = '7'] = process.argv.slice(2);
 let key = process.env.ASK_LOG_KEY;
 if (!key && existsSync('.env.local')) key = readFileSync('.env.local', 'utf8').match(/^ASK_LOG_KEY=(.*)$/m)?.[1]?.trim();
 if (!key) {

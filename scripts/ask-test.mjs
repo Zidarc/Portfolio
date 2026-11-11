@@ -4,7 +4,7 @@
 // Usage (with `npm run dev` running, or against the live site):
 //   node scripts/ask-test.mjs                                   # typed questions only, to localhost:5173
 //   node scripts/ask-test.mjs http://localhost:5173 photo.png 2 # plus a picture with 2 numbered boxes
-//   node scripts/ask-test.mjs https://ali-hussain-portfolio.netlify.app
+//   node scripts/ask-test.mjs https://alihussain.codes
 //
 // The picture should already have the numbered boxes drawn on it (the sketchpad does this itself);
 // any PNG/JPEG with handwriting works for a first look, with the box count as the last argument.

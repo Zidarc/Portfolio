@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ali-hussain-portfolio.netlify.app/sitemap.xml
+Sitemap: https://alihussain.codes/sitemap.xml
